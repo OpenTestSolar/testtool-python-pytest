@@ -6,14 +6,14 @@
 
 ```yaml
 testTool:
-  use: github.com/OpenTestSolar/testtool-python@master:pytest
+  use: github.com/OpenTestSolar/testtool-python@main:pytest
 ```
 
 我们提供`git`和`http`两种使用方式。
 
 | **访问协议** | **访问地址**                                                 | **说明** |
 |----------|----------------------------------------------------------|--------|
-| `git`    | `github.com/OpenTestSolar/testtool-python@master:pytest` |        |
+| `git`    | `github.com/OpenTestSolar/testtool-python@main:pytest` |        |
 | `http`   | `TODO`                                                   |        |
 
 ### 分支/tag切换
@@ -37,7 +37,7 @@ testTool: # 测试工具相关配置
 schemaVersion: 1.0
 baseImage: python:3.10
 testTool:
-  use: github.com/OpenTestSolar/testtool-python@master:pytest
+  use: github.com/OpenTestSolar/testtool-python@main:pytest
 ```
 
 ## 配置参数
@@ -46,7 +46,7 @@ testTool:
 
 ```yaml
 testTool:
-  use: github.com/OpenTestSolar/testtool-python@master:pytest
+  use: github.com/OpenTestSolar/testtool-python@main:pytest
   with:
     workerCount: '0'
     extraArgs: ''
