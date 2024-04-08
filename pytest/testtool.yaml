@@ -1,0 +1,20 @@
+schemaVersion: 1.0
+name: pytest
+lang: python
+defaultBaseImage: python:3.10 # 用户在 TestContainer 配置中未指定 baseImage 时的默认镜像
+parameterDefs: # 用户 use 这个测试工具时可以配置的 with 参数
+  - name: workerCount
+    value: 并发数
+    default: '0'
+  - name: extraArgs
+    value: 额外命令行参数
+    default: ''
+  - name: timeout
+    value: 用例超时时间
+    default: '0'
+  - name: enableAllure
+    value: 是否用allure生成报告
+    default: 'false' # choice: true/false
+entry:
+  load: "/testtools/pytest/.env3/bin/python3 /testtools/pytest/load.py $1"
+  run: "/testtools/pytest/.env3/bin/python3 /testtools/pytest/run.py $1"

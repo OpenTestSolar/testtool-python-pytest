@@ -1,0 +1,24 @@
+[project]
+name = "pytest"
+version = "0.1.0"
+description = "Pytest tool for TestSolar"
+authors = [
+    {name = "asiazhang2002", email = "asiazhang2002@gmail.com"},
+]
+dependencies = [
+    "pytest>=8.1.1",
+    "pytest-timeout>=2.3.1",
+    "pytest-tornasync>=0.6.0.post2",
+]
+requires-python = ">=3.8"
+readme = "README.md"
+license = {text = "MIT"}
+
+
+[tool.pdm]
+distribution = false
+
+[tool.pdm.dev-dependencies]
+dev = [
+    "ruff>=0.3.5",
+]
