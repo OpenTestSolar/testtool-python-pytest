@@ -2,7 +2,7 @@ import sys
 import re
 
 
-def selector_to_pytest(test_selector):
+def selector_to_pytest(test_selector: str) -> str:
     """translate from test selector format to pytest format"""
     pos = test_selector.find("?")
     if pos < 0:
@@ -57,4 +57,5 @@ def normalize_testcase_name(name: str) -> str:
             )  # 数据驱动值前面加上/
     if "[" in name:
         name = decode_datadrive(name)
+
     return name

@@ -1,38 +1,38 @@
 import json
 import os
-import struct
-import sys
 import time
 import traceback
+from typing import BinaryIO, Sequence, Optional
 
 import pytest
+from pytest import Item, Collector, CollectReport, CallInfo, TestReport
 
-from .converter import normalize_testcase_name, selector_to_pytest
+from testsolar_testtool_sdk.reporter import Reporter, ReportType
+from testsolar_testtool_sdk.model.testresult import TestResult, ResultType, TestCaseStep
+from testsolar_testtool_sdk.model.test import TestCase
+
+from .case_log import gen_logs
+from .converter import normalize_testcase_name
 from .parser import parse_case_attributes
+from .allure import parse_allure_step_info
 
 
 class PytestTestSolarPlugin:
-    def __init__(self, pre_testcase_run=None, post_testcase_run=None, allure_path=None):
+    def __init__(self, allure_path=None, pipe_io: BinaryIO = None):
         self._post_data = {}
         self._testcase_name = ""
         self._allure_path = allure_path
-        self._pre_testcase_run = pre_testcase_run
-        self._post_testcase_run = post_testcase_run
         self._testcase_count = 0
-        self.collected = []
+        self.collected: list[Item | Collector] = []
         self.errors = {}
-        self._testdata = {}
-        self._session = None
-        self._skipped_testcase = {}
+        self._testdata: dict[str, TestResult] = {}
+        self._skipped_testcase: dict[str, str] = {}
+        self.reporter: Reporter = Reporter(reporter_type=ReportType.Pipeline, pipe_io=pipe_io)
 
-    def pytest_sessionstart(self, session):
-        self._session = session
+    def pytest_collection_modifyitems(self, items: Sequence[Item | Collector]) -> None:
+        self.collected.extend(items)
 
-    def pytest_collection_modifyitems(self, items):
-        for item in items:
-            self.collected.append(item)
-
-    def pytest_collectreport(self, report):
+    def pytest_collectreport(self, report: CollectReport) -> None:
         if report.failed:
             path = report.fspath
             if path in self.errors:
@@ -50,38 +50,10 @@ class PytestTestSolarPlugin:
     def _clear_item(self, item):
         del item._report_sections[:]
 
-    def _gen_logs(self, report):
-        logs = []
-        if report.capstdout:
-            logs.append(report.capstdout)
-        if report.capstderr:
-            logs.append(report.capstderr)
-        if report.caplog:
-            logs.append(report.caplog)
-
-        log = "\n".join(logs)
-        error_log = ""
-        if report.outcome == "failed":
-            error_log = report.longreprtext
-            if error_log:
-                if log:
-                    log += "\n\n"
-                log += error_log
-        logs = []
-        if log:
-            logs.append(
-                {
-                    "content": log,
-                    "level": 4 if error_log else 2,
-                    "time": time.time() - report.duration,
-                }
-            )
-        return logs
-
     @pytest.hookimpl(hookwrapper=True, tryfirst=True)
-    def pytest_runtest_makereport(self, item, call):
+    def pytest_runtest_makereport(self, item: Item, call: CallInfo):
         out = yield
-        report = out.get_result()
+        report: TestReport = out.get_result()
         testcase_name = normalize_testcase_name(report.nodeid)
         self._testcase_name = testcase_name
         attributes = parse_case_attributes(item)
@@ -90,6 +62,22 @@ class PytestTestSolarPlugin:
             if report.outcome == "skipped":
                 if isinstance(report.longrepr, tuple):
                     self._skipped_testcase[self._testcase_name] = report.longrepr[2]
+
+            setup_start_time = end_time - report.duration
+            self.reporter.report_run_case_result(TestResult(
+                Test=TestCase(Name=testcase_name, Attributes=attributes),
+                ResultType=ResultType.FAILED if report.failed else ResultType.SUCCEED,
+                Steps=[
+                    TestCaseStep(
+                        Title="Setup",
+                        Logs=gen_logs(report),
+                        StartTime=setup_start_time,
+                        EndTime=end_time,
+                    )
+                ],
+                StartTime=setup_start_time,
+                Message="",
+            ))
             if self._pre_testcase_run:
                 setup_start_time = end_time - report.duration
                 self._testdata[testcase_name] = {
@@ -98,7 +86,7 @@ class PytestTestSolarPlugin:
                     "steps": [
                         {
                             "title": "Setup",
-                            "logs": self._gen_logs(report),
+                            "logs": gen_logs(report),
                             "startTime": setup_start_time,
                             "endTime": end_time,
                             "resultType": "failed" if report.failed else "succeed",
@@ -127,7 +115,7 @@ class PytestTestSolarPlugin:
             self._testdata[testcase_name]["steps"].append(
                 {
                     "title": "Run TestCase",
-                    "logs": self._gen_logs(report),
+                    "logs": gen_logs(report),
                     "startTime": call_start_time,
                     "endTime": end_time,
                     "resultType": "failed" if report.failed else "succeed",
@@ -139,7 +127,7 @@ class PytestTestSolarPlugin:
             testcase = self._testdata.pop(testcase_name, None)
             self._teardown_info = {
                 "title": "Teardown",
-                "logs": self._gen_logs(report),
+                "logs": gen_logs(report),
                 "startTime": end_time - report.duration,
                 "endTime": end_time,
                 "resultType": "failed" if report.failed else "succeed",
@@ -204,75 +192,6 @@ class PytestTestSolarPlugin:
             return
 
 
-def ipc_send(fd, item):
-    buffer = json.dumps(item)
-    if not isinstance(buffer, bytes):
-        buffer = buffer.encode()
-    buffer = struct.pack("!I", len(buffer)) + buffer
-    os.write(fd, buffer)
-
-
-def gen_allure_log(content, result, log_time):
-    logs = []
-    if content:
-        logs.append(
-            {
-                "content": content,
-                "level": 2 if result else 4,
-                "time": format_allure_time(log_time),
-            }
-        )
-    return logs
-
-
-def format_allure_time(result_time):
-    return result_time / 1000
-
-
-def parse_allure_step_info(steps, index=None):
-    case_steps = []
-    if not index:
-        index = 0
-    if isinstance(steps, list):
-        for step in steps:
-            index += 1
-            result = step["status"]
-            if result == "passed":
-                result = True
-            else:
-                result = False
-            log = ""
-            if "parameters" in step.keys():
-                for param in step["parameters"]:
-                    for key in param:
-                        log += "%-30s%-20s\n" % (
-                            "key: {}".format(key),
-                            "value: {}".format(param[key]),
-                        )
-            if "statusDetails" in step.keys():
-                if "message" and "trace" in step["statusDetails"]:
-                    log += (
-                            step["statusDetails"]["message"]
-                            + step["statusDetails"]["trace"]
-                    )
-            step_info = {
-                "title": "{}： {}".format(".".join(list(str(index))), step["name"]),
-                "logs": gen_allure_log(log, result, step["start"]),
-                "startTime": format_allure_time(step["start"]),
-                "endTime": format_allure_time(step["stop"]),
-                "resultType": "succeed" if result else "failed",
-            }
-            case_steps.append(step_info)
-            if "steps" in step:
-                case_steps.extend(parse_allure_step_info(step["steps"], index * 10))
-    return case_steps
-
-
-def check_allure_enabled():
-    enable_allure = os.environ.get("TESTSOLAR_TTP_ENABLEALLURE", "")
-    return enable_allure == "true"
-
-
 class SummaryOutput(object):
     def __init__(self, stream):
         self._stream = stream
@@ -290,45 +209,3 @@ class SummaryOutput(object):
             )
             buffer = buffer[:4096] + warnning + buffer[-4096:]
         return self._stream.write(buffer)
-
-
-def run_testcases(proj_path, testcase_list, fd=None):
-    if proj_path not in sys.path:
-        sys.path.insert(0, proj_path)
-    args = [selector_to_pytest(it) for it in testcase_list]
-    args.append("--rootdir=%s" % proj_path)
-    # args.append("-s") # disable capture
-    allure_dir = ""
-    if check_allure_enabled():
-        allure_dir = os.path.join(proj_path, "allure_results")
-        args.append("--alluredir={}".format(allure_dir))
-
-        if not os.path.isdir(allure_dir):
-            os.mkdir(allure_dir)
-        else:
-            for f_name in os.listdir(allure_dir):
-                os.remove(os.path.join(allure_dir, f_name))
-    extra_args = os.environ.get("TESTSOLAR_TTP_EXTRAARGS", "")
-    if extra_args:
-        args.extend(extra_args.split())
-    timeout = int(os.environ.get("TESTSOLAR_TTP_TIMEOUT", "0"))
-    if timeout > 0:
-        args.append("--timeout=%d" % timeout)
-    print(args)
-
-    def pre_testcase_run(testcase):
-        if fd:
-            ipc_send(fd, ["pre_testcase_run", testcase])
-
-    def post_testcase_run(testcase):
-        if fd:
-            ipc_send(fd, ["post_testcase_run", testcase])
-
-    my_plugin = PytestTestSolarPlugin(
-        pre_testcase_run=pre_testcase_run,
-        post_testcase_run=post_testcase_run,
-        allure_path=allure_dir,
-    )
-    pytest.main(args, plugins=[my_plugin])
-    time.sleep(0.01)
-    print("pytest process exit")
