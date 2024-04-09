@@ -1,23 +1,17 @@
-import argparse
 import json
 import os
-import re
-import shlex
 import struct
 import sys
 import time
 import traceback
+
 import pytest
 
-try:
-    # Python 3
-    from urllib.parse import quote, unquote
-except ImportError:
-    # Python 2
-    from urllib import quote, unquote
+from .converter import normalize_testcase_name, selector_to_pytest
+from .parser import parse_case_attributes
 
 
-class MyPlugin:
+class PytestTestSolarPlugin:
     def __init__(self, pre_testcase_run=None, post_testcase_run=None, allure_path=None):
         self._post_data = {}
         self._testcase_name = ""
@@ -210,37 +204,6 @@ class MyPlugin:
             return
 
 
-def normalize_testcase_name(name):
-    """ test_directory/test_module.py::TestExampleClass::test_example_function[datedrive]
-        -> test_directory/test_module.py?TestExampleClass/test_example_function/[datedrive]
-    """
-    assert "::" in name
-    name = name.replace("::", "?", 1).replace("::", "/").replace("[", "/[")
-    if "[" in name:
-        name = decode_datadrive(name)
-    return name
-
-
-def encode_datadrive(name):
-    if sys.version_info[0] >= 3:
-        name = name.encode("unicode_escape").decode()
-    else:
-        if not isinstance(name, bytes):
-            name = name.encode("utf-8")
-        name = name.encode("string-escape")
-    return name
-
-
-def decode_datadrive(name):
-    if sys.version_info[0] >= 3:
-        if re.search(r"\\u\w{4}", name):
-            name = name.encode().decode("unicode_escape")
-    else:
-        name = name.decode("string-escape")
-        name = name.decode("string-escape") # need decode twice
-    return name
-
-
 def ipc_send(fd, item):
     buffer = json.dumps(item)
     if not isinstance(buffer, bytes):
@@ -289,8 +252,8 @@ def parse_allure_step_info(steps, index=None):
             if "statusDetails" in step.keys():
                 if "message" and "trace" in step["statusDetails"]:
                     log += (
-                        step["statusDetails"]["message"]
-                        + step["statusDetails"]["trace"]
+                            step["statusDetails"]["message"]
+                            + step["statusDetails"]["trace"]
                     )
             step_info = {
                 "title": "{}： {}".format(".".join(list(str(index))), step["name"]),
@@ -303,102 +266,6 @@ def parse_allure_step_info(steps, index=None):
             if "steps" in step:
                 case_steps.extend(parse_allure_step_info(step["steps"], index * 10))
     return case_steps
-
-
-def selector_to_pytest(test_selector):
-    """translate from test selector format to pytest format"""
-    pos = test_selector.find("?")
-    if pos < 0:
-        # TODO: Check is valid path
-        return test_selector
-    testcase = test_selector[pos + 1 :]
-    if "&" in testcase:
-        testcase_attrs = testcase.split("&")
-        for attr in testcase_attrs:
-            if  "name=" in attr:
-                testcase = attr[5:]
-                break
-            elif "=" not in attr:
-                testcase = attr
-                break
-    else:
-        if testcase.startswith("name="):
-            testcase = testcase[5:]
-    if "/[" in testcase:
-        testcase = encode_datadrive(testcase.replace("/[", "["))
-    return test_selector[:pos] + "::" + testcase.replace("/", "::")
-
-
-def parse_case_attributes(item):
-    """parse testcase attributes"""
-    attributes = {"description": (item.function.__doc__ or "").strip()}
-    if not item.own_markers:
-        return attributes
-    for mark in item.own_markers:
-        if not mark.args and mark.name != "attributes":
-            attributes["tag"] = mark.name
-        elif mark.args and mark.name == "owner":
-            attributes["owner"] = mark.args[0]
-        elif mark.name == "extra_attributes":
-            extra_attr = {}
-            for key in mark.args[0]:
-                if mark.args[0][key] is None:
-                    continue
-                extra_attr[key] = mark.args[0][key]
-            if not attributes.get("extra_attributes"):
-                attributes["extra_attributes"] = []
-            attributes["extra_attributes"].append(extra_attr)
-    return attributes
-
-def collect_testcases(proj_path, testcases, fd=None):
-    if proj_path not in sys.path:
-        sys.path.insert(0, proj_path)
-    testcase_list = [
-        os.path.join(proj_path, selector_to_pytest(it)) for it in testcases
-    ]
-    print(
-        "[Load] try to load testcases: %s"
-        % (str(testcase_list))
-    )
-    my_plugin = MyPlugin()
-    exit_code = pytest.main(
-        ["--rootdir=%s" % proj_path, "--collect-only"] + testcase_list,
-        plugins=[my_plugin],
-    )
-
-    to_report_testcases = []
-    if exit_code != 0:
-        print("[Load] collect testcases exit_code: {}".format(exit_code))
-
-    for item in my_plugin.collected:
-        if hasattr(item, "path") and hasattr(item, "cls"):
-            path = str(item.path)[len(proj_path) + 1 :]
-            name = item.name
-            if item.cls:
-                name = item.cls.__name__ + "/" + name
-            if name.endswith("]"):
-                name = name.replace("[", "/[")
-        elif hasattr(item, "nodeid"):
-            path, _, name = normalize_testcase_name(item.nodeid).partition("?")
-        else:
-            path = item.location[0]
-            # TODO: 感觉这里也少了replace("[", "/[")的逻辑？
-            name = item.location[2].replace(".", "/")
-        # support: @pytest.mark.attributes({"key":"value"})
-        attributes = parse_case_attributes(item)
-        name = decode_datadrive(name)
-        to_report_testcases.append([path, name, attributes])
-
-    for item in my_plugin.errors:
-        to_report_testcases.append([item, "", {"error": my_plugin.errors[item]}])
-
-    print(
-        "[Load] collected testcases {}".format(to_report_testcases)
-    )
-    
-    if fd:
-        ipc_send(fd, to_report_testcases)
-    return to_report_testcases
 
 
 def check_allure_enabled():
@@ -457,7 +324,7 @@ def run_testcases(proj_path, testcase_list, fd=None):
         if fd:
             ipc_send(fd, ["post_testcase_run", testcase])
 
-    my_plugin = MyPlugin(
+    my_plugin = PytestTestSolarPlugin(
         pre_testcase_run=pre_testcase_run,
         post_testcase_run=post_testcase_run,
         allure_path=allure_dir,
@@ -465,25 +332,3 @@ def run_testcases(proj_path, testcase_list, fd=None):
     pytest.main(args, plugins=[my_plugin])
     time.sleep(0.01)
     print("pytest process exit")
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(prog="pytestx", description="pytest tool wrapper")
-    parser.add_argument(
-        "--action",
-        help="current run action",
-        choices=("collect", "run"),
-        required=True,
-    )
-    parser.add_argument("--proj-path", help="project root path", required=True)
-    parser.add_argument("--testcases", help="testcase list")
-    parser.add_argument("--ipc-fd", help="ipc fd", type=int)
-    args = parser.parse_args()
-
-    testcase_list = shlex.split(args.testcases)
-    if args.action == "collect":
-        collect_testcases(args.proj_path, testcase_list, args.ipc_fd)
-    elif args.action == "run":
-        run_testcases(args.proj_path, testcase_list, args.ipc_fd)
-    if args.ipc_fd:
-        os.close(args.ipc_fd)
