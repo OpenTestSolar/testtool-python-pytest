@@ -16,4 +16,4 @@ export PYTHONUNBUFFERED=1
 export TESTSOLAR_TTP_LOADINSUBPROC=1 # 隔离环境
 
 /usr/local/bin/testtools_sdk version
-/usr/local/bin/testtools_sdk serve --tool pytest --file-report-mode
+/usr/local/bin/testtools_sdk serve --tool pytest
