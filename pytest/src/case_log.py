@@ -1,8 +1,11 @@
-import time
+from datetime import datetime, timedelta
+
+from pytest import TestReport
+from testsolar_testtool_sdk.model.testresult import TestCaseLog, LogLevel
 
 
-def gen_logs(report):
-    logs = []
+def gen_logs(report: TestReport) -> TestCaseLog:
+    logs: list[str] = []
     if report.capstdout:
         logs.append(report.capstdout)
     if report.capstderr:
@@ -11,24 +14,15 @@ def gen_logs(report):
         logs.append(report.caplog)
 
     log = "\n".join(logs)
-    error_log = ""
-    if report.outcome == "failed":
+
+    if report.failed:
         error_log = report.longreprtext
         if error_log:
-            if log:
-                log += "\n\n"
+            log += "\n\n"
             log += error_log
-    logs = []
-    if log:
-        logs.append(
-            {
-                "content": log,
-                "level": 4 if error_log else 2,
-                "time": time.time() - report.duration,
-            }
-        )
-    return logs
 
-
-
-
+    return TestCaseLog(
+        Time=datetime.now() - timedelta(report.duration),
+        Level=LogLevel.ERROR if report.failed else LogLevel.INFO,
+        Content=log,
+    )

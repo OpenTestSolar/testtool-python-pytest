@@ -23,17 +23,17 @@ def test_collect_testcases():
 
     re = read_load_result(pipe_io)
 
-    assert len(re.tests) == 5
-    assert len(re.load_errors) == 1
+    assert len(re.Tests) == 5
+    assert len(re.LoadErrors) == 1
 
-    assert re.tests[0].name == 'aa/bb/cc/class_test.py?TestCompute/test_add'
+    assert re.Tests[0].Name == 'aa/bb/cc/class_test.py?TestCompute/test_add'
 
-    assert re.tests[1].name == 'data_drive.py?test_eval/[2+4-6]'
-    assert re.tests[2].name == 'data_drive.py?test_eval/[3+5-8]'
-    assert re.tests[3].name == 'data_drive.py?test_eval/[6*9-42]'
+    assert re.Tests[1].Name == 'data_drive.py?test_eval/[2+4-6]'
+    assert re.Tests[2].Name == 'data_drive.py?test_eval/[3+5-8]'
+    assert re.Tests[3].Name == 'data_drive.py?test_eval/[6*9-42]'
 
-    assert re.tests[4].name == 'normal_case.py?test_answer'
-    assert re.tests[4].attrs['owner'] == 'foo'
-    assert re.tests[4].attrs['description'] == '测试获取答案'
-    assert re.tests[4].attrs['tag'] == 'high'
-    assert re.tests[4].attrs['extra_attributes'] == '[{"env": ["AA", "BB"]}]'
+    assert re.Tests[4].Name == 'normal_case.py?test_answer'
+    assert re.Tests[4].Attributes['owner'] == 'foo'
+    assert re.Tests[4].Attributes['description'] == '测试获取答案'
+    assert re.Tests[4].Attributes['tag'] == 'high'
+    assert re.Tests[4].Attributes['extra_attributes'] == '[{"env": ["AA", "BB"]}]'

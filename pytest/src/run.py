@@ -1,7 +1,10 @@
+import json
 import sys
 
-from .executor import run_testcases
+from dacite import from_dict
 from testsolar_testtool_sdk.model.param import EntryParam
+
+from .executor import run_testcases
 
 if __name__ == '__main__':
     argc = len(sys.argv)
@@ -11,5 +14,5 @@ if __name__ == '__main__':
     filename = sys.argv[1]
 
     with open(filename, 'r') as f:
-        entry = EntryParam.parse_raw(f.read())
+        entry = from_dict(data_class=EntryParam, data=json.loads(f.read()))
         run_testcases(entry)

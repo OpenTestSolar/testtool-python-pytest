@@ -1,12 +1,14 @@
 import os
 
+from testsolar_testtool_sdk.model.testresult import TestCaseStep
 
-def check_allure_enabled():
+
+def check_allure_enabled() -> bool:
     enable_allure = os.environ.get("TESTSOLAR_TTP_ENABLEALLURE", "")
     return enable_allure == "true"
 
 
-def parse_allure_step_info(steps, index=None):
+def parse_allure_step_info(steps: dict, index: int | None = None) -> list[TestCaseStep]:
     case_steps = []
     if not index:
         index = 0
