@@ -1,5 +1,4 @@
 import re
-import sys
 
 
 def selector_to_pytest(test_selector: str) -> str:
