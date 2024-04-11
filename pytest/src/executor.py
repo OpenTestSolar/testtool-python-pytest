@@ -23,6 +23,7 @@ def run_testcases(entry: EntryParam, pipe_io: BinaryIO | None = None):
     args = [
         f"--rootdir={entry.ProjectPath}",
         "--continue-on-collection-errors",
+        "-v",
     ]
     args.extend(
         [
@@ -150,3 +151,6 @@ class PytestExecutor:
         test_result.EndTime = datetime.now()
 
         self.reporter.report_run_case_result(test_result)
+
+        # 上报完成后测试记录就没有用了，删除以节省内存
+        self.testdata.pop(testcase_name, None)

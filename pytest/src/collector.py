@@ -75,11 +75,11 @@ def collect_testcases(entry_param: EntryParam, pipe_io: BinaryIO | None = None) 
 
     load_result.Tests.sort(key=lambda x: x.Name)
 
-    for item in my_plugin.errors:
+    for k, v in my_plugin.errors.items():
         load_result.LoadErrors.append(
             LoadError(
-                name=f"load error of selector: [{item}]",
-                message=str(my_plugin.errors.get(item)),
+                name=f"load error of selector: [{k}]",
+                message=v,
             )
         )
 
@@ -93,7 +93,7 @@ def collect_testcases(entry_param: EntryParam, pipe_io: BinaryIO | None = None) 
 
 
 def _filter_invalid_selector_path(
-    workspace: str, load_result: LoadResult, selectors: list[str]
+        workspace: str, load_result: LoadResult, selectors: list[str]
 ) -> list[str]:
     valid_selectors = []
     for selector in selectors:
@@ -115,7 +115,7 @@ def _filter_invalid_selector_path(
 class PytestCollector:
     def __init__(self, pipe_io: BinaryIO | None = None):
         self.collected: list[Item] = []
-        self.errors = {}
+        self.errors: dict[str, str] = {}
         self.reporter: Reporter = Reporter(pipe_io=pipe_io)
 
     def pytest_collection_modifyitems(self, items: Sequence[Item | Collector]) -> None:
