@@ -1,3 +1,5 @@
+import sys
+
 import pytest
 
 
@@ -23,8 +25,6 @@ def test_success(print_extra_msg):
     assert inc(3) == 4
 
 
-@pytest.mark.low
-@pytest.mark.owner("bar")
 def test_failed():
     print("this is assert output")
     assert inc(3) == 6
@@ -33,6 +33,6 @@ def test_failed():
 @pytest.mark.low
 @pytest.mark.owner("bar")
 def test_raise_error():
-    print("this is assert output")
+    print("this is raise output", file=sys.stderr)
     assert inc(3) == 4
     raise RuntimeError("this is raise runtime error")

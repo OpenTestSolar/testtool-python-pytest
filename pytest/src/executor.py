@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from typing import BinaryIO, Optional, Dict
 
 import pytest
-from pytest import TestReport
+from pytest import TestReport, Item
 from testsolar_testtool_sdk.model.param import EntryParam
 from testsolar_testtool_sdk.model.test import TestCase
 from testsolar_testtool_sdk.model.testresult import TestResult, ResultType, TestCaseStep
@@ -14,6 +14,7 @@ from testsolar_testtool_sdk.reporter import Reporter
 from .case_log import gen_logs
 from .converter import selector_to_pytest, normalize_testcase_name
 from .filter import filter_invalid_selector_path
+from .parser import parse_case_attributes
 
 
 def run_testcases(entry: EntryParam, pipe_io: Optional[BinaryIO] = None):
@@ -78,6 +79,17 @@ class PytestExecutor:
 
         self.reporter.report_case_result(test_result)
 
+    def pytest_runtest_setup(self, item: Item) -> None:
+        """
+        Called to perform the setup phase for a test item.
+        """
+
+        # 在Setup阶段将用例的属性解析出来并设置到Test中
+        testcase_name = normalize_testcase_name(item.nodeid)
+        test_result = self.testdata[testcase_name]
+        if test_result:
+            test_result.Test.Attributes = parse_case_attributes(item)
+
     def pytest_runtest_logreport(self, report: TestReport) -> None:
         """
         Process the TestReport produced for each of the setup, call and teardown runtest phases of an item.
@@ -109,6 +121,12 @@ class PytestExecutor:
             )
 
             test_result.ResultType = result_type
+
+            if report.skipped and isinstance(report.longrepr, tuple):
+                file, line, reason = report.longrepr
+                print(f"Skipped {file}:{line}: {reason}")
+                test_result.Message = reason[:1000]
+
         elif report.when == "call":
             self.testcase_count += 1
 
@@ -124,8 +142,12 @@ class PytestExecutor:
 
             print(
                 f"[{self.__class__.__name__}] Testcase {report.nodeid} run {report.outcome},"
-                " total {self.testcase_count} testcases complete"
+                f" total {self.testcase_count} testcases complete"
             )
+
+            if not test_result.Message and report.failed:
+                # 避免错误信息过长，因此仅获取前面最多1000个字符
+                test_result.Message = report.longreprtext[:1000]
 
             test_result.ResultType = result_type
 
