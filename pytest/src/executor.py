@@ -89,7 +89,13 @@ class PytestExecutor:
 
         step_end_time = datetime.now()
 
-        result_type = ResultType.FAILED if report.failed else ResultType.SUCCEED
+        result_type: ResultType
+        if report.failed:
+            result_type = ResultType.FAILED
+        elif report.skipped:
+            result_type = ResultType.IGNORED
+        else:
+            result_type = ResultType.SUCCEED
 
         if report.when == "setup":
             test_result.Steps.append(

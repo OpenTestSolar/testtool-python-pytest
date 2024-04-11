@@ -19,7 +19,6 @@ def test_success(print_extra_msg):
     """
     测试获取答案
     """
-    
     print("this is print sample output")
     assert inc(3) == 4
 
@@ -27,9 +26,6 @@ def test_success(print_extra_msg):
 @pytest.mark.low
 @pytest.mark.owner("bar")
 def test_failed():
-    """
-    测试获取答案
-    """
     print("this is assert output")
     assert inc(3) == 6
 
@@ -37,9 +33,6 @@ def test_failed():
 @pytest.mark.low
 @pytest.mark.owner("bar")
 def test_raise_error():
-    """
-    测试获取答案
-    """
     print("this is assert output")
     assert inc(3) == 4
     raise RuntimeError("this is raise runtime error")
