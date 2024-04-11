@@ -26,9 +26,11 @@ def collect_testcases(entry_param: EntryParam, pipe_io: BinaryIO | None = None) 
         LoadErrors=[],
     )
 
-    valid_selectors = _filter_invalid_selector_path(workspace=entry_param.ProjectPath,
-                                                    load_result=load_result,
-                                                    selectors=entry_param.TestSelectors)
+    valid_selectors = _filter_invalid_selector_path(
+        workspace=entry_param.ProjectPath,
+        load_result=load_result,
+        selectors=entry_param.TestSelectors,
+    )
 
     pytest_paths = [selector_to_pytest(test_selector=it) for it in valid_selectors]
     testcase_list = [
@@ -65,22 +67,21 @@ def collect_testcases(entry_param: EntryParam, pipe_io: BinaryIO | None = None) 
             name = item.location[2].replace(".", "/")
             full_name = f"{rel_path}?{name}"
 
-        if full_name.endswith(']'):
-            full_name = full_name.replace('[', "/[")
+        if full_name.endswith("]"):
+            full_name = full_name.replace("[", "/[")
 
         attributes = parse_case_attributes(item)
-        load_result.Tests.append(TestCase(
-            Name=full_name,
-            Attributes=attributes
-        ))
+        load_result.Tests.append(TestCase(Name=full_name, Attributes=attributes))
 
     load_result.Tests.sort(key=lambda x: x.Name)
 
     for item in my_plugin.errors:
-        load_result.LoadErrors.append(LoadError(
-            name=f"load error of selector: [{item}]",
-            message=str(my_plugin.errors.get(item))
-        ))
+        load_result.LoadErrors.append(
+            LoadError(
+                name=f"load error of selector: [{item}]",
+                message=str(my_plugin.errors.get(item)),
+            )
+        )
 
     load_result.LoadErrors.sort(key=lambda x: x.name)
 
@@ -91,16 +92,19 @@ def collect_testcases(entry_param: EntryParam, pipe_io: BinaryIO | None = None) 
     reporter.report_load_result(load_result)
 
 
-def _filter_invalid_selector_path(workspace: str, load_result: LoadResult, selectors: list[str]) -> list[str]:
+def _filter_invalid_selector_path(
+    workspace: str, load_result: LoadResult, selectors: list[str]
+) -> list[str]:
     valid_selectors = []
     for selector in selectors:
-        path, _, _ = selector.partition('?')
+        path, _, _ = selector.partition("?")
 
         full_path = pathlib.Path(workspace, path).resolve()
         if not full_path.exists():
             message = f"[WARNING]Path {full_path} does not exist, SKIP collect"
-            load_result.LoadErrors.append(LoadError(name=f"invalid selector [{selector}]",
-                                                    message=message))
+            load_result.LoadErrors.append(
+                LoadError(name=f"invalid selector [{selector}]", message=message)
+            )
             print(message)
         else:
             valid_selectors.append(selector)

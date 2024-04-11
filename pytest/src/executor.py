@@ -1,9 +1,9 @@
 import logging
 import os
 import sys
+from datetime import datetime, timedelta
 from typing import BinaryIO
 
-from datetime import datetime, timedelta
 import pytest
 from pytest import TestReport
 from testsolar_testtool_sdk.model.param import EntryParam
@@ -24,7 +24,12 @@ def run_testcases(entry: EntryParam, pipe_io: BinaryIO | None = None):
         f"--rootdir={entry.ProjectPath}",
         "--continue-on-collection-errors",
     ]
-    args.extend([os.path.join(entry.ProjectPath, selector_to_pytest(it)) for it in entry.TestSelectors])
+    args.extend(
+        [
+            os.path.join(entry.ProjectPath, selector_to_pytest(it))
+            for it in entry.TestSelectors
+        ]
+    )
 
     allure_dir = ""
     if check_allure_enabled():
@@ -44,9 +49,7 @@ def run_testcases(entry: EntryParam, pipe_io: BinaryIO | None = None):
         args.append(f"--timeout={timeout}")
     logging.info(args)
 
-    my_plugin = PytestExecutor(
-        pipe_io=pipe_io
-    )
+    my_plugin = PytestExecutor(pipe_io=pipe_io)
     pytest.main(args, plugins=[my_plugin])
     logging.info("pytest process exit")
 
@@ -89,7 +92,8 @@ class PytestExecutor:
         test_result = self.testdata[testcase_name]
 
         step_end_time = datetime.now()
-        # 根据报告修改对应TestResult的值
+
+        result_type = ResultType.FAILED if report.failed else ResultType.SUCCEED
 
         if report.when == "setup":
             test_result.Steps.append(
@@ -98,21 +102,29 @@ class PytestExecutor:
                     Logs=[gen_logs(report)],
                     StartTime=step_end_time - timedelta(report.duration),
                     EndTime=step_end_time,
-                    ResultType=ResultType.FAILED if report.failed else ResultType.SUCCEED
+                    ResultType=result_type,
                 )
             )
             if report.failed:
                 test_result.ResultType = ResultType.FAILED
         elif report.when == "call":
+            self.testcase_count += 1
+
             test_result.Steps.append(
                 TestCaseStep(
                     Title="Run TestCase",
                     Logs=[gen_logs(report)],
                     StartTime=step_end_time - timedelta(report.duration),
                     EndTime=step_end_time,
-                    ResultType=ResultType.FAILED if report.failed else ResultType.SUCCEED
+                    ResultType=result_type
                 )
             )
+
+            print(
+                f"[{self.__class__.__name__}] Testcase {report.nodeid} run {report.outcome},"
+                " total {self.testcase_count} testcases complete"
+            )
+
             if report.failed:
                 test_result.ResultType = ResultType.FAILED
         elif report.when == "teardown":
@@ -122,11 +134,11 @@ class PytestExecutor:
                     Logs=[gen_logs(report)],
                     StartTime=step_end_time - timedelta(report.duration),
                     EndTime=step_end_time,
-                    ResultType=ResultType.FAILED if report.failed else ResultType.SUCCEED
+                    ResultType=ResultType.FAILED if report.failed else ResultType.SUCCEED,
                 )
             )
 
-            test_result.ResultType = ResultType.FAILED if report.failed else ResultType.SUCCEED
+            test_result.ResultType = result_type
 
     def pytest_runtest_logfinish(self, nodeid: str, location):
         """

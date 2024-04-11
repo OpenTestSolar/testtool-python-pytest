@@ -13,7 +13,9 @@ from pytest import Mark
 # - extra_attributes
 def parse_case_attributes(item) -> Dict[str, str]:
     """parse testcase attributes"""
-    attributes: Dict[str, str] = {"description": (str(item.function.__doc__) or "").strip()}
+    attributes: Dict[str, str] = {
+        "description": (str(item.function.__doc__) or "").strip()
+    }
     if not item.own_markers:
         return attributes
     for mark in item.own_markers:  # type: Mark

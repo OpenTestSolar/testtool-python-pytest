@@ -31,8 +31,8 @@ def parse_allure_step_info(steps: dict, index: int | None = None) -> list[TestCa
             if "statusDetails" in step.keys():
                 if "message" and "trace" in step["statusDetails"]:
                     log += (
-                            step["statusDetails"]["message"]
-                            + step["statusDetails"]["trace"]
+                        step["statusDetails"]["message"]
+                        + step["statusDetails"]["trace"]
                     )
             step_info = {
                 "title": "{}： {}".format(".".join(list(str(index))), step["name"]),

@@ -78,7 +78,9 @@ class PytestTestSolarPlugin:
                         Logs=gen_logs(report),
                         StartTime=setup_start_time,
                         EndTime=end_time,
-                        ResultType=ResultType.FAILED if report.failed else ResultType.SUCCEED
+                        ResultType=ResultType.FAILED
+                        if report.failed
+                        else ResultType.SUCCEED,
                     )
                 ],
                 StartTime=setup_start_time,
@@ -110,28 +112,35 @@ class PytestTestSolarPlugin:
                 if report.failed:
                     test_result.ResultType = ResultType.FAILED
 
-                test_result.Steps.append(TestCaseStep(
-                    Title="Run TestCase",
-                    Logs=gen_logs(report),
-                    StartTime=call_start_time,
-                    EndTime=end_time,
-                    ResultType=ResultType.FAILED if report.failed else ResultType.SUCCEED
-                ))
+                test_result.Steps.append(
+                    TestCaseStep(
+                        Title="Run TestCase",
+                        Logs=gen_logs(report),
+                        StartTime=call_start_time,
+                        EndTime=end_time,
+                        ResultType=ResultType.FAILED
+                        if report.failed
+                        else ResultType.SUCCEED,
+                    )
+                )
         elif report.when == "teardown":
-
             test_result = self._testdata[testcase_name]
             if test_result:
                 if report.failed:
                     test_result.ResultType = ResultType.FAILED
 
                 if not self._allure_path:
-                    test_result.Steps.append(TestCaseStep(
-                        Title="Teardown",
-                        Logs=gen_logs(report),
-                        StartTime=end_time - timedelta(report.duration),
-                        EndTime=end_time,
-                        ResultType=ResultType.FAILED if report.failed else ResultType.SUCCEED
-                    ))
+                    test_result.Steps.append(
+                        TestCaseStep(
+                            Title="Teardown",
+                            Logs=gen_logs(report),
+                            StartTime=end_time - timedelta(report.duration),
+                            EndTime=end_time,
+                            ResultType=ResultType.FAILED
+                            if report.failed
+                            else ResultType.SUCCEED,
+                        )
+                    )
 
                     if len(test_result.Steps) <= 2:
                         for step in test_result.Steps:
@@ -142,7 +151,9 @@ class PytestTestSolarPlugin:
                             if testcase_name not in self._skipped_testcase:
                                 test_result.Message = "skip"
                             else:
-                                test_result.Message = self._skipped_testcase[testcase_name]
+                                test_result.Message = self._skipped_testcase[
+                                    testcase_name
+                                ]
 
                 self.reporter.report_run_case_result(test_result)
 
