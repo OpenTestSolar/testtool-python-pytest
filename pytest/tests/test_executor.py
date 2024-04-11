@@ -7,14 +7,19 @@ from src.executor import run_testcases
 
 
 def test_run_testcases():
-    testdata_dir = Path(__file__).parent.absolute().joinpath('testdata')
+    testdata_dir = Path(__file__).parent.absolute().joinpath("testdata")
     entry = EntryParam(
         Context={},
-        TaskId='aa',
+        TaskId="aa",
         ProjectPath=str(testdata_dir),
-        TestSelectors=['normal_case.py', 'aa/bb/cc/class_test.py', 'data_drive.py', 'error_load.py'],
-        Collectors=[''],
-        FileReportPath=''
+        TestSelectors=[
+            "normal_case.py",
+            "aa/bb/cc/class_test.py",
+            "data_drive.py",
+            "load_error.py",
+        ],
+        Collectors=[""],
+        FileReportPath="",
     )
 
     pipe_io = io.BytesIO()

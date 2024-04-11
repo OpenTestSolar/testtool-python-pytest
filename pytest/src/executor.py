@@ -3,14 +3,17 @@ import os
 import sys
 from typing import BinaryIO
 
+from datetime import datetime, timedelta
 import pytest
 from pytest import TestReport
 from testsolar_testtool_sdk.model.param import EntryParam
-from testsolar_testtool_sdk.model.testresult import TestResult
+from testsolar_testtool_sdk.model.test import TestCase
+from testsolar_testtool_sdk.model.testresult import TestResult, ResultType, TestCaseStep
 from testsolar_testtool_sdk.reporter import Reporter
 
 from .allure import check_allure_enabled
-from .converter import selector_to_pytest
+from .case_log import gen_logs
+from .converter import selector_to_pytest, normalize_testcase_name
 
 
 def run_testcases(entry: EntryParam, pipe_io: BinaryIO | None = None):
@@ -59,13 +62,22 @@ class PytestExecutor:
         """
         Called at the start of running the runtest protocol for a single item.
         """
+
+        # 通知ResultHouse用例开始运行
+        testcase_name = normalize_testcase_name(nodeid)
+
+        test_result = TestResult(
+            Test=TestCase(Name=testcase_name),
+            ResultType=ResultType.RUNNING,
+            StartTime=datetime.now(),
+            Message="",
+        )
+
+        self.testdata[testcase_name] = test_result
+
         logging.info(f"{nodeid} start")
 
-    def pytest_runtest_logfinish(self, nodeid: str, location):
-        """
-        Called at the end of running the runtest protocol for a single item.
-        """
-        logging.info(f"{nodeid} finish")
+        self.reporter.report_run_case_result(test_result)
 
     def pytest_runtest_logreport(self, report: TestReport) -> None:
         """
@@ -73,6 +85,56 @@ class PytestExecutor:
         """
         logging.info(f"{report.nodeid} log report")
 
+        testcase_name = normalize_testcase_name(report.nodeid)
+        test_result = self.testdata[testcase_name]
 
+        step_end_time = datetime.now()
+        # 根据报告修改对应TestResult的值
 
+        if report.when == "setup":
+            test_result.Steps.append(
+                TestCaseStep(
+                    Title="Setup",
+                    Logs=[gen_logs(report)],
+                    StartTime=step_end_time - timedelta(report.duration),
+                    EndTime=step_end_time,
+                    ResultType=ResultType.FAILED if report.failed else ResultType.SUCCEED
+                )
+            )
+            if report.failed:
+                test_result.ResultType = ResultType.FAILED
+        elif report.when == "call":
+            test_result.Steps.append(
+                TestCaseStep(
+                    Title="Run TestCase",
+                    Logs=[gen_logs(report)],
+                    StartTime=step_end_time - timedelta(report.duration),
+                    EndTime=step_end_time,
+                    ResultType=ResultType.FAILED if report.failed else ResultType.SUCCEED
+                )
+            )
+            if report.failed:
+                test_result.ResultType = ResultType.FAILED
+        elif report.when == "teardown":
+            test_result.Steps.append(
+                TestCaseStep(
+                    Title="Teardown",
+                    Logs=[gen_logs(report)],
+                    StartTime=step_end_time - timedelta(report.duration),
+                    EndTime=step_end_time,
+                    ResultType=ResultType.FAILED if report.failed else ResultType.SUCCEED
+                )
+            )
 
+            test_result.ResultType = ResultType.FAILED if report.failed else ResultType.SUCCEED
+
+    def pytest_runtest_logfinish(self, nodeid: str, location):
+        """
+        Called at the end of running the runtest protocol for a single item.
+        """
+        testcase_name = normalize_testcase_name(nodeid)
+
+        test_result = self.testdata[testcase_name]
+        test_result.EndTime = datetime.now()
+
+        self.reporter.report_run_case_result(test_result)

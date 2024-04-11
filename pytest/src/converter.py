@@ -1,14 +1,14 @@
-import sys
 import re
+import sys
 
 
 def selector_to_pytest(test_selector: str) -> str:
     """translate from test selector format to pytest format"""
-    pos = test_selector.find("?")
-    if pos < 0:
-        # TODO: Check is valid path
-        return test_selector
-    testcase = test_selector[pos + 1:]
+    path, _, testcase = test_selector.partition('?')
+
+    if not testcase:
+        return path
+
     if "&" in testcase:
         testcase_attrs = testcase.split("&")
         for attr in testcase_attrs:
@@ -23,7 +23,7 @@ def selector_to_pytest(test_selector: str) -> str:
             testcase = testcase[5:]
     if "/[" in testcase:
         testcase = encode_datadrive(testcase.replace("/[", "["))
-    return test_selector[:pos] + "::" + testcase.replace("/", "::")
+    return path + "::" + testcase.replace("/", "::")
 
 
 def encode_datadrive(name):

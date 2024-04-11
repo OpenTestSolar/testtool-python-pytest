@@ -1,5 +1,6 @@
 import logging
 import os
+import pathlib
 import sys
 import traceback
 from typing import BinaryIO, Sequence
@@ -19,25 +20,33 @@ from .pytestx import normalize_testcase_name
 def collect_testcases(entry_param: EntryParam, pipe_io: BinaryIO | None = None) -> None:
     if entry_param.ProjectPath not in sys.path:
         sys.path.insert(0, entry_param.ProjectPath)
-    testcase_list = [
-        os.path.join(entry_param.ProjectPath, selector_to_pytest(it)) for it in entry_param.TestSelectors
-    ]
-    logging.info(f"[Load] try to load testcases: {testcase_list}")
-    my_plugin = PytestCollector()
-    args = [
-        f"--rootdir={entry_param.ProjectPath}",
-        "--collect-only",
-        "--continue-on-collection-errors",
-        "-v"
-    ]
-    args.extend(testcase_list)
-
-    exit_code = pytest.main(args, plugins=[my_plugin])
 
     load_result: LoadResult = LoadResult(
         Tests=[],
         LoadErrors=[],
     )
+
+    valid_selectors = _filter_invalid_selector_path(workspace=entry_param.ProjectPath,
+                                                    load_result=load_result,
+                                                    selectors=entry_param.TestSelectors)
+
+    pytest_paths = [selector_to_pytest(test_selector=it) for it in valid_selectors]
+    testcase_list = [
+        os.path.join(entry_param.ProjectPath, it) for it in pytest_paths if it
+    ]
+
+    my_plugin = PytestCollector(pipe_io)
+    args = [
+        f"--rootdir={entry_param.ProjectPath}",
+        "--collect-only",
+        "--continue-on-collection-errors",
+        "-v",
+    ]
+    args.extend(testcase_list)
+
+    logging.info(f"[Load] try to collect testcases: {args}")
+    print(f"[Load] try to collect testcases: {args}")
+    exit_code = pytest.main(args, plugins=[my_plugin])
 
     if exit_code != 0:
         logging.warning(f"[Load] collect testcases exit_code: {exit_code}")
@@ -69,7 +78,7 @@ def collect_testcases(entry_param: EntryParam, pipe_io: BinaryIO | None = None) 
 
     for item in my_plugin.errors:
         load_result.LoadErrors.append(LoadError(
-            name="load error",
+            name=f"load error of selector: [{item}]",
             message=str(my_plugin.errors.get(item))
         ))
 
@@ -80,6 +89,23 @@ def collect_testcases(entry_param: EntryParam, pipe_io: BinaryIO | None = None) 
 
     reporter = Reporter(pipe_io=pipe_io)
     reporter.report_load_result(load_result)
+
+
+def _filter_invalid_selector_path(workspace: str, load_result: LoadResult, selectors: list[str]) -> list[str]:
+    valid_selectors = []
+    for selector in selectors:
+        path, _, _ = selector.partition('?')
+
+        full_path = pathlib.Path(workspace, path).resolve()
+        if not full_path.exists():
+            message = f"[WARNING]Path {full_path} does not exist, SKIP collect"
+            load_result.LoadErrors.append(LoadError(name=f"invalid selector [{selector}]",
+                                                    message=message))
+            print(message)
+        else:
+            valid_selectors.append(selector)
+
+    return valid_selectors
 
 
 class PytestCollector:
