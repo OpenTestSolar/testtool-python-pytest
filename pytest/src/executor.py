@@ -11,14 +11,19 @@ from testsolar_testtool_sdk.model.test import TestCase
 from testsolar_testtool_sdk.model.testresult import TestResult, ResultType, TestCaseStep
 from testsolar_testtool_sdk.reporter import Reporter
 
-from .allure import check_allure_enabled
 from .case_log import gen_logs
 from .converter import selector_to_pytest, normalize_testcase_name
+from .filter import filter_invalid_selector_path
 
 
 def run_testcases(entry: EntryParam, pipe_io: BinaryIO | None = None):
     if entry.ProjectPath not in sys.path:
         sys.path.insert(0, entry.ProjectPath)
+
+    valid_selectors, _ = filter_invalid_selector_path(
+        workspace=entry.ProjectPath,
+        selectors=entry.TestSelectors,
+    )
 
     args = [
         f"--rootdir={entry.ProjectPath}",
@@ -28,20 +33,10 @@ def run_testcases(entry: EntryParam, pipe_io: BinaryIO | None = None):
     args.extend(
         [
             os.path.join(entry.ProjectPath, selector_to_pytest(it))
-            for it in entry.TestSelectors
+            for it in valid_selectors
         ]
     )
 
-    allure_dir = ""
-    if check_allure_enabled():
-        allure_dir = os.path.join(entry.ProjectPath, "allure_results")
-        args.append("--alluredir={}".format(allure_dir))
-
-        if not os.path.isdir(allure_dir):
-            os.mkdir(allure_dir)
-        else:
-            for f_name in os.listdir(allure_dir):
-                os.remove(os.path.join(allure_dir, f_name))
     extra_args = os.environ.get("TESTSOLAR_TTP_EXTRAARGS", "")
     if extra_args:
         args.extend(extra_args.split())
@@ -106,8 +101,8 @@ class PytestExecutor:
                     ResultType=result_type,
                 )
             )
-            if report.failed:
-                test_result.ResultType = ResultType.FAILED
+
+            test_result.ResultType = result_type
         elif report.when == "call":
             self.testcase_count += 1
 
@@ -126,8 +121,8 @@ class PytestExecutor:
                 " total {self.testcase_count} testcases complete"
             )
 
-            if report.failed:
-                test_result.ResultType = ResultType.FAILED
+            test_result.ResultType = result_type
+
         elif report.when == "teardown":
             test_result.Steps.append(
                 TestCaseStep(
@@ -135,11 +130,11 @@ class PytestExecutor:
                     Logs=[gen_logs(report)],
                     StartTime=step_end_time - timedelta(report.duration),
                     EndTime=step_end_time,
-                    ResultType=ResultType.FAILED if report.failed else ResultType.SUCCEED,
+                    ResultType=result_type
                 )
             )
-
-            test_result.ResultType = result_type
+            if test_result.ResultType not in [ResultType.FAILED, ResultType.LOAD_FAILED, ResultType.IGNORED, ResultType.UNKNOWN]:
+                test_result.ResultType = result_type
 
     def pytest_runtest_logfinish(self, nodeid: str, location):
         """

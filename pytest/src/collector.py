@@ -12,9 +12,9 @@ from testsolar_testtool_sdk.model.param import EntryParam
 from testsolar_testtool_sdk.model.test import TestCase
 from testsolar_testtool_sdk.reporter import Reporter
 
-from .converter import selector_to_pytest
+from .converter import selector_to_pytest, normalize_testcase_name
 from .parser import parse_case_attributes
-from .pytestx import normalize_testcase_name
+from .filter import filter_invalid_selector_path
 
 
 def collect_testcases(entry_param: EntryParam, pipe_io: BinaryIO | None = None) -> None:
@@ -26,11 +26,12 @@ def collect_testcases(entry_param: EntryParam, pipe_io: BinaryIO | None = None) 
         LoadErrors=[],
     )
 
-    valid_selectors = _filter_invalid_selector_path(
+    valid_selectors, load_errors = filter_invalid_selector_path(
         workspace=entry_param.ProjectPath,
-        load_result=load_result,
         selectors=entry_param.TestSelectors,
     )
+
+    load_result.LoadErrors.extend(load_errors)
 
     pytest_paths = [selector_to_pytest(test_selector=it) for it in valid_selectors]
     testcase_list = [
@@ -90,26 +91,6 @@ def collect_testcases(entry_param: EntryParam, pipe_io: BinaryIO | None = None) 
 
     reporter = Reporter(pipe_io=pipe_io)
     reporter.report_load_result(load_result)
-
-
-def _filter_invalid_selector_path(
-        workspace: str, load_result: LoadResult, selectors: list[str]
-) -> list[str]:
-    valid_selectors = []
-    for selector in selectors:
-        path, _, _ = selector.partition("?")
-
-        full_path = pathlib.Path(workspace, path).resolve()
-        if not full_path.exists():
-            message = f"[WARNING]Path {full_path} does not exist, SKIP collect"
-            load_result.LoadErrors.append(
-                LoadError(name=f"invalid selector [{selector}]", message=message)
-            )
-            print(message)
-        else:
-            valid_selectors.append(selector)
-
-    return valid_selectors
 
 
 class PytestCollector:

@@ -9,12 +9,12 @@ from src.collector import collect_testcases
 
 
 class CollectorTest(unittest.TestCase):
+    testdata_dir: str = str(Path(__file__).parent.parent.absolute().joinpath("testdata"))
+
     def test_collect_testcases_when_selector_is_valid(self):
-        testdata_dir = Path(__file__).parent.parent.absolute().joinpath("testdata")
         entry = EntryParam(
-            Context={},
             TaskId="aa",
-            ProjectPath=str(testdata_dir),
+            ProjectPath=self.testdata_dir,
             TestSelectors=[
                 "normal_case.py?test_success",
                 "aa/bb/cc/class_test.py",
@@ -22,7 +22,6 @@ class CollectorTest(unittest.TestCase):
                 "errors/import_error.py",
                 "errors/load_error.py",
             ],
-            Collectors=[""],
             FileReportPath="",
         )
 
@@ -56,16 +55,13 @@ class CollectorTest(unittest.TestCase):
         self.assertIn("SyntaxError: unterminated string literal", re.LoadErrors[1].message)
 
     def test_collect_testcases_when_select_not_valid(self):
-        testdata_dir = Path(__file__).parent.parent.absolute().joinpath("testdata")
         entry = EntryParam(
-            Context={},
             TaskId="aa",
-            ProjectPath=str(testdata_dir),
+            ProjectPath=self.testdata_dir,
             TestSelectors=[
                 "data_drive.py",
                 "not_exist.py",
             ],
-            Collectors=[""],
             FileReportPath="",
         )
 
