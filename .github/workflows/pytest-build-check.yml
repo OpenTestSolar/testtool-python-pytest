@@ -6,8 +6,12 @@ name: Python package
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - 'pytest/**'
   pull_request:
     branches: [ "main" ]
+    paths:
+      - 'pytest/**'
 
 jobs:
   pytest-build:
@@ -15,29 +19,29 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11"]
+        python-version: [ "3.8", "3.9", "3.10", "3.11" ]
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
-      run: |
-        cd pytest
-        python -m pip install --upgrade pip
-        curl -sSL https://pdm-project.org/install-pdm.py | python3 -
-        pdm install -d
-    - name: Lint with ruff
-      run: |
-        cd pytest
-        pdm run ruff check src
-    - name: Check with mypy
-      run: |
-        cd pytest
-        pdm run mypy src
-    - name: Test with pytest
-      run: |
-        cd pytest
-        pdm run pytest --durations=5 --cov=. --cov-report term -vv
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          cd pytest
+          python -m pip install --upgrade pip
+          curl -sSL https://pdm-project.org/install-pdm.py | python3 -
+          pdm install -d
+      - name: Lint with ruff
+        run: |
+          cd pytest
+          pdm run ruff check src
+      - name: Check with mypy
+        run: |
+          cd pytest
+          pdm run mypy src
+      - name: Test with pytest
+        run: |
+          cd pytest
+          pdm run pytest --durations=5 --cov=. --cov-report term -vv
