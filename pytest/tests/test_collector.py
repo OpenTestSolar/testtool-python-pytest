@@ -74,7 +74,7 @@ class CollectorTest(unittest.TestCase):
         self.assertEqual(len(re.Tests), 3)
         self.assertEqual(len(re.LoadErrors), 1)
         self.assertIn(
-            "not_exist.py does not exist, SKIP collect", re.LoadErrors[0].message
+            "not_exist.py does not exist, SKIP it", re.LoadErrors[0].message
         )
 
 
