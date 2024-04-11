@@ -1,6 +1,6 @@
 import io
-from pathlib import Path
 import unittest
+from pathlib import Path
 
 from testsolar_testtool_sdk.model.param import EntryParam
 from testsolar_testtool_sdk.model.testresult import ResultType, LogLevel
@@ -77,7 +77,6 @@ this is teardown
 
     def test_run_failed_testcase_with_log(self):
         entry = EntryParam(
-            Context={},
             TaskId="aa",
             ProjectPath=self.testdata_dir,
             TestSelectors=[
@@ -102,3 +101,52 @@ this is teardown
         self.assertEqual(len(step2.Logs), 1)
         self.assertEqual(step2.Logs[0].Level, LogLevel.ERROR)
         self.assertEqual(step2.ResultType, ResultType.FAILED)
+        self.assertIn("E       assert 4 == 6", step2.Logs[0].Content)
+
+    def test_run_failed_testcase_with_raise_error(self):
+        entry = EntryParam(
+            TaskId="aa",
+            ProjectPath=self.testdata_dir,
+            TestSelectors=[
+                "normal_case.py?test_raise_error",
+            ],
+            FileReportPath="",
+        )
+
+        pipe_io = io.BytesIO()
+        run_testcases(entry, pipe_io)
+        pipe_io.seek(0)
+
+        start = read_test_result(pipe_io)
+        self.assertEqual(start.ResultType, ResultType.RUNNING)
+
+        end = read_test_result(pipe_io)
+        self.assertEqual(end.ResultType, ResultType.FAILED)
+        self.assertEqual(len(end.Steps), 3)
+
+        step2 = end.Steps[1]
+        self.assertEqual(len(step2.Logs), 1)
+        self.assertEqual(step2.Logs[0].Level, LogLevel.ERROR)
+        self.assertEqual(step2.ResultType, ResultType.FAILED)
+        self.assertIn("E       RuntimeError: this is raise runtime error", step2.Logs[0].Content)
+
+    def test_run_skipped_testcase(self):
+        entry = EntryParam(
+            TaskId="aa",
+            ProjectPath=self.testdata_dir,
+            TestSelectors=[
+                "skipped.py?test_filtered",
+            ],
+            FileReportPath="",
+        )
+
+        pipe_io = io.BytesIO()
+        run_testcases(entry, pipe_io)
+        pipe_io.seek(0)
+
+        start = read_test_result(pipe_io)
+        self.assertEqual(start.ResultType, ResultType.RUNNING)
+
+        end = read_test_result(pipe_io)
+        self.assertEqual(end.ResultType, ResultType.IGNORED)
+        self.assertEqual(len(end.Steps), 2)
