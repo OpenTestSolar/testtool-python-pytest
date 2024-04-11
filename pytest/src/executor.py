@@ -76,7 +76,7 @@ class PytestExecutor:
 
         logging.info(f"{nodeid} start")
 
-        self.reporter.report_run_case_result(test_result)
+        self.reporter.report_case_result(test_result)
 
     def pytest_runtest_logreport(self, report: TestReport) -> None:
         """
@@ -145,7 +145,7 @@ class PytestExecutor:
         test_result = self.testdata[testcase_name]
         test_result.EndTime = datetime.now()
 
-        self.reporter.report_run_case_result(test_result)
+        self.reporter.report_case_result(test_result)
 
         # 上报完成后测试记录就没有用了，删除以节省内存
         self.testdata.pop(testcase_name, None)
