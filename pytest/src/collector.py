@@ -2,7 +2,7 @@ import logging
 import os
 import sys
 import traceback
-from typing import BinaryIO, Sequence
+from typing import BinaryIO, Sequence, Optional, List, Dict, Union
 
 import pytest
 from pytest import Item, Collector, CollectReport
@@ -16,7 +16,7 @@ from .filter import filter_invalid_selector_path
 from .parser import parse_case_attributes
 
 
-def collect_testcases(entry_param: EntryParam, pipe_io: BinaryIO | None = None) -> None:
+def collect_testcases(entry_param: EntryParam, pipe_io: Optional[BinaryIO] = None) -> None:
     if entry_param.ProjectPath not in sys.path:
         sys.path.insert(0, entry_param.ProjectPath)
 
@@ -93,12 +93,12 @@ def collect_testcases(entry_param: EntryParam, pipe_io: BinaryIO | None = None) 
 
 
 class PytestCollector:
-    def __init__(self, pipe_io: BinaryIO | None = None):
-        self.collected: list[Item] = []
-        self.errors: dict[str, str] = {}
+    def __init__(self, pipe_io: Optional[BinaryIO] = None):
+        self.collected: List[Item] = []
+        self.errors: Dict[str, str] = {}
         self.reporter: Reporter = Reporter(pipe_io=pipe_io)
 
-    def pytest_collection_modifyitems(self, items: Sequence[Item | Collector]) -> None:
+    def pytest_collection_modifyitems(self, items: Sequence[Union[Item,Collector]]) -> None:
         for item in items:
             if isinstance(item, Item):
                 self.collected.append(item)

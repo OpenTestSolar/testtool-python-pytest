@@ -2,7 +2,7 @@ import logging
 import os
 import sys
 from datetime import datetime, timedelta
-from typing import BinaryIO
+from typing import BinaryIO, Optional, Dict
 
 import pytest
 from pytest import TestReport
@@ -16,7 +16,7 @@ from .converter import selector_to_pytest, normalize_testcase_name
 from .filter import filter_invalid_selector_path
 
 
-def run_testcases(entry: EntryParam, pipe_io: BinaryIO | None = None):
+def run_testcases(entry: EntryParam, pipe_io: Optional[BinaryIO] = None):
     if entry.ProjectPath not in sys.path:
         sys.path.insert(0, entry.ProjectPath)
 
@@ -51,10 +51,10 @@ def run_testcases(entry: EntryParam, pipe_io: BinaryIO | None = None):
 
 
 class PytestExecutor:
-    def __init__(self, pipe_io: BinaryIO | None = None):
+    def __init__(self, pipe_io: Optional[BinaryIO] = None):
         self.testcase_count = 0
-        self.testdata: dict[str, TestResult] = {}
-        self.skipped_testcase: dict[str, str] = {}
+        self.testdata: Dict[str, TestResult] = {}
+        self.skipped_testcase: Dict[str, str] = {}
         self.reporter: Reporter = Reporter(pipe_io=pipe_io)
 
     def pytest_runtest_logstart(self, nodeid: str, location):

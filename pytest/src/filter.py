@@ -1,10 +1,10 @@
 import pathlib
-from typing import Tuple
+from typing import Tuple, List
 
 from testsolar_testtool_sdk.model.load import LoadError
 
 
-def filter_invalid_selector_path(workspace: str, selectors: list[str]) -> Tuple[list[str], list[LoadError]]:
+def filter_invalid_selector_path(workspace: str, selectors: List[str]) -> Tuple[list[str], List[LoadError]]:
     valid_selectors = []
     invalid_selectors = []
     for selector in selectors:

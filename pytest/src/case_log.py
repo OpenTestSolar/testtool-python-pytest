@@ -1,11 +1,12 @@
 from datetime import datetime, timedelta
+from typing import List
 
 from pytest import TestReport
 from testsolar_testtool_sdk.model.testresult import TestCaseLog, LogLevel
 
 
 def gen_logs(report: TestReport) -> TestCaseLog:
-    logs: list[str] = []
+    logs: List[str] = []
     if report.capstdout:
         logs.append(report.capstdout)
     if report.capstderr:
