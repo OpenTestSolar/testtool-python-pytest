@@ -8,7 +8,7 @@ authors = [
 dependencies = [
     "pytest>=8.1.1",
     "pytest-timeout>=2.3.1",
-    "testsolar-testtool-sdk>=0.1.7",
+    "testsolar-testtool-sdk>=0.1.8",
 ]
 requires-python = ">=3.8"
 readme = "README.md"

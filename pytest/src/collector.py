@@ -11,7 +11,7 @@ from testsolar_testtool_sdk.model.param import EntryParam
 from testsolar_testtool_sdk.model.test import TestCase
 from testsolar_testtool_sdk.reporter import Reporter
 
-from .converter import selector_to_pytest, normalize_testcase_name
+from .converter import selector_to_pytest, normalize_testcase_name, decode_datadrive
 from .filter import filter_invalid_selector_path
 from .parser import parse_case_attributes
 
@@ -59,16 +59,15 @@ def collect_testcases(entry_param: EntryParam, pipe_io: Optional[BinaryIO] = Non
             name = item.name
             if item.cls:
                 name = item.cls.__name__ + "/" + name
+            name = decode_datadrive(name)
             full_name = f"{rel_path}?{name}"
         elif hasattr(item, "nodeid"):
             full_name = normalize_testcase_name(item.nodeid)
         else:
-            rel_path = item.location[0]
-            name = item.location[2].replace(".", "/")
+            rel_path, _, name = item.location
+            name = name.replace(".", "/")
+            name = decode_datadrive(name)
             full_name = f"{rel_path}?{name}"
-
-        if full_name.endswith("]"):
-            full_name = full_name.replace("[", "/[")
 
         attributes = parse_case_attributes(item)
         load_result.Tests.append(TestCase(Name=full_name, Attributes=attributes))
@@ -98,7 +97,7 @@ class PytestCollector:
         self.errors: Dict[str, str] = {}
         self.reporter: Reporter = Reporter(pipe_io=pipe_io)
 
-    def pytest_collection_modifyitems(self, items: Sequence[Union[Item,Collector]]) -> None:
+    def pytest_collection_modifyitems(self, items: Sequence[Union[Item, Collector]]) -> None:
         for item in items:
             if isinstance(item, Item):
                 self.collected.append(item)

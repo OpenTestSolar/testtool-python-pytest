@@ -17,7 +17,7 @@ class ExecutorTest(unittest.TestCase):
             TaskId="aa",
             ProjectPath=self.testdata_dir,
             TestSelectors=[
-                "normal_case.py?test_success",
+                "normal_case.py?name=test_success&tag=A&priority=High",
             ],
             FileReportPath="",
         )
@@ -30,6 +30,9 @@ class ExecutorTest(unittest.TestCase):
         self.assertEqual(start.ResultType, ResultType.RUNNING)
 
         end = read_test_result(pipe_io)
+        self.assertEqual(end.Test.Name, "normal_case.py?test_success")
+        self.assertEqual(end.Test.Attributes['tag'], "high")
+        self.assertEqual(end.Test.Attributes['owner'], "foo")
         self.assertEqual(end.ResultType, ResultType.SUCCEED)
         self.assertEqual(len(end.Steps), 3)
 
@@ -62,7 +65,7 @@ this is teardown
             TaskId="aa",
             ProjectPath=self.testdata_dir,
             TestSelectors=[
-                "normal_case.py?test_success",
+                "normal_case.py?name=test_success",
                 "invalid_case.py?test_success",
             ],
             FileReportPath="",
@@ -80,7 +83,7 @@ this is teardown
             TaskId="aa",
             ProjectPath=self.testdata_dir,
             TestSelectors=[
-                "normal_case.py?test_failed",
+                "normal_case.py?test_failed&priority=High",
                 "invalid_case.py?test_success",
             ],
             FileReportPath="",
@@ -96,6 +99,7 @@ this is teardown
         end = read_test_result(pipe_io)
         self.assertEqual(end.ResultType, ResultType.FAILED)
         self.assertEqual(len(end.Steps), 3)
+        self.assertIn("testdata/normal_case.py", end.Message)
 
         step2 = end.Steps[1]
         self.assertEqual(len(step2.Logs), 1)
@@ -150,3 +154,46 @@ this is teardown
         end = read_test_result(pipe_io)
         self.assertEqual(end.ResultType, ResultType.IGNORED)
         self.assertEqual(len(end.Steps), 2)
+        self.assertEqual(end.Message, "Skipped: no way of currently testing this")
+
+    def test_run_datadrive_with_single_value(self):
+        entry = EntryParam(
+            TaskId="aa",
+            ProjectPath=self.testdata_dir,
+            TestSelectors=[
+                "data_drive.py?test_eval/[2+4-6]",
+            ],
+            FileReportPath="",
+        )
+
+        pipe_io = io.BytesIO()
+        run_testcases(entry, pipe_io)
+        pipe_io.seek(0)
+
+        start = read_test_result(pipe_io)
+        self.assertEqual(start.ResultType, ResultType.RUNNING)
+
+        end = read_test_result(pipe_io)
+        self.assertEqual(end.ResultType, ResultType.SUCCEED)
+        self.assertEqual(len(end.Steps), 3)
+
+    def test_run_datadrive_with_utf8_str(self):
+        entry = EntryParam(
+            TaskId="aa",
+            ProjectPath=self.testdata_dir,
+            TestSelectors=[
+                "data_drive_zh_cn.py?test_include/[中文-中文汉字]",
+            ],
+            FileReportPath="",
+        )
+
+        pipe_io = io.BytesIO()
+        run_testcases(entry, pipe_io)
+        pipe_io.seek(0)
+
+        start = read_test_result(pipe_io)
+        self.assertEqual(start.ResultType, ResultType.RUNNING)
+
+        end = read_test_result(pipe_io)
+        self.assertEqual(end.ResultType, ResultType.SUCCEED)
+        self.assertEqual(len(end.Steps), 3)
