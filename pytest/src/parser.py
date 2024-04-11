@@ -1,8 +1,6 @@
 import json
 from typing import Dict
 
-from pytest import Mark
-
 
 # 支持 @pytest.mark.attributes({"key":"value"}) 这种用法
 #
@@ -13,10 +11,12 @@ from pytest import Mark
 # - extra_attributes
 def parse_case_attributes(item) -> Dict[str, str]:
     """parse testcase attributes"""
-    attributes: Dict[str, str] = {"description": (str(item.function.__doc__) or "").strip()}
+    attributes: Dict[str, str] = {
+        "description": (str(item.function.__doc__) or "").strip()
+    }
     if not item.own_markers:
         return attributes
-    for mark in item.own_markers:  # type: Mark
+    for mark in item.own_markers:
         if not mark.args and mark.name != "attributes":
             attributes["tag"] = mark.name
         elif mark.args and mark.name == "owner":

@@ -1,14 +1,14 @@
-import sys
 import re
+import sys
 
 
-def selector_to_pytest(test_selector):
+def selector_to_pytest(test_selector: str) -> str:
     """translate from test selector format to pytest format"""
-    pos = test_selector.find("?")
-    if pos < 0:
-        # TODO: Check is valid path
-        return test_selector
-    testcase = test_selector[pos + 1:]
+    path, _, testcase = test_selector.partition("?")
+
+    if not testcase:
+        return path
+
     if "&" in testcase:
         testcase_attrs = testcase.split("&")
         for attr in testcase_attrs:
@@ -23,7 +23,7 @@ def selector_to_pytest(test_selector):
             testcase = testcase[5:]
     if "/[" in testcase:
         testcase = encode_datadrive(testcase.replace("/[", "["))
-    return test_selector[:pos] + "::" + testcase.replace("/", "::")
+    return path + "::" + testcase.replace("/", "::")
 
 
 def encode_datadrive(name):
@@ -47,14 +47,16 @@ def decode_datadrive(name):
 
 
 def normalize_testcase_name(name: str) -> str:
-    """ test_directory/test_module.py::TestExampleClass::test_example_function[datedrive]
-        -> test_directory/test_module.py?TestExampleClass/test_example_function/[datedrive]
+    """test_directory/test_module.py::TestExampleClass::test_example_function[datedrive]
+    -> test_directory/test_module.py?TestExampleClass/test_example_function/[datedrive]
     """
     assert "::" in name
-    name = (name
-            .replace("::", "?", 1)  # 第一个分割符是文件，因此替换为?
-            .replace("::", "/")  # 后续的分割符是测试用例名称，替换为/
-            )  # 数据驱动值前面加上/
+    name = (
+        name.replace("::", "?", 1).replace(  # 第一个分割符是文件，因此替换为?
+            "::", "/"
+        )  # 后续的分割符是测试用例名称，替换为/
+    )  # 数据驱动值前面加上/
     if "[" in name:
         name = decode_datadrive(name)
+
     return name
