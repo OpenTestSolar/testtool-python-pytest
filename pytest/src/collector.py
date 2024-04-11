@@ -1,6 +1,5 @@
 import logging
 import os
-import pathlib
 import sys
 import traceback
 from typing import BinaryIO, Sequence
@@ -13,8 +12,8 @@ from testsolar_testtool_sdk.model.test import TestCase
 from testsolar_testtool_sdk.reporter import Reporter
 
 from .converter import selector_to_pytest, normalize_testcase_name
-from .parser import parse_case_attributes
 from .filter import filter_invalid_selector_path
+from .parser import parse_case_attributes
 
 
 def collect_testcases(entry_param: EntryParam, pipe_io: BinaryIO | None = None) -> None:
