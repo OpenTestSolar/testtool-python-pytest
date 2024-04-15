@@ -1,4 +1,3 @@
-import logging
 import os
 import sys
 import traceback
@@ -16,7 +15,9 @@ from .filter import filter_invalid_selector_path
 from .parser import parse_case_attributes
 
 
-def collect_testcases(entry_param: EntryParam, pipe_io: Optional[BinaryIO] = None) -> None:
+def collect_testcases(
+    entry_param: EntryParam, pipe_io: Optional[BinaryIO] = None
+) -> None:
     if entry_param.ProjectPath not in sys.path:
         sys.path.insert(0, entry_param.ProjectPath)
 
@@ -46,12 +47,11 @@ def collect_testcases(entry_param: EntryParam, pipe_io: Optional[BinaryIO] = Non
     ]
     args.extend(testcase_list)
 
-    logging.info(f"[Load] try to collect testcases: {args}")
     print(f"[Load] try to collect testcases: {args}")
     exit_code = pytest.main(args, plugins=[my_plugin])
 
     if exit_code != 0:
-        logging.warning(f"[Load] collect testcases exit_code: {exit_code}")
+        print(f"[Warn][Load] collect testcases exit_code: {exit_code}")
 
     for item in my_plugin.collected:
         if hasattr(item, "path") and hasattr(item, "cls"):
@@ -84,8 +84,8 @@ def collect_testcases(entry_param: EntryParam, pipe_io: Optional[BinaryIO] = Non
 
     load_result.LoadErrors.sort(key=lambda x: x.name)
 
-    logging.info(f"[Load] collect testcase count: {len(load_result.Tests)}")
-    logging.info(f"[Load] collect load error count: {len(load_result.LoadErrors)}")
+    print(f"[Load] collect testcase count: {len(load_result.Tests)}")
+    print(f"[Load] collect load error count: {len(load_result.LoadErrors)}")
 
     reporter = Reporter(pipe_io=pipe_io)
     reporter.report_load_result(load_result)
@@ -97,7 +97,9 @@ class PytestCollector:
         self.errors: Dict[str, str] = {}
         self.reporter: Reporter = Reporter(pipe_io=pipe_io)
 
-    def pytest_collection_modifyitems(self, items: Sequence[Union[Item, Collector]]) -> None:
+    def pytest_collection_modifyitems(
+        self, items: Sequence[Union[Item, Collector]]
+    ) -> None:
         for item in items:
             if isinstance(item, Item):
                 self.collected.append(item)

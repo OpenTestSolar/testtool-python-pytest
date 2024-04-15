@@ -136,7 +136,7 @@ class PytestExecutor:
                     Logs=[gen_logs(report)],
                     StartTime=step_end_time - timedelta(report.duration),
                     EndTime=step_end_time,
-                    ResultType=result_type
+                    ResultType=result_type,
                 )
             )
 
@@ -158,10 +158,10 @@ class PytestExecutor:
                     Logs=[gen_logs(report)],
                     StartTime=step_end_time - timedelta(report.duration),
                     EndTime=step_end_time,
-                    ResultType=result_type
+                    ResultType=result_type,
                 )
             )
-            if test_result.ResultType not in [ResultType.FAILED, ResultType.LOAD_FAILED, ResultType.IGNORED, ResultType.UNKNOWN]:
+            if not test_result.is_final():
                 test_result.ResultType = result_type
 
     def pytest_runtest_logfinish(self, nodeid: str, location):

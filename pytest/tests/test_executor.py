@@ -10,7 +10,9 @@ from src.executor import run_testcases
 
 
 class ExecutorTest(unittest.TestCase):
-    testdata_dir: str = str(Path(__file__).parent.parent.absolute().joinpath("testdata"))
+    testdata_dir: str = str(
+        Path(__file__).parent.parent.absolute().joinpath("testdata")
+    )
 
     def test_run_success_testcase_with_logs(self):
         entry = EntryParam(
@@ -31,8 +33,8 @@ class ExecutorTest(unittest.TestCase):
 
         end = read_test_result(pipe_io)
         self.assertEqual(end.Test.Name, "normal_case.py?test_success")
-        self.assertEqual(end.Test.Attributes['tag'], "high")
-        self.assertEqual(end.Test.Attributes['owner'], "foo")
+        self.assertEqual(end.Test.Attributes["tag"], "high")
+        self.assertEqual(end.Test.Attributes["owner"], "foo")
         self.assertEqual(end.ResultType, ResultType.SUCCEED)
         self.assertEqual(len(end.Steps), 3)
 
@@ -55,10 +57,13 @@ class ExecutorTest(unittest.TestCase):
         self.assertEqual(len(step3.Logs), 1)
         self.assertEqual(step3.Logs[0].Level, LogLevel.INFO)
         self.assertEqual(step3.ResultType, ResultType.SUCCEED)
-        self.assertEqual(step3.Logs[0].Content, """this is setup
+        self.assertEqual(
+            step3.Logs[0].Content,
+            """this is setup
 this is print sample output
 this is teardown
-""")
+""",
+        )
 
     def test_run_success_testcase_with_one_invalid_selector(self):
         entry = EntryParam(
@@ -132,7 +137,9 @@ this is teardown
         self.assertEqual(len(step2.Logs), 1)
         self.assertEqual(step2.Logs[0].Level, LogLevel.ERROR)
         self.assertEqual(step2.ResultType, ResultType.FAILED)
-        self.assertIn("E       RuntimeError: this is raise runtime error", step2.Logs[0].Content)
+        self.assertIn(
+            "E       RuntimeError: this is raise runtime error", step2.Logs[0].Content
+        )
 
     def test_run_skipped_testcase(self):
         entry = EntryParam(

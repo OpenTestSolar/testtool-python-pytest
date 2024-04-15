@@ -9,7 +9,9 @@ from src.collector import collect_testcases
 
 
 class CollectorTest(unittest.TestCase):
-    testdata_dir: str = str(Path(__file__).parent.parent.absolute().joinpath("testdata"))
+    testdata_dir: str = str(
+        Path(__file__).parent.parent.absolute().joinpath("testdata")
+    )
 
     def test_collect_testcases_when_selector_is_valid(self):
         entry = EntryParam(
@@ -49,9 +51,16 @@ class CollectorTest(unittest.TestCase):
             re.Tests[4].Attributes["extra_attributes"], '[{"env": ["AA", "BB"]}]'
         )
 
-        self.assertEqual(re.LoadErrors[0].name, "load error of selector: [errors/import_error.py]")
-        self.assertIn("ModuleNotFoundError: No module named 'bad_import'", re.LoadErrors[0].message)
-        self.assertEqual(re.LoadErrors[1].name, "load error of selector: [errors/load_error.py]")
+        self.assertEqual(
+            re.LoadErrors[0].name, "load error of selector: [errors/import_error.py]"
+        )
+        self.assertIn(
+            "ModuleNotFoundError: No module named 'bad_import'",
+            re.LoadErrors[0].message,
+        )
+        self.assertEqual(
+            re.LoadErrors[1].name, "load error of selector: [errors/load_error.py]"
+        )
         self.assertIn("SyntaxError: ", re.LoadErrors[1].message)
 
     def test_collect_testcases_when_select_not_valid(self):
@@ -73,9 +82,7 @@ class CollectorTest(unittest.TestCase):
 
         self.assertEqual(len(re.Tests), 3)
         self.assertEqual(len(re.LoadErrors), 1)
-        self.assertIn(
-            "not_exist.py does not exist, SKIP it", re.LoadErrors[0].message
-        )
+        self.assertIn("not_exist.py does not exist, SKIP it", re.LoadErrors[0].message)
 
     def test_collect_testcases_with_utf8_chars(self):
         entry = EntryParam(
@@ -96,6 +103,13 @@ class CollectorTest(unittest.TestCase):
         self.assertEqual(len(re.Tests), 3)
         self.assertEqual(len(re.LoadErrors), 0)
 
-        self.assertEqual(re.Tests[0].Name, "data_drive_zh_cn.py?test_include/[#?-#?^$%!/]")
-        self.assertEqual(re.Tests[1].Name, "data_drive_zh_cn.py?test_include/[中文-中文汉字]")
-        self.assertEqual(re.Tests[2].Name, "data_drive_zh_cn.py?test_include/[파일을 찾을 수 없습니다-ファイルが見つかりません]")
+        self.assertEqual(
+            re.Tests[0].Name, "data_drive_zh_cn.py?test_include/[#?-#?^$%!/]"
+        )
+        self.assertEqual(
+            re.Tests[1].Name, "data_drive_zh_cn.py?test_include/[中文-中文汉字]"
+        )
+        self.assertEqual(
+            re.Tests[2].Name,
+            "data_drive_zh_cn.py?test_include/[파일을 찾을 수 없습니다-ファイルが見つかりません]",
+        )

@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = ["cross_platform", "inherit_metadata"]
 lock_version = "4.4.1"
-content_hash = "sha256:2aa57a8caa3f18923676cb60227545088997f7df55afbc2d3851a0c0b85d4b30"
+content_hash = "sha256:1046f65ab82b5c882cefd63b2359a8c7a3e04c5069c1bdd1aeec1460f2ec41d1"
 
 [[package]]
 name = "colorama"
@@ -364,7 +364,7 @@ files = [
 
 [[package]]
 name = "testsolar-testtool-sdk"
-version = "0.1.8"
+version = "0.1.9"
 requires_python = ">=3.8"
 summary = "TestSolar测试工具SDK"
 groups = ["default"]
@@ -373,8 +373,8 @@ dependencies = [
     "portalocker>=2.8.2",
 ]
 files = [
-    {file = "testsolar-testtool-sdk-0.1.8.tar.gz", hash = "sha256:e2a04673e33d2eb17272d5b527477faf2d66267df9e0d3da4d3195fd27d891d0"},
-    {file = "testsolar_testtool_sdk-0.1.8-py3-none-any.whl", hash = "sha256:f21fec3ccb31b509eb37e0aecd309a20bfd02479407a1e8cd7550c3429073f5c"},
+    {file = "testsolar_testtool_sdk-0.1.9-py3-none-any.whl", hash = "sha256:ab428e3b97ea8358813b66fcf20d5fcd3f46906f8b73b4b89bf71dd49bd2aa28"},
+    {file = "testsolar_testtool_sdk-0.1.9.tar.gz", hash = "sha256:69a64c66950f2d74d537ea3b9ab5cdb3a7b4ddb2fb37725d977be78a76b8b00d"},
 ]
 
 [[package]]
