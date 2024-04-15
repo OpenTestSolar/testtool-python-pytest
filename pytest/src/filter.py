@@ -4,7 +4,9 @@ from typing import Tuple, List
 from testsolar_testtool_sdk.model.load import LoadError
 
 
-def filter_invalid_selector_path(workspace: str, selectors: List[str]) -> Tuple[List[str], List[LoadError]]:
+def filter_invalid_selector_path(
+    workspace: str, selectors: List[str]
+) -> Tuple[List[str], List[LoadError]]:
     valid_selectors = []
     invalid_selectors = []
     for selector in selectors:
@@ -14,7 +16,9 @@ def filter_invalid_selector_path(workspace: str, selectors: List[str]) -> Tuple[
         if not full_path.exists():
             message = f"[WARNING]Path {full_path} does not exist, SKIP it"
             print(message)
-            invalid_selectors.append(LoadError(name=f"invalid selector [{selector}]", message=message))
+            invalid_selectors.append(
+                LoadError(name=f"invalid selector [{selector}]", message=message)
+            )
         else:
             valid_selectors.append(selector)
 

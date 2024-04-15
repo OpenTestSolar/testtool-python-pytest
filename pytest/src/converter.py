@@ -42,8 +42,8 @@ def decode_datadrive(name: str) -> str:
 
     test_include[\u4e2d\u6587-\u4e2d\u6587\u6c49\u5b57] -> test_include[中文-中文汉字]
     """
-    if name.endswith(']'):
-        name = name.replace('[', "/[")
+    if name.endswith("]"):
+        name = name.replace("[", "/[")
         if re.search(r"\\u\w{4}", name):
             name = name.encode().decode("unicode_escape")
 
