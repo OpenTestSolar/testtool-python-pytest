@@ -6,12 +6,12 @@ from typing import Optional, List, BinaryIO
 from dacite import from_dict
 from testsolar_testtool_sdk.model.param import EntryParam
 
-# 将src的上一级目录加入path，方便entry调用
-parent = Path(__file__).parent.resolve().parent
+# 将pytestx加入path
+parent = Path(__file__).parent.resolve()
 if parent not in sys.path:
     sys.path.append(str(parent))
 
-from .pytestx.executor import run_testcases  # noqa: E402
+from pytestx.executor import run_testcases  # type: ignore  # noqa: E402
 
 
 def run_testcases_from_args(
