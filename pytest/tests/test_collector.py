@@ -5,7 +5,7 @@ from pathlib import Path
 from testsolar_testtool_sdk.model.param import EntryParam
 from testsolar_testtool_sdk.pipe_reader import read_load_result
 
-from src.collector import collect_testcases
+from src.pytestx.collector import collect_testcases
 
 
 class CollectorTest(unittest.TestCase):
