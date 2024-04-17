@@ -11,6 +11,7 @@ import traceback
 import unittest
 import unittest.result
 from datetime import datetime
+from .converter import selector_to_django
 
 from django.test.runner import DiscoverRunner
 
@@ -23,16 +24,6 @@ else:
 orig_stdout = sys.stdout
 orig_stderr = sys.stderr
 
-
-def log(*args, file=None):
-    if not args:
-        return
-    buffer = "[%s][Django] " % datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
-    args = [str(arg) for arg in args]
-    buffer += " ".join(args)
-    if file is None:
-        file = orig_stdout
-    file.write(buffer + "\n")
 
 
 class DjangoUnitTestResult(unittest.result.TestResult):
@@ -207,62 +198,7 @@ class DjangoUnitTestRunner(object):
         return result
 
 
-class MyDiscoverRunner(DiscoverRunner):
-    def __init__(self, *args, **kwargs):
-        super(MyDiscoverRunner, self).__init__(*args, **kwargs)
-        self._fd = kwargs.get("fd", None)
 
-    def get_test_runner_kwargs(self):
-        result = super(MyDiscoverRunner, self).get_test_runner_kwargs()
-        result["fd"] = self._fd
-        return result
-
-
-def init_django_env(proj_root):
-    """初始化django环境"""
-    if proj_root not in sys.path:
-        sys.path.insert(0, proj_root)
-    for it in os.listdir(proj_root):
-        path = os.path.join(proj_root, it)
-        if os.path.isdir(path):
-            if not os.path.exists(os.path.join(path, "wsgi.py")):
-                continue
-            settings_path = os.path.join(path, "settings.py")
-            if os.path.exists(settings_path):
-                os.environ["DJANGO_SETTINGS_MODULE"] = "%s.settings" % it
-                break
-            elif os.path.isdir(os.path.join(path, "settings")):
-                for py in os.listdir(os.path.join(path, "settings")):
-                    if not py.endswith(".py"):
-                        continue
-                    with open(os.path.join(path, "settings", py)) as fp:
-                        text = fp.read()
-                    if not "SECRET_KEY" in text:
-                        continue
-                    os.environ["DJANGO_SETTINGS_MODULE"] = "%s.settings.%s" % (
-                        it,
-                        py[:-3],
-                    )
-                    break
-                else:
-                    os.environ["DJANGO_SETTINGS_MODULE"] = "%s.settings" % it
-                break
-    else:
-        raise RuntimeError("Find django settings failed")
-
-    log("Django settings module: %s" % os.environ["DJANGO_SETTINGS_MODULE"])
-    from django.apps import apps
-    from django.conf import settings
-
-    apps.populate(settings.INSTALLED_APPS)  # 初始化操作，避免加载时报错
-
-
-def ipc_send(fd, item):
-    buffer = json.dumps(item)
-    if not isinstance(buffer, bytes):
-        buffer = buffer.encode()
-    buffer = struct.pack("!I", len(buffer)) + buffer
-    os.write(fd, buffer)
 
 
 def list_testsuite(test_suite):
@@ -304,21 +240,7 @@ def collect_testcases(proj_path, test_selectors, fd=None):
     return testcases
 
 
-def selector_to_django(test_selector):
-    """translate from test selector format to django format"""
-    if test_selector.endswith("/"):
-        test_selector = test_selector[:-1]
-    if "?" in test_selector:
-        module, name = test_selector.split("?", 1)
-    else:
-        module, name = test_selector, ""
-    if module.endswith(".py"):
-        module = module[:-3]
-    module = module.replace("/", ".")
-    if name:
-        return module + "." + name
-    else:
-        return module
+
 
 
 def get_testcase_selector(testcase, proj):
@@ -349,7 +271,7 @@ def run_testcases(proj_path, testcase_list, fd=None):
     if fd:
         options["fd"] = fd
     DiscoverRunner.test_runner = DjangoUnitTestRunner
-    test_runner = MyDiscoverRunner(**options)
+    test_runner = DiscoverRunner(**options)
     time0 = time.time()
     failures = test_runner.run_tests(testcase_list)
     print(failures)

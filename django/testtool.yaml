@@ -6,3 +6,6 @@ parameterDefs: # 用户 use 这个测试工具时可以配置的 with 参数
   - name: workerCount
     value: 并发数
     default: "0"
+entry:
+  load: "python3 /testtools/django/load.py $1"
+  run: "python3 /testtools/django/run.py $1"

@@ -8,6 +8,7 @@ authors = [
 dependencies = [
     "testsolar-testtool-sdk>=0.1.9",
     "django>=4.2.11",
+    "loguru>=0.7.2",
 ]
 requires-python = ">=3.8"
 readme = "README.md"
