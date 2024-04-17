@@ -11,7 +11,7 @@ parent = Path(__file__).parent.resolve().parent
 if parent not in sys.path:
     sys.path.append(str(parent))
 
-from .pytestx.executor import run_testcases
+from .pytestx.executor import run_testcases  # noqa: E402
 
 
 def run_testcases_from_args(
