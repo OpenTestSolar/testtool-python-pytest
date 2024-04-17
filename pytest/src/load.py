@@ -5,16 +5,12 @@ from typing import Optional, List, BinaryIO
 from dacite import from_dict
 from testsolar_testtool_sdk.model.param import EntryParam
 
-from pathlib import Path
-parent = Path(__file__).parent.resolve().joinpath('pytestx')
-sys.path.append(str(parent))
+from .pytestx.collector import collect_testcases
 
 
 def collect_testcases_from_args(
         args: List[str], workspace: Optional[str] = None, pipe_io: Optional[BinaryIO] = None
 ) -> None:
-    from pytestx.collector import collect_testcases
-
     if len(args) != 2:
         raise SystemExit("Usage: python load.py <entry_file>")
 

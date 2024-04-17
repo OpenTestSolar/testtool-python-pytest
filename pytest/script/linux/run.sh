@@ -8,12 +8,11 @@ chmod +x /usr/local/bin/testtools_sdk
 
 TOOL_ROOT=$(realpath "$0" | xargs dirname | xargs dirname | xargs dirname)
 echo "${TOOL_ROOT}"
-
-cd "${TOOL_ROOT}"/src
 echo "$TESTSOLAR_WORKSPACE"
 
 export PYTHONUNBUFFERED=1
 export TESTSOLAR_TTP_LOADINSUBPROC=1 # 隔离环境
+export PYTHONPATH="/testtools/pytest/:$PYTHONPATH"
 
 /usr/local/bin/testtools_sdk version
 /usr/local/bin/testtools_sdk serve --tool pytest
