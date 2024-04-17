@@ -5,7 +5,7 @@ from typing import Optional, List, BinaryIO
 from dacite import from_dict
 from testsolar_testtool_sdk.model.param import EntryParam
 
-from .executor import run_testcases
+from .pytestx.executor import run_testcases
 
 
 def run_testcases_from_args(
