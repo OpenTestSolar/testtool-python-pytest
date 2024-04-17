@@ -12,9 +12,6 @@ echo "$TESTSOLAR_WORKSPACE"
 
 export PYTHONUNBUFFERED=1
 export TESTSOLAR_TTP_LOADINSUBPROC=1 # 隔离环境
-set +u
-export PYTHONPATH="/testtools/pytest/:$PYTHONPATH"
-set -u
 
 /usr/local/bin/testtools_sdk version
 /usr/local/bin/testtools_sdk serve --tool pytest

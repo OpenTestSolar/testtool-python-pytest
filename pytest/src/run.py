@@ -1,11 +1,17 @@
 import json
 import sys
+from pathlib import Path
 from typing import Optional, List, BinaryIO
 
 from dacite import from_dict
 from testsolar_testtool_sdk.model.param import EntryParam
 
-from .pytestx.executor import run_testcases
+# 将src的上一级目录加入path，方便entry调用
+parent = Path(__file__).parent.resolve().parent
+if parent not in sys.path:
+    sys.path.append(str(parent))
+
+from .pytestx.executor import run_testcases  # noqa: E402
 
 
 def run_testcases_from_args(
