@@ -16,5 +16,5 @@ parameterDefs: # 用户 use 这个测试工具时可以配置的 with 参数
     value: 是否用allure生成报告
     default: 'false' # choice: true/false
 entry:
-  load: "python3 /testtools/pytest/load.py $1"
-  run: "python3 /testtools/pytest/run.py $1"
+  load: "python3 /testtools/pytest/src/load.py $1"
+  run: "python3 /testtools/pytest/src/run.py $1"
