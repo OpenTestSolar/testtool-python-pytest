@@ -17,7 +17,7 @@ class TestExecuteEntry(TestCase):
     def test_run_testcases_from_args(self):
         pipe_io = io.BytesIO()
         run_testcases_from_args(
-            args=["load.py", Path.joinpath(Path(self.testdata_dir), "entry.json")],
+            args=["run.py", Path.joinpath(Path(self.testdata_dir), "entry.json")],
             workspace=self.testdata_dir,
             pipe_io=pipe_io,
         )
@@ -31,7 +31,7 @@ class TestExecuteEntry(TestCase):
             pipe_io = io.BytesIO()
             run_testcases_from_args(
                 args=[
-                    "load.py",
+                    "run.py",
                     Path.joinpath(Path(self.testdata_dir), "bad_entry.json"),
                 ],
                 workspace=self.testdata_dir,
