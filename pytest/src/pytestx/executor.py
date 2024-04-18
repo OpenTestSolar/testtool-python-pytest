@@ -16,7 +16,10 @@ from .converter import selector_to_pytest, normalize_testcase_name
 from .filter import filter_invalid_selector_path
 from .parser import parse_case_attributes
 
+from .extend.global_extend import global_extend
 
+
+@global_extend
 def run_testcases(entry: EntryParam, pipe_io: Optional[BinaryIO] = None):
     if entry.ProjectPath not in sys.path:
         sys.path.insert(0, entry.ProjectPath)
