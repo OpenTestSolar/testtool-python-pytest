@@ -5,10 +5,10 @@
   "Collectors": [],
   "Context": {},
   "TestSelectors": [
-    "normal_case.py?test_success",
-    "aa/bb/cc/class_test.py",
-    "data_drive.py",
-    "errors/import_error.py",
-    "errors/load_error.py"
+    "test_normal_case.py?test_success",
+    "aa/bb/cc/test_in_sub_class.py",
+    "test_data_drive.py",
+    "errors/test_import_error.py",
+    "errors/test_load_error.py"
   ]
 }

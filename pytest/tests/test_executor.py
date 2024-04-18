@@ -19,7 +19,7 @@ class ExecutorTest(unittest.TestCase):
             TaskId="aa",
             ProjectPath=self.testdata_dir,
             TestSelectors=[
-                "normal_case.py?name=test_success&tag=A&priority=High",
+                "test_normal_case.py?name=test_success&tag=A&priority=High",
             ],
             FileReportPath="",
         )
@@ -32,7 +32,7 @@ class ExecutorTest(unittest.TestCase):
         self.assertEqual(start.ResultType, ResultType.RUNNING)
 
         end = read_test_result(pipe_io)
-        self.assertEqual(end.Test.Name, "normal_case.py?test_success")
+        self.assertEqual(end.Test.Name, "test_normal_case.py?test_success")
         self.assertEqual(end.Test.Attributes["tag"], "high")
         self.assertEqual(end.Test.Attributes["owner"], "foo")
         self.assertEqual(end.ResultType, ResultType.SUCCEED)
@@ -70,8 +70,8 @@ this is teardown
             TaskId="aa",
             ProjectPath=self.testdata_dir,
             TestSelectors=[
-                "normal_case.py?name=test_success",
-                "invalid_case.py?test_success",
+                "test_normal_case.py?name=test_success",
+                "test_invalid_case.py?test_success",
             ],
             FileReportPath="",
         )
@@ -88,8 +88,7 @@ this is teardown
             TaskId="aa",
             ProjectPath=self.testdata_dir,
             TestSelectors=[
-                "normal_case.py?test_failed&priority=High",
-                "invalid_case.py?test_success",
+                "test_normal_case.py?test_failed&priority=High",
             ],
             FileReportPath="",
         )
@@ -104,7 +103,7 @@ this is teardown
         end = read_test_result(pipe_io)
         self.assertEqual(end.ResultType, ResultType.FAILED)
         self.assertEqual(len(end.Steps), 3)
-        self.assertIn("testdata/normal_case.py", end.Message)
+        self.assertIn("testdata/test_normal_case.py", end.Message)
 
         step2 = end.Steps[1]
         self.assertEqual(len(step2.Logs), 1)
@@ -117,7 +116,7 @@ this is teardown
             TaskId="aa",
             ProjectPath=self.testdata_dir,
             TestSelectors=[
-                "normal_case.py?test_raise_error",
+                "test_normal_case.py?test_raise_error",
             ],
             FileReportPath="",
         )
@@ -146,7 +145,7 @@ this is teardown
             TaskId="aa",
             ProjectPath=self.testdata_dir,
             TestSelectors=[
-                "skipped.py?test_filtered",
+                "test_skipped.py?test_filtered",
             ],
             FileReportPath="",
         )
@@ -168,7 +167,7 @@ this is teardown
             TaskId="aa",
             ProjectPath=self.testdata_dir,
             TestSelectors=[
-                "data_drive.py?test_eval/[2+4-6]",
+                "test_data_drive.py?test_eval/[2+4-6]",
             ],
             FileReportPath="",
         )
@@ -189,7 +188,7 @@ this is teardown
             TaskId="aa",
             ProjectPath=self.testdata_dir,
             TestSelectors=[
-                "data_drive_zh_cn.py?test_include/[中文-中文汉字]",
+                "test_data_drive_zh_cn.py?test_include/[中文-中文汉字]",
             ],
             FileReportPath="",
         )
