@@ -1,4 +1,8 @@
 import re
+import os
+from typing import Tuple
+
+from pytest import Item
 
 
 def selector_to_pytest(test_selector: str) -> str:
@@ -21,12 +25,61 @@ def selector_to_pytest(test_selector: str) -> str:
         if testcase.startswith("name="):
             testcase = testcase[5:]
 
-    testcase = encode_datadrive(testcase)
-    return path + "::" + testcase.replace("/", "::")
+    case, datadrive = extract_case_and_datadrive(testcase)
+
+    if datadrive:
+        datadrive = encode_datadrive(datadrive)
+
+    # 数据驱动里面的/不用替换为::
+    result = f"{path}::{case.replace("/", "::")}"
+    if datadrive:
+        result += datadrive
+
+    return result
+
+
+def extract_case_and_datadrive(case_selector: str) -> Tuple[str, str]:
+    """
+    Extract case and datadrive from test case selector
+
+    从用例名称中拆分用例和数据驱动名称，pytest的数据驱动为最终的/[....]，如果不存在则返回空即可
+    """
+    splits = case_selector.rsplit("/", 1)
+    if len(splits) == 2:
+        if splits[1] and splits[1].startswith("[") and splits[1].endswith("]"):
+            # part2确实是一个数据驱动
+            return splits[0], splits[1]
+        else:
+            return case_selector, ""
+    else:
+        return case_selector, ""
+
+
+def pytest_to_selector(item: Item, project_path: str) -> str:
+    """
+    translate from pytest format to test selector format
+    """
+
+    if hasattr(item, "path") and hasattr(item, "cls") and item.path:
+        rel_path = os.path.relpath(item.path, project_path)
+        name = item.name
+        if item.cls:
+            name = item.cls.__name__ + "/" + name
+        name = decode_datadrive(name)
+        full_name = f"{rel_path}?{name}"
+    elif hasattr(item, "nodeid") and item.nodeid:
+        full_name = normalize_testcase_name(item.nodeid)
+    else:
+        rel_path, _, name = item.location
+        name = name.replace(".", "/")
+        name = decode_datadrive(name)
+        full_name = f"{rel_path}?{name}"
+
+    return full_name
 
 
 def encode_datadrive(name: str) -> str:
-    if "/[" in name:
+    if name.endswith("]") and "[" in name:
         name = name.encode("unicode_escape").decode()
         name = name.replace("/[", "[")
     return name
@@ -42,7 +95,7 @@ def decode_datadrive(name: str) -> str:
 
     test_include[\u4e2d\u6587-\u4e2d\u6587\u6c49\u5b57] -> test_include[中文-中文汉字]
     """
-    if name.endswith("]"):
+    if name.endswith("]") and "[" in name:
         name = name.replace("[", "/[")
         if re.search(r"\\u\w{4}", name):
             name = name.encode().decode("unicode_escape")

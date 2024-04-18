@@ -52,7 +52,8 @@ class CollectorTest(unittest.TestCase):
         )
 
         self.assertEqual(
-            re.LoadErrors[0].name, "load error of selector: [errors/test_import_error.py]"
+            re.LoadErrors[0].name,
+            "load error of selector: [errors/test_import_error.py]",
         )
         self.assertIn(
             "ModuleNotFoundError: No module named 'bad_import'",
@@ -82,7 +83,9 @@ class CollectorTest(unittest.TestCase):
 
         self.assertEqual(len(re.Tests), 3)
         self.assertEqual(len(re.LoadErrors), 1)
-        self.assertIn("test_not_exist.py does not exist, SKIP it", re.LoadErrors[0].message)
+        self.assertIn(
+            "test_not_exist.py does not exist, SKIP it", re.LoadErrors[0].message
+        )
 
     def test_collect_testcases_with_utf8_chars(self):
         entry = EntryParam(
