@@ -30,8 +30,9 @@ def selector_to_pytest(test_selector: str) -> str:
     if datadrive:
         datadrive = encode_datadrive(datadrive)
 
+    case = case.replace("/", "::")
     # 数据驱动里面的/不用替换为::
-    result = f"{path}::{case.replace("/", "::")}"
+    result = f"{path}::{case}"
     if datadrive:
         result += datadrive
 
