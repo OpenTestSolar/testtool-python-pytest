@@ -22,6 +22,7 @@ from .extend.global_extend import global_extend
 def check_allure_enable():
     return os.getenv("TESTSOLAR_TTP_ENABLEALLURE", "") != ""
 
+
 @global_extend
 def run_testcases(entry: EntryParam, pipe_io: Optional[BinaryIO] = None):
     if entry.ProjectPath not in sys.path:
@@ -38,7 +39,7 @@ def run_testcases(entry: EntryParam, pipe_io: Optional[BinaryIO] = None):
         "-v",
     ]
 
-    # check allure 
+    # check allure
     enable_allure = check_allure_enable()
     if enable_allure:
         allure_dir = os.path.join(entry.ProjectPath, "allure_results")
@@ -208,6 +209,8 @@ class PytestExecutor:
         for file_name in os.listdir(allure_dir):
             if not file_name.endswith("result.json"):
                 continue
-            self.testdata = generate_allure_results(self.testdata, os.path.join(allure_dir, file_name))
+            self.testdata = generate_allure_results(
+                self.testdata, os.path.join(allure_dir, file_name)
+            )
         for _, test_result in self.testdata:
             self.reporter.report_case_result(test_result)

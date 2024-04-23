@@ -4,7 +4,13 @@ from typing import List
 
 import json
 from pytest import TestReport
-from testsolar_testtool_sdk.model.testresult import TestCaseLog, LogLevel, TestResult, ResultType, TestCaseStep
+from testsolar_testtool_sdk.model.testresult import (
+    TestCaseLog,
+    LogLevel,
+    TestResult,
+    ResultType,
+    TestCaseStep,
+)
 
 
 def gen_logs(report: TestReport) -> TestCaseLog:
@@ -31,7 +37,9 @@ def gen_logs(report: TestReport) -> TestCaseLog:
     )
 
 
-def generate_allure_results(test_data: dict[str, TestResult], file_name: str) -> dict[str, TestResult]:
+def generate_allure_results(
+    test_data: dict[str, TestResult], file_name: str
+) -> dict[str, TestResult]:
     with open(file_name) as fp:
         data = json.loads(fp.read())
         full_name = data["fullName"].replace("#", ".")
@@ -48,9 +56,9 @@ def generate_allure_results(test_data: dict[str, TestResult], file_name: str) ->
     return test_data
 
 
-
 def format_allure_time(timestamp: float):
     return datetime.fromtimestamp(timestamp)
+
 
 def gen_allure_step_info(steps: any, index=None) -> List[TestCaseStep]:
     case_steps: TestCaseStep = []
@@ -83,17 +91,17 @@ def gen_allure_step_info(steps: any, index=None) -> List[TestCaseStep]:
                         + step["statusDetails"]["trace"]
                     )
             log_info = TestCaseLog(
-                        Time=format_allure_time(step["start"]),
-                        Level=LogLevel.ERROR if result == "failed" else LogLevel.INFO,
-                        Content=log,
-                    )
+                Time=format_allure_time(step["start"]),
+                Level=LogLevel.ERROR if result == "failed" else LogLevel.INFO,
+                Content=log,
+            )
             step_info = TestCaseStep(
-                    Title="{}： {}".format(".".join(list(str(index))), step["name"]),
-                    Logs=[log_info],
-                    StartTime=format_allure_time(step["start"]),
-                    EndTime=format_allure_time(step["stop"]),
-                    ResultType=result_type,
-                )
+                Title="{}: {}".format(".".join(list(str(index))), step["name"]),
+                Logs=[log_info],
+                StartTime=format_allure_time(step["start"]),
+                EndTime=format_allure_time(step["stop"]),
+                ResultType=result_type,
+            )
             case_steps.append(step_info)
             if "steps" in step:
                 case_steps.extend(gen_allure_step_info(step["steps"], index * 10))
