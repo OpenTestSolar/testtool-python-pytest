@@ -205,6 +205,9 @@ class PytestExecutor:
         """
         allure json报告在所有用例运行完才能生成, 故在运行用例结束后生成result并上报
         """
+        enable_alure = check_allure_enable()
+        if not enable_alure:
+            return
         allure_dir = session.config.option.allure_report_dir
         for file_name in os.listdir(allure_dir):
             if not file_name.endswith("result.json"):
