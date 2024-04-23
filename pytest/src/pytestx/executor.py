@@ -11,13 +11,16 @@ from testsolar_testtool_sdk.model.test import TestCase
 from testsolar_testtool_sdk.model.testresult import TestResult, ResultType, TestCaseStep
 from testsolar_testtool_sdk.reporter import Reporter
 
-from .case_log import gen_logs
+from .case_log import gen_logs, generate_allure_results
 from .converter import selector_to_pytest, normalize_testcase_name
 from .filter import filter_invalid_selector_path
 from .parser import parse_case_attributes
 
 from .extend.global_extend import global_extend
 
+
+def check_allure_enable():
+    return os.getenv("TESTSOLAR_TTP_ENABLEALLURE", "") != ""
 
 @global_extend
 def run_testcases(entry: EntryParam, pipe_io: Optional[BinaryIO] = None):
@@ -34,6 +37,19 @@ def run_testcases(entry: EntryParam, pipe_io: Optional[BinaryIO] = None):
         "--continue-on-collection-errors",
         "-v",
     ]
+
+    # check allure 
+    enable_allure = check_allure_enable()
+    if enable_allure:
+        allure_dir = os.path.join(entry.ProjectPath, "allure_results")
+        args.append("--alluredir={}".format(allure_dir))
+
+        # initialization allure dir
+        if not os.path.isdir(allure_dir):
+            os.mkdir(allure_dir)
+        else:
+            for file_name in os.listdir(allure_dir):
+                os.remove(os.path.join(allure_dir, file_name))
     args.extend(
         [
             os.path.join(entry.ProjectPath, selector_to_pytest(it))
@@ -176,7 +192,22 @@ class PytestExecutor:
         test_result = self.testdata[testcase_name]
         test_result.EndTime = datetime.now()
 
-        self.reporter.report_case_result(test_result)
+        # 检查是否allure报告，如果是在统一生成json文件后再上报
+        enable_alure = check_allure_enable()
+        if not enable_alure:
+            self.reporter.report_case_result(test_result)
 
-        # 上报完成后测试记录就没有用了，删除以节省内存
-        self.testdata.pop(testcase_name, None)
+            # 上报完成后测试记录就没有用了，删除以节省内存
+            self.testdata.pop(testcase_name, None)
+
+    def pytest_sessionfinish(self, session, exitstatus):
+        """
+        allure json报告在所有用例运行完才能生成, 故在运行用例结束后生成result并上报
+        """
+        allure_dir = session.config.option.allure_report_dir
+        for file_name in os.listdir(allure_dir):
+            if not file_name.endswith("result.json"):
+                continue
+            self.testdata = generate_allure_results(self.testdata, os.path.join(allure_dir, file_name))
+        for _, test_result in self.testdata:
+            self.reporter.report_case_result(test_result)
