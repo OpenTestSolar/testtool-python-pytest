@@ -60,10 +60,8 @@ def format_allure_time(timestamp: float):
     return datetime.fromtimestamp(timestamp)
 
 
-def gen_allure_step_info(steps: Any, index: int = None) -> List[TestCaseStep]:
+def gen_allure_step_info(steps: Any, index: int = 0) -> List[TestCaseStep]:
     case_steps = []
-    if not index:
-        index = 0
     if isinstance(steps, list):
         for step in steps:
             index += 1
