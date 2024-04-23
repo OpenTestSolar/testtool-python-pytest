@@ -1,6 +1,6 @@
 import os
 from datetime import datetime, timedelta
-from typing import List
+from typing import List, Dict, Any
 
 import json
 from pytest import TestReport
@@ -38,8 +38,8 @@ def gen_logs(report: TestReport) -> TestCaseLog:
 
 
 def generate_allure_results(
-    test_data: dict[str, TestResult], file_name: str
-) -> dict[str, TestResult]:
+    test_data: Dict[str, TestResult], file_name: str
+) -> Dict[str, TestResult]:
     with open(file_name) as fp:
         data = json.loads(fp.read())
         full_name = data["fullName"].replace("#", ".")
@@ -60,8 +60,8 @@ def format_allure_time(timestamp: float):
     return datetime.fromtimestamp(timestamp)
 
 
-def gen_allure_step_info(steps: any, index=None) -> List[TestCaseStep]:
-    case_steps: TestCaseStep = []
+def gen_allure_step_info(steps: Any, index: int = None) -> List[TestCaseStep]:
+    case_steps = []
     if not index:
         index = 0
     if isinstance(steps, list):
