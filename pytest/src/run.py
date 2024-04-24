@@ -7,9 +7,9 @@ from dacite import from_dict
 from testsolar_testtool_sdk.model.param import EntryParam
 
 # 将pytestx加入path
-parent = Path(__file__).parent.resolve()
+parent = str(Path(__file__).parent.resolve())
 if parent not in sys.path:
-    sys.path.append(str(parent))
+    sys.path.append(parent)
 
 from pytestx.executor import run_testcases  # type: ignore  # noqa: E402
 

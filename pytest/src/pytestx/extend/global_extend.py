@@ -1,15 +1,15 @@
 import logging
 import functools
 
-from typing import Callable
+from typing import Callable, Any, Tuple, Dict
 
 from .global_setup_extend import global_setup_extend
 from .global_cleanup_extend import global_cleanup_extend
 
 
-def global_extend(func: Callable) -> Callable:
+def global_extend(func: Callable[[Any, Any], Any]) -> Callable[[Any, Any], Any]:
     @functools.wraps(func)
-    def wrapper(*args, **kwargs):
+    def wrapper(*args: Tuple[Any, ...], **kwargs: Dict[str, Any]) -> Any:
         # 在函数执行前打印日志
 
         try:
