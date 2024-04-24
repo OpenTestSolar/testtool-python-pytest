@@ -26,8 +26,8 @@ class AllureData:
     historyId: str
     testCaseId: str
     fullName: str
-    steps: List[str] = field(default_factory=list)
-    labels: List[str] = field(default_factory=list)
+    steps: List[Any] = field(default_factory=list)
+    labels: List[Any] = field(default_factory=list)
 
     @staticmethod
     def from_json(data: Dict[str, Any]) -> "AllureData":
