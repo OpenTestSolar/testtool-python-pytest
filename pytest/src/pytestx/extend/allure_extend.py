@@ -46,7 +46,7 @@ class AllureData:
 
 
 def check_allure_enable() -> bool:
-    return os.getenv("TESTSOLAR_TTP_ENABLEALLURE", "") != ""
+    return os.getenv("TESTSOLAR_TTP_ENABLEALLURE", "") == ""
 
 
 def initialization_allure_dir(allure_dir):
@@ -111,15 +111,15 @@ def gen_allure_step_info(steps: Any, index: int = 0) -> List[TestCaseStep]:
                         + step["statusDetails"]["trace"]
                     )
             log_info = TestCaseLog(
-                Time=format_allure_time(step["start"]),
+                Time=step["start"],
                 Level=LogLevel.ERROR if result == "failed" else LogLevel.INFO,
                 Content=log,
             )
             step_info = TestCaseStep(
                 Title="{}: {}".format(".".join(list(str(index))), step["name"]),
                 Logs=[log_info],
-                StartTime=format_allure_time(step["start"]),
-                EndTime=format_allure_time(step["stop"]),
+                StartTime=step["start"],
+                EndTime=step["stop"],
                 ResultType=result_type,
             )
 
