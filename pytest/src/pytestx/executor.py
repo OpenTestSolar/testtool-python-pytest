@@ -37,13 +37,10 @@ def run_testcases(entry: EntryParam, pipe_io: Optional[BinaryIO] = None):
         "-v",
     ]
 
-    for key, value in os.environ.items():
-        print(f"环境变量：{key}: {value}")
-    print("allure 方式：", os.getenv("TESTSOLAR_TTP_ENABLEALLURE"))
-    print("allure 方式：", os.environ.get("TESTSOLAR_TTP_ENABLEALLURE"))
     # check allure
     enable_allure = check_allure_enable()
     if enable_allure:
+        print("Start allure test")
         allure_dir = os.path.join(entry.ProjectPath, "allure_results")
         args.append("--alluredir={}".format(allure_dir))
         initialization_allure_dir(allure_dir)
@@ -202,14 +199,11 @@ class PytestExecutor:
         """
         allure json报告在所有用例运行完才能生成, 故在运行用例结束后生成result并上报
         """
-        print("====000")
         enable_alure = check_allure_enable()
-        print("====000", enable_alure)
         if not enable_alure:
             return
         allure_dir = session.config.option.allure_report_dir
         for file_name in os.listdir(allure_dir):
-            print("====000111", file_name)
             if not file_name.endswith("result.json"):
                 continue
             self.testdata = generate_allure_results(
