@@ -20,8 +20,8 @@ from testsolar_testtool_sdk.model.testresult import (
 class AllureData:
     name: str
     status: str
-    start: datetime
-    stop: datetime
+    start: int
+    stop: int
     uuid: str
     historyId: str
     testCaseId: str
@@ -34,8 +34,8 @@ class AllureData:
         return AllureData(
             name=data["name"],
             status=data["status"],
-            start=datetime.fromtimestamp(data["start"] / 1000.0),
-            stop=datetime.fromtimestamp(data["stop"] / 1000.0),
+            start=data["start"],
+            stop=data["stop"],
             uuid=data["uuid"],
             historyId=data["historyId"],
             testCaseId=data["testCaseId"],
@@ -111,15 +111,15 @@ def gen_allure_step_info(steps: Any, index: int = 0) -> List[TestCaseStep]:
                         + step["statusDetails"]["trace"]
                     )
             log_info = TestCaseLog(
-                Time=step["start"],
+                Time=format_allure_time(step["start"]),
                 Level=LogLevel.ERROR if result == "failed" else LogLevel.INFO,
                 Content=log,
             )
             step_info = TestCaseStep(
                 Title="{}: {}".format(".".join(list(str(index))), step["name"]),
                 Logs=[log_info],
-                StartTime=step["start"],
-                EndTime=step["stop"],
+                StartTime=format_allure_time(step["start"]),
+                EndTime=format_allure_time(step["stop"]),
                 ResultType=result_type,
             )
 
