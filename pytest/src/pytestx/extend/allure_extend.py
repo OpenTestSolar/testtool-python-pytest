@@ -25,6 +25,7 @@ def initialization_allure_dir(allure_dir):
 def generate_allure_results(
     test_data: Dict[str, TestResult], file_name: str
 ) -> Dict[str, TestResult]:
+    print("======1111")
     with open(file_name) as fp:
         data = json.loads(fp.read())
         full_name = data["fullName"].replace("#", ".")
@@ -34,6 +35,7 @@ def generate_allure_results(
             )
             if full_name != testcase_format_name:
                 continue
+            print("=====222 parse step")
             if "steps" in data.keys():
                 step_info = gen_allure_step_info(data["steps"])
             test_data[testcase_name].Steps.clear()
@@ -46,6 +48,7 @@ def format_allure_time(timestamp: float):
 
 
 def gen_allure_step_info(steps: Any, index: int = 0) -> List[TestCaseStep]:
+    print("=====333 start parse step")
     case_steps = []
     if isinstance(steps, list):
         for step in steps:
@@ -85,6 +88,9 @@ def gen_allure_step_info(steps: Any, index: int = 0) -> List[TestCaseStep]:
                 EndTime=format_allure_time(step["stop"]),
                 ResultType=result_type,
             )
+
+
+            print("====444", step_info)
             case_steps.append(step_info)
             if "steps" in step:
                 case_steps.extend(gen_allure_step_info(step["steps"], index * 10))
