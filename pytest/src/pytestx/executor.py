@@ -37,6 +37,7 @@ def run_testcases(entry: EntryParam, pipe_io: Optional[BinaryIO] = None):
         "-v",
     ]
     print("allure 方式：", os.getenv("TESTSOLAR_TTP_ENABLEALLURE"))
+    print("allure 方式：", os.environ.get("TESTSOLAR_TTP_ENABLEALLURE"))
     # check allure
     enable_allure = check_allure_enable()
     if enable_allure:
