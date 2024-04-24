@@ -20,13 +20,13 @@ from testsolar_testtool_sdk.model.testresult import (
 class AllureData:
     name: str
     status: str
-    steps: List[str] = field(default_factory=list)
     start: datetime
     stop: datetime
     uuid: str
     historyId: str
     testCaseId: str
     fullName: str
+    steps: List[str] = field(default_factory=list)
     labels: List[str] = field(default_factory=list)
 
     @staticmethod
@@ -34,13 +34,13 @@ class AllureData:
         return AllureData(
             name=data["name"],
             status=data["status"],
-            steps=data.get("steps", []),
             start=datetime.fromtimestamp(data["start"] / 1000.0),
             stop=datetime.fromtimestamp(data["stop"] / 1000.0),
             uuid=data["uuid"],
             historyId=data["historyId"],
             testCaseId=data["testCaseId"],
             fullName=data["fullName"],
+            steps=data.get("steps", []),
             labels=data.get("labels", []),
         )
 
