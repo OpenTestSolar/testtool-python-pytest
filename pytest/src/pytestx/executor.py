@@ -2,7 +2,7 @@ import logging
 import os
 import sys
 from datetime import datetime, timedelta
-from typing import BinaryIO, Optional, Dict
+from typing import BinaryIO, Optional, Dict, Any
 
 import pytest
 from pytest import TestReport, Item
@@ -17,6 +17,8 @@ from .filter import filter_invalid_selector_path
 from .parser import parse_case_attributes
 
 from .extend.global_extend import global_extend
+from .extend.allure_extend import check_allure_enable, initialization_allure_dir, generate_allure_results
+
 
 
 @global_extend
@@ -34,6 +36,14 @@ def run_testcases(entry: EntryParam, pipe_io: Optional[BinaryIO] = None):
         "--continue-on-collection-errors",
         "-v",
     ]
+
+    # check allure
+    enable_allure = check_allure_enable()
+    if enable_allure:
+        allure_dir = os.path.join(entry.ProjectPath, "allure_results")
+        args.append("--alluredir={}".format(allure_dir))
+        initialization_allure_dir()
+
     args.extend(
         [
             os.path.join(entry.ProjectPath, selector_to_pytest(it))
@@ -61,7 +71,7 @@ class PytestExecutor:
         self.skipped_testcase: Dict[str, str] = {}
         self.reporter: Reporter = Reporter(pipe_io=pipe_io)
 
-    def pytest_runtest_logstart(self, nodeid: str, location):
+    def pytest_runtest_logstart(self, nodeid: str, location) -> None:
         """
         Called at the start of running the runtest protocol for a single item.
         """
@@ -167,7 +177,7 @@ class PytestExecutor:
             if not test_result.is_final():
                 test_result.ResultType = result_type
 
-    def pytest_runtest_logfinish(self, nodeid: str, location):
+    def pytest_runtest_logfinish(self, nodeid: str, location) -> None:
         """
         Called at the end of running the runtest protocol for a single item.
         """
@@ -176,7 +186,27 @@ class PytestExecutor:
         test_result = self.testdata[testcase_name]
         test_result.EndTime = datetime.now()
 
-        self.reporter.report_case_result(test_result)
+        # 检查是否allure报告，如果是在统一生成json文件后再上报
+        enable_alure = check_allure_enable()
+        if not enable_alure:
+            self.reporter.report_case_result(test_result)
 
-        # 上报完成后测试记录就没有用了，删除以节省内存
-        self.testdata.pop(testcase_name, None)
+            # 上报完成后测试记录就没有用了，删除以节省内存
+            self.testdata.pop(testcase_name, None)
+
+    def pytest_sessionfinish(self, session: Any, exitstatus: int) -> None:
+        """
+        allure json报告在所有用例运行完才能生成, 故在运行用例结束后生成result并上报
+        """
+        enable_alure = check_allure_enable()
+        if not enable_alure:
+            return
+        allure_dir = session.config.option.allure_report_dir
+        for file_name in os.listdir(allure_dir):
+            if not file_name.endswith("result.json"):
+                continue
+            self.testdata = generate_allure_results(
+                self.testdata, os.path.join(allure_dir, file_name)
+            )
+        for _, test_result in self.testdata:
+            self.reporter.report_case_result(test_result)
