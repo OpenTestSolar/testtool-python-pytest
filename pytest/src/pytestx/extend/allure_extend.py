@@ -12,7 +12,7 @@ from testsolar_testtool_sdk.model.testresult import (
 )
 
 
-def check_allure_enable() -> None:
+def check_allure_enable() -> bool:
     return os.getenv("TESTSOLAR_TTP_ENABLEALLURE", "") != ""
 
 def initialization_allure_dir(allure_dir):
