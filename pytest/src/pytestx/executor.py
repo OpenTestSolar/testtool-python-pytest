@@ -36,13 +36,13 @@ def run_testcases(entry: EntryParam, pipe_io: Optional[BinaryIO] = None):
         "--continue-on-collection-errors",
         "-v",
     ]
-
+    print("allure 方式：", os.getenv("TESTSOLAR_TTP_ENABLEALLURE"))
     # check allure
     enable_allure = check_allure_enable()
     if enable_allure:
         allure_dir = os.path.join(entry.ProjectPath, "allure_results")
         args.append("--alluredir={}".format(allure_dir))
-        initialization_allure_dir()
+        initialization_allure_dir(allure_dir)
 
     args.extend(
         [

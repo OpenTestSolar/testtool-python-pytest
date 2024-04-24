@@ -44,7 +44,7 @@ def generate_allure_results(
 
 
 def format_allure_time(timestamp: float):
-    return datetime.fromtimestamp(timestamp)
+    return datetime.fromtimestamp(timestamp / 1000)
 
 
 def gen_allure_step_info(steps: Any, index: int = 0) -> List[TestCaseStep]:
