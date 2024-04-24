@@ -36,6 +36,9 @@ def run_testcases(entry: EntryParam, pipe_io: Optional[BinaryIO] = None):
         "--continue-on-collection-errors",
         "-v",
     ]
+
+    for key, value in os.environ.items():
+        print(f"环境变量：{key}: {value}")
     print("allure 方式：", os.getenv("TESTSOLAR_TTP_ENABLEALLURE"))
     print("allure 方式：", os.environ.get("TESTSOLAR_TTP_ENABLEALLURE"))
     # check allure
