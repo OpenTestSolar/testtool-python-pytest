@@ -1,0 +1,10 @@
+{
+  "TaskId": "aa",
+  "ProjectPath": "bb",
+  "FileReportPath": "",
+  "Collectors": [],
+  "Context": {},
+  "TestSelectors": [
+    "allure/allure_step_test.py"
+  ]
+}
