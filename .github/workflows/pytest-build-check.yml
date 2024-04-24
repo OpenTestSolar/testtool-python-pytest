@@ -42,7 +42,7 @@ jobs:
       - name: Check with mypy
         run: |
           cd pytest
-          pdm run mypy src
+          pdm run mypy src --strict
       - name: Test with pytest
         run: |
           cd pytest
