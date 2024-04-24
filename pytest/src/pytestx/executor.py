@@ -61,7 +61,7 @@ class PytestExecutor:
         self.skipped_testcase: Dict[str, str] = {}
         self.reporter: Reporter = Reporter(pipe_io=pipe_io)
 
-    def pytest_runtest_logstart(self, nodeid: str, _: Any) -> None:
+    def pytest_runtest_logstart(self, nodeid: str, location: Any) -> None:
         """
         Called at the start of running the runtest protocol for a single item.
         """
@@ -167,7 +167,7 @@ class PytestExecutor:
             if not test_result.is_final():
                 test_result.ResultType = result_type
 
-    def pytest_runtest_logfinish(self, nodeid: str, _: Any) -> None:
+    def pytest_runtest_logfinish(self, nodeid: str, location: Any) -> None:
         """
         Called at the end of running the runtest protocol for a single item.
         """
