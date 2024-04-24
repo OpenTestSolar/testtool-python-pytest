@@ -215,5 +215,5 @@ class PytestExecutor:
             self.testdata = generate_allure_results(
                 self.testdata, os.path.join(allure_dir, file_name)
             )
-        for _, test_result in self.testdata:
+        for _, test_result in self.testdata.items():
             self.reporter.report_case_result(test_result)
