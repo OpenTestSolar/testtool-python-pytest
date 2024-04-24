@@ -17,8 +17,11 @@ from .filter import filter_invalid_selector_path
 from .parser import parse_case_attributes
 
 from .extend.global_extend import global_extend
-from .extend.allure_extend import check_allure_enable, initialization_allure_dir, generate_allure_results
-
+from .extend.allure_extend import (
+    check_allure_enable,
+    initialization_allure_dir,
+    generate_allure_results,
+)
 
 
 @global_extend

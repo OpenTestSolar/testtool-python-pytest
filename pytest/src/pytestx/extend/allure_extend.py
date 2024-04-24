@@ -1,8 +1,12 @@
 import os
 from datetime import datetime
 from typing import List, Dict, Any
+from dataclasses import dataclass, field
+from typing import List, Dict
+from datetime import datetime
 
 import json
+from dacite import from_dict
 from testsolar_testtool_sdk.model.testresult import (
     TestCaseLog,
     LogLevel,
@@ -12,8 +16,38 @@ from testsolar_testtool_sdk.model.testresult import (
 )
 
 
+@dataclass
+class AllureData:
+    name: str
+    status: str
+    steps: List[str] = field(default_factory=list)
+    start: datetime
+    stop: datetime
+    uuid: str
+    historyId: str
+    testCaseId: str
+    fullName: str
+    labels: List[str] = field(default_factory=list)
+
+    @staticmethod
+    def from_json(data: Dict[str, Any]) -> "AllureData":
+        return AllureData(
+            name=data["name"],
+            status=data["status"],
+            steps=data.get("steps", []),
+            start=datetime.fromtimestamp(data["start"] / 1000.0),
+            stop=datetime.fromtimestamp(data["stop"] / 1000.0),
+            uuid=data["uuid"],
+            historyId=data["historyId"],
+            testCaseId=data["testCaseId"],
+            fullName=data["fullName"],
+            labels=data.get("labels", []),
+        )
+
+
 def check_allure_enable() -> bool:
-    return os.getenv("TESTSOLAR_TTP_ENABLEALLURE", "") == ""
+    return os.getenv("TESTSOLAR_TTP_ENABLEALLURE", "") != ""
+
 
 def initialization_allure_dir(allure_dir):
     if not os.path.isdir(allure_dir):
@@ -22,21 +56,22 @@ def initialization_allure_dir(allure_dir):
         for file_name in os.listdir(allure_dir):
             os.remove(os.path.join(allure_dir, file_name))
 
+
 def generate_allure_results(
     test_data: Dict[str, TestResult], file_name: str
 ) -> Dict[str, TestResult]:
     print("Start to generate allure results")
     with open(file_name) as fp:
-        data = json.loads(fp.read())
-        full_name = data["fullName"].replace("#", ".")
+        allure_data = from_dict(data_class=AllureData, data=json.loads(fp.read()))
+        full_name = allure_data.fullName.replace("#", ".")
         for testcase_name in test_data.keys():
             testcase_format_name = ".".join(
                 testcase_name.replace(".py?", os.sep).split(os.sep)
             )
             if full_name != testcase_format_name:
                 continue
-            if "steps" in data.keys():
-                step_info = gen_allure_step_info(data["steps"])
+            if allure_data.steps:
+                step_info = gen_allure_step_info(allure_data.steps)
             test_data[testcase_name].Steps.clear()
             test_data[testcase_name].Steps.extend(step_info)
     return test_data
@@ -87,7 +122,6 @@ def gen_allure_step_info(steps: Any, index: int = 0) -> List[TestCaseStep]:
                 EndTime=format_allure_time(step["stop"]),
                 ResultType=result_type,
             )
-
 
             print("Get allure step from json file: ", step_info)
             case_steps.append(step_info)
