@@ -12,3 +12,7 @@ pip3 install "pytest>=8" "pytest-timeout>=2.3" "testsolar-testtool-sdk>=0.1.9"
 
 # 将version信息写进文件，来判断走sdk V1还是V2逻辑
 solarctl version > /tmp/solarctl_version
+
+# 暂时仅支持amd64，后续再支持arm64
+curl -Lk https://github.com/OpenTestSolar/testtools-uni-sdk/releases/download/0.0.2/testtools_sdk.amd64 -o /usr/local/bin/testtools_sdk
+chmod +x /usr/local/bin/testtools_sdk
