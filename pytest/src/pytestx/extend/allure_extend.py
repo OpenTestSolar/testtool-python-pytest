@@ -47,7 +47,7 @@ def check_allure_enable() -> bool:
     return os.getenv("TESTSOLAR_TTP_ENABLEALLURE", "") != ""
 
 
-def initialization_allure_dir(allure_dir):
+def initialization_allure_dir(allure_dir: str) -> None:
     if not os.path.isdir(allure_dir):
         os.mkdir(allure_dir)
     else:
@@ -75,7 +75,7 @@ def generate_allure_results(
     return test_data
 
 
-def format_allure_time(timestamp: float):
+def format_allure_time(timestamp: float) -> datetime:
     return datetime.fromtimestamp(timestamp / 1000)
 
 
