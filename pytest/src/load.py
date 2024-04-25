@@ -1,11 +1,17 @@
 import json
 import sys
+from pathlib import Path
 from typing import Optional, List, BinaryIO
 
 from dacite import from_dict
 from testsolar_testtool_sdk.model.param import EntryParam
 
-from .collector import collect_testcases
+# 将pytestx加入path
+parent = str(Path(__file__).parent.resolve())
+if parent not in sys.path:
+    sys.path.append(parent)
+
+from pytestx.collector import collect_testcases  # type: ignore  # noqa: E402
 
 
 def collect_testcases_from_args(

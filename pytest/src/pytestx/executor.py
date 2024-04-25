@@ -2,7 +2,7 @@ import logging
 import os
 import sys
 from datetime import datetime, timedelta
-from typing import BinaryIO, Optional, Dict
+from typing import BinaryIO, Optional, Dict, Any
 
 import pytest
 from pytest import TestReport, Item
@@ -16,8 +16,11 @@ from .converter import selector_to_pytest, normalize_testcase_name
 from .filter import filter_invalid_selector_path
 from .parser import parse_case_attributes
 
+from .extend.global_extend import global_extend
 
-def run_testcases(entry: EntryParam, pipe_io: Optional[BinaryIO] = None):
+
+@global_extend
+def run_testcases(entry: EntryParam, pipe_io: Optional[BinaryIO] = None) -> None:
     if entry.ProjectPath not in sys.path:
         sys.path.insert(0, entry.ProjectPath)
 
@@ -58,7 +61,7 @@ class PytestExecutor:
         self.skipped_testcase: Dict[str, str] = {}
         self.reporter: Reporter = Reporter(pipe_io=pipe_io)
 
-    def pytest_runtest_logstart(self, nodeid: str, location):
+    def pytest_runtest_logstart(self, nodeid: str, location: Any) -> None:
         """
         Called at the start of running the runtest protocol for a single item.
         """
@@ -164,7 +167,7 @@ class PytestExecutor:
             if not test_result.is_final():
                 test_result.ResultType = result_type
 
-    def pytest_runtest_logfinish(self, nodeid: str, location):
+    def pytest_runtest_logfinish(self, nodeid: str, location: Any) -> None:
         """
         Called at the end of running the runtest protocol for a single item.
         """

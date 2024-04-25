@@ -10,7 +10,10 @@ from testsolar_testtool_sdk.model.param import EntryParam
 from testsolar_testtool_sdk.model.test import TestCase
 from testsolar_testtool_sdk.reporter import Reporter
 
-from .converter import selector_to_pytest, normalize_testcase_name, decode_datadrive
+from .converter import (
+    selector_to_pytest,
+    pytest_to_selector,
+)
 from .filter import filter_invalid_selector_path
 from .parser import parse_case_attributes
 
@@ -54,21 +57,7 @@ def collect_testcases(
         print(f"[Warn][Load] collect testcases exit_code: {exit_code}")
 
     for item in my_plugin.collected:
-        if hasattr(item, "path") and hasattr(item, "cls"):
-            rel_path = os.path.relpath(item.path, entry_param.ProjectPath)
-            name = item.name
-            if item.cls:
-                name = item.cls.__name__ + "/" + name
-            name = decode_datadrive(name)
-            full_name = f"{rel_path}?{name}"
-        elif hasattr(item, "nodeid"):
-            full_name = normalize_testcase_name(item.nodeid)
-        else:
-            rel_path, _, name = item.location
-            name = name.replace(".", "/")
-            name = decode_datadrive(name)
-            full_name = f"{rel_path}?{name}"
-
+        full_name = pytest_to_selector(item, entry_param.ProjectPath)
         attributes = parse_case_attributes(item)
         load_result.Tests.append(TestCase(Name=full_name, Attributes=attributes))
 
