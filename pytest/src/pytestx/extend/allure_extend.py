@@ -24,23 +24,9 @@ class AllureData:
     historyId: str
     testCaseId: str
     fullName: str
-    steps: List[Any] = field(default_factory=list)
-    labels: List[Any] = field(default_factory=list)
+    steps: List[Dict[str, Any]] = field(default_factory=list)
+    labels: List[Dict[str, str]] = field(default_factory=list)
 
-    @staticmethod
-    def from_json(data: Dict[str, Any]) -> "AllureData":
-        return AllureData(
-            name=data["name"],
-            status=data["status"],
-            start=data["start"],
-            stop=data["stop"],
-            uuid=data["uuid"],
-            historyId=data["historyId"],
-            testCaseId=data["testCaseId"],
-            fullName=data["fullName"],
-            steps=data.get("steps", []),
-            labels=data.get("labels", []),
-        )
 
 
 def check_allure_enable() -> bool:
@@ -79,7 +65,7 @@ def format_allure_time(timestamp: float) -> datetime:
     return datetime.fromtimestamp(timestamp / 1000)
 
 
-def gen_allure_step_info(steps: Any, index: int = 0) -> List[TestCaseStep]:
+def gen_allure_step_info(steps: List[Dict[str, Any]], index: int = 0) -> List[TestCaseStep]:
     print("Gen allure step")
     case_steps = []
     if isinstance(steps, list):

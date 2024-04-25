@@ -15,7 +15,6 @@ class TestExecuteEntry(TestCase):
     )
 
     def test_run_testcases_from_args(self):
-        os.system("python3 -m pip install allure-pytest")
         os.environ["TESTSOLAR_TTP_ENABLEALLURE"] = "1" 
         pipe_io = io.BytesIO()
         run_testcases_from_args(
