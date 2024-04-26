@@ -23,7 +23,7 @@ class TestCollectorEntry(TestCase):
         pipe_io.seek(0)
         re = read_load_result(pipe_io)
 
-        self.assertEqual(len(re.Tests), 6)
+        self.assertEqual(len(re.Tests), 5)
 
     def test_raise_error_when_param_is_invalid(self):
         with self.assertRaises(SystemExit):

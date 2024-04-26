@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from typing import BinaryIO, Optional, Dict, Any
 
 import pytest
-from pytest import TestReport, Item
+from pytest import TestReport, Item, Session
 from testsolar_testtool_sdk.model.param import EntryParam
 from testsolar_testtool_sdk.model.test import TestCase
 from testsolar_testtool_sdk.model.testresult import TestResult, ResultType, TestCaseStep
@@ -198,7 +198,7 @@ class PytestExecutor:
             # 上报完成后测试记录就没有用了，删除以节省内存
             self.testdata.pop(testcase_name, None)
 
-    def pytest_sessionfinish(self, session: Any, exitstatus: int) -> None:
+    def pytest_sessionfinish(self, session: Session, exitstatus: int) -> None:
         """
         allure json报告在所有用例运行完才能生成, 故在运行用例结束后生成result并上报
         """
@@ -209,8 +209,6 @@ class PytestExecutor:
         for file_name in os.listdir(allure_dir):
             if not file_name.endswith("result.json"):
                 continue
-            self.testdata = generate_allure_results(
-                self.testdata, os.path.join(allure_dir, file_name)
-            )
+            generate_allure_results(self.testdata, os.path.join(allure_dir, file_name))
         for _, test_result in self.testdata.items():
             self.reporter.report_case_result(test_result)

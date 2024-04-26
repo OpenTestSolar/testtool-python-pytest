@@ -10,6 +10,5 @@
     "test_data_drive.py",
     "errors/test_import_error.py",
     "errors/test_load_error.py",
-    "allure/allure_step_test.py"
   ]
 }
