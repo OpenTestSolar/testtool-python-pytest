@@ -73,7 +73,7 @@ def initialization_allure_dir(allure_dir: str) -> None:
 
 def generate_allure_results(
     test_data: Dict[str, TestResult], file_name: str
-) -> Dict[str, TestResult]:
+) -> None:
     print("Start to generate allure results")
     with open(file_name) as fp:
         allure_data = from_dict(data_class=AllureData, data=json.loads(fp.read()))
@@ -109,11 +109,12 @@ def gen_allure_step_info(steps: List[Step], index: int = 0) -> List[TestCaseStep
             result_type = ResultType.FAILED
 
         log = "\n"
-        for param in step.parameters:
-            log += "%-30s%-20s\n" % (
-                "key: {}".format(param.name),
-                "value: {}".format(param.value),
-            )
+        if step.parameters:
+            for param in step.parameters:
+                log += "%-30s%-20s\n" % (
+                    "key: {}".format(param.name),
+                    "value: {}".format(param.value),
+                )
         if step.statusDetails:
             if step.statusDetails.message and step.statusDetails.trace:
                 log += step.statusDetails.message + step.statusDetails.trace
