@@ -110,11 +110,10 @@ def gen_allure_step_info(steps: List[Step], index: int = 0) -> List[TestCaseStep
 
         log = "\n"
         for param in step.parameters:
-            for key in param:
-                log += "%-30s%-20s\n" % (
-                    "key: {}".format(key),
-                    "value: {}".format(param[key]),
-                )
+            log += "%-30s%-20s\n" % (
+                "key: {}".format(param.name),
+                "value: {}".format(param.value),
+            )
         if step.statusDetails:
             if step.statusDetails.message and step.statusDetails.trace:
                 log += step.statusDetails.message + step.statusDetails.trace
