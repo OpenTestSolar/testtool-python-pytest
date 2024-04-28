@@ -11,7 +11,7 @@ parent = str(Path(__file__).parent.resolve())
 if parent not in sys.path:
     sys.path.append(parent)
 
-from pytestx.collector import collect_testcases  # type: ignore  # noqa: E402
+from testsolar_pytestx.collector import collect_testcases  # type: ignore  # noqa: E402
 
 
 def collect_testcases_from_args(

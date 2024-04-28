@@ -13,18 +13,15 @@ from testsolar_testtool_sdk.reporter import Reporter
 
 from .case_log import gen_logs
 from .converter import selector_to_pytest, normalize_testcase_name
-from .filter import filter_invalid_selector_path
-from .parser import parse_case_attributes
-
-from .extend.global_extend import global_extend
 from .extend.allure_extend import (
     check_allure_enable,
     initialization_allure_dir,
     generate_allure_results,
 )
+from .filter import filter_invalid_selector_path
+from .parser import parse_case_attributes
 
 
-@global_extend
 def run_testcases(entry: EntryParam, pipe_io: Optional[BinaryIO] = None) -> None:
     if entry.ProjectPath not in sys.path:
         sys.path.insert(0, entry.ProjectPath)

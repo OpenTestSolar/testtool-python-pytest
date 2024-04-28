@@ -1,7 +1,7 @@
 from unittest import TestCase
 from unittest.mock import MagicMock
 
-from src.pytestx.converter import selector_to_pytest, pytest_to_selector
+from src.testsolar_pytestx.converter import selector_to_pytest, pytest_to_selector
 
 
 class InnerClass:

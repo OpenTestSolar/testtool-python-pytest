@@ -1,22 +1,22 @@
 [project]
-name = "pytest"
+name = "testsolar-pytestx"
 version = "0.1.0"
 description = "Pytest tool for TestSolar"
 authors = [
     {name = "asiazhang2002", email = "asiazhang2002@gmail.com"},
 ]
 dependencies = [
-    "pytest>=8.1.1",
-    "pytest-timeout>=2.3.1",
+    "pytest>=6",
+    "pytest-timeout>=2",
     "testsolar-testtool-sdk>=0.1.9",
 ]
 requires-python = ">=3.8"
 readme = "README.md"
-license = {text = "MIT"}
+license = {text = "Apache-2.0"}
 
 
 [tool.pdm]
-distribution = false
+distribution = true
 
 [tool.pdm.dev-dependencies]
 dev = [
