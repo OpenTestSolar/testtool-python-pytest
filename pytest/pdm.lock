@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = ["cross_platform", "inherit_metadata"]
 lock_version = "4.4.1"
-content_hash = "sha256:a94c8b3d4c6c6907eb84682a0f9835417ff99ae6c45836058040ab5a6ca4ace5"
+content_hash = "sha256:6b9c0999592de0579efbd7086420dcfe73fe548f242d438cfcd991d5505bf04d"
 
 [[package]]
 name = "allure-pytest"

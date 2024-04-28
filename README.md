@@ -1,2 +1,2 @@
 # testtool-python
-Python Test Tool for TestSolar
+Pytest Test Tool for TestSolar

@@ -71,9 +71,7 @@ def initialization_allure_dir(allure_dir: str) -> None:
     os.makedirs(allure_dir, exist_ok=True)
 
 
-def generate_allure_results(
-    test_data: Dict[str, TestResult], file_name: str
-) -> None:
+def generate_allure_results(test_data: Dict[str, TestResult], file_name: str) -> None:
     print("Start to generate allure results")
     with open(file_name) as fp:
         allure_data = from_dict(data_class=AllureData, data=json.loads(fp.read()))
