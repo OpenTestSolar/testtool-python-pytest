@@ -6,14 +6,8 @@ name: PyTest Tool Build And Check
 on:
   push:
     branches: [ "main" ]
-    paths:
-      - 'pytest/**'
-      - '.github/workflows/pytest-build-check.yml'
   pull_request:
     branches: [ "main" ]
-    paths:
-      - 'pytest/**'
-      - '.github/workflows/pytest-build-check.yml'
 
 jobs:
   pytest-build:
