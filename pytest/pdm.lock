@@ -5,7 +5,47 @@
 groups = ["default", "dev"]
 strategy = ["cross_platform", "inherit_metadata"]
 lock_version = "4.4.1"
-content_hash = "sha256:1046f65ab82b5c882cefd63b2359a8c7a3e04c5069c1bdd1aeec1460f2ec41d1"
+content_hash = "sha256:a94c8b3d4c6c6907eb84682a0f9835417ff99ae6c45836058040ab5a6ca4ace5"
+
+[[package]]
+name = "allure-pytest"
+version = "2.13.5"
+summary = "Allure pytest integration"
+groups = ["dev"]
+dependencies = [
+    "allure-python-commons==2.13.5",
+    "pytest>=4.5.0",
+]
+files = [
+    {file = "allure-pytest-2.13.5.tar.gz", hash = "sha256:0ef8e1790c44a988db6b83c4d4f5e91451e2c4c8ea10601dfa88528d23afcf6e"},
+    {file = "allure_pytest-2.13.5-py3-none-any.whl", hash = "sha256:94130bac32964b78058e62cf4b815ad97a5ac82a065e6dd2d43abac2be7640fc"},
+]
+
+[[package]]
+name = "allure-python-commons"
+version = "2.13.5"
+requires_python = ">=3.6"
+summary = "('Contains the API for end users as well as helper functions and classes to build Allure adapters for Python test frameworks',)"
+groups = ["dev"]
+dependencies = [
+    "attrs>=16.0.0",
+    "pluggy>=0.4.0",
+]
+files = [
+    {file = "allure-python-commons-2.13.5.tar.gz", hash = "sha256:a232e7955811f988e49a4c1dd6c16cce7e9b81d0ea0422b1e5654d3254e2caf3"},
+    {file = "allure_python_commons-2.13.5-py3-none-any.whl", hash = "sha256:8b0e837b6e32d810adec563f49e1d04127a5b6770e0232065b7cb09b9953980d"},
+]
+
+[[package]]
+name = "attrs"
+version = "23.2.0"
+requires_python = ">=3.7"
+summary = "Classes Without Boilerplate"
+groups = ["dev"]
+files = [
+    {file = "attrs-23.2.0-py3-none-any.whl", hash = "sha256:99b87a485a5820b23b879f04c2305b44b951b502fd64be915879d77a7e8fc6f1"},
+    {file = "attrs-23.2.0.tar.gz", hash = "sha256:935dc3b529c262f6cf76e50877d35a4bd3c1de194fd41f47a2b7ae8f19971f30"},
+]
 
 [[package]]
 name = "colorama"
