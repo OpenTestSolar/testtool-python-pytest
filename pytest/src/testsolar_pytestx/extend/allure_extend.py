@@ -1,10 +1,10 @@
+import json
 import os
 import shutil
+from dataclasses import dataclass, field
 from datetime import datetime
 from typing import List, Dict, Optional
-from dataclasses import dataclass, field
 
-import json
 from dacite import from_dict
 from testsolar_testtool_sdk.model.testresult import (
     TestCaseLog,
@@ -33,8 +33,8 @@ class Step:
     status: str
     start: int
     stop: int
-    parameters: Optional[List[Parameter]] = field(default_factory=list)
-    steps: Optional[List["Step"]] = field(
+    parameters: Optional[List[Parameter]] = field(default_factory=list)  # type: ignore
+    steps: Optional[List["Step"]] = field(  # type: ignore
         default_factory=list
     )  # Note the forward reference for recursive type
     statusDetails: Optional[StatusDetails] = None
