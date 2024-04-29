@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = ["cross_platform", "inherit_metadata"]
 lock_version = "4.4.1"
-content_hash = "sha256:74d8c6fe32eb8bda345dbb5195a5e26560b0f4474856b5dfb1f30c3836456751"
+content_hash = "sha256:9069a32c8c662f95dfa9643a8a0c92216e1a74fb0773f449b09e175ce01f5764"
 
 [[package]]
 name = "allure-pytest"
@@ -443,7 +443,7 @@ files = [
 
 [[package]]
 name = "testsolar-testtool-sdk"
-version = "0.2.0"
+version = "0.2.1"
 requires_python = ">=3.7"
 summary = "Python3 SDK for TestSolar testtool"
 groups = ["default"]
@@ -452,8 +452,8 @@ dependencies = [
     "portalocker>=2.7",
 ]
 files = [
-    {file = "testsolar-testtool-sdk-0.2.0.tar.gz", hash = "sha256:5b7c0e57cbaa716e1b8e48ef2ff741a3d2d625cfce2ebca7102cf77142ec7337"},
-    {file = "testsolar_testtool_sdk-0.2.0-py3-none-any.whl", hash = "sha256:cd68282c85f9439f927c051b3a4b008725126ac53f71b9b195fb9e35cb2eaa2e"},
+    {file = "testsolar-testtool-sdk-0.2.1.tar.gz", hash = "sha256:05a113926ef6998dc1bd219ad22f490f7c2b7284091e9391ebfe8161494e88ce"},
+    {file = "testsolar_testtool_sdk-0.2.1-py3-none-any.whl", hash = "sha256:9d2988eb329ad8f5e24f8f5a06b0442c04b9c94c7022336ae581279523a6a728"},
 ]
 
 [[package]]
