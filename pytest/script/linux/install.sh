@@ -15,4 +15,3 @@ solarctl version > /tmp/solarctl_version
 
 # 修改为COS地址，后续增加域名
 curl -Lk https://testsolar-1321258242.cos.ap-guangzhou.myqcloud.com/cli/install/stable/install.sh | bash
-chmod +x /usr/local/bin/testtools_sdk
