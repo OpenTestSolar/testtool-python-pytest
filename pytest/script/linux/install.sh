@@ -13,6 +13,5 @@ pip3 install "pytest>=7" "pytest-timeout>=2.3" "testsolar-testtool-sdk>=0.1.9"
 # 将version信息写进文件，来判断走sdk V1还是V2逻辑
 solarctl version > /tmp/solarctl_version
 
-# 暂时仅支持amd64，后续再支持arm64
-curl -Lk https://github.com/OpenTestSolar/testtools-uni-sdk/releases/download/0.0.2/testtools_sdk.amd64 -o /usr/local/bin/testtools_sdk
-chmod +x /usr/local/bin/testtools_sdk
+# 修改为COS地址，后续增加域名
+curl -Lk https://testsolar-1321258242.cos.ap-guangzhou.myqcloud.com/cli/install/stable/install.sh | bash
