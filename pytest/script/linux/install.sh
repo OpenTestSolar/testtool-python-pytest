@@ -14,5 +14,5 @@ pip3 install "pytest>=7" "pytest-timeout>=2.3" "testsolar-testtool-sdk>=0.1.9"
 solarctl version > /tmp/solarctl_version
 
 # 修改为COS地址，后续增加域名
-curl -Lk https://testsolar-1321258242.cos.ap-guangzhou.myqcloud.com/cli/testtools_sdk/stable/linux-amd64/testtools_sdk -o /usr/local/bin/testtools_sdk
+curl -Lk https://testsolar-1321258242.cos.ap-guangzhou.myqcloud.com/cli/install/stable/install.sh | bash
 chmod +x /usr/local/bin/testtools_sdk
