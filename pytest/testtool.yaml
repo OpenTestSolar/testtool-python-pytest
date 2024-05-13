@@ -1,7 +1,7 @@
 schemaVersion: 1.0
 name: pytest
 lang: python
-version: '0.1.4'
+version: '0.1.5'
 langType: INTERPRETED
 description: TestSolar Support For Pytest
 homePage: https://github.com/OpenTestSolar/testtool-python-pytest
