@@ -42,9 +42,8 @@ jobs:
 #          packages-dir: pytest/dist/
       - name: Release metadata
         run: |
-          git config -l
-          git config user.name 'asiazhang'
-          git config user.email 'asiazhang2002@gmail.com'
+          git config --global user.name 'asiazhang'
+          git config --global user.email 'asiazhang2002@gmail.com'
           pip install solar-registry
           solar-registry pull-request pytest
         env:
