@@ -34,14 +34,16 @@ jobs:
         run: |
           cd pytest
           pdm build
-      - name: Publish package
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          user: __token__
-          password: ${{ secrets.PYPI_API_TOKEN }}
-          packages-dir: pytest/dist/
+#      - name: Publish package
+#        uses: pypa/gh-action-pypi-publish@release/v1
+#        with:
+#          user: __token__
+#          password: ${{ secrets.PYPI_API_TOKEN }}
+#          packages-dir: pytest/dist/
       - name: Release metadata
         run: |
+          git config user 'asiazhang'
+          git config user.email 'asiazhang2002@gmail.com'
           pip install solar-registry
           solar-registry pull-request pytest
         env:
