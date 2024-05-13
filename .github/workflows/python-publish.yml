@@ -47,5 +47,5 @@ jobs:
           pip install solar-registry
           solar-registry pull-request pytest
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.TESTSOLAR_TOKEN }}
 
