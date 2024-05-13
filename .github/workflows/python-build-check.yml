@@ -39,3 +39,7 @@ jobs:
         run: |
           cd pytest
           pdm run pytest tests --durations=5 --cov=. --cov-fail-under=90 --cov-report term -vv
+      - name: Validate metadata
+        run: |
+          pip install solar-registry
+          solar-registry validate pytest
