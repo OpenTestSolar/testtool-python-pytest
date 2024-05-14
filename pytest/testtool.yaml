@@ -5,8 +5,8 @@ version: '0.1.6'
 langType: INTERPRETED
 description: TestSolar Support For Pytest
 homePage: https://github.com/OpenTestSolar/testtool-python-pytest
-versionFile: https://raw.githubusercontent.com/OpenTestSolar/testtool-registry/main/testtools/python/pytest/metadata.json
-indexFile: https://raw.githubusercontent.com/OpenTestSolar/testtool-registry/main/testtools/stable.index.json
+versionFile: https://opentestsolar.github.io/testtool-registry/testtools/python/pytest/metadata.json
+indexFile: https://opentestsolar.github.io/testtool-registry/testtools/stable.index.json
 scaffoldRepo: https://github.com/OpenTestSolar/testtool-scaffold-pytest
 defaultBaseImage: python:3.10 # 用户在 TestContainer 配置中未指定 baseImage 时的默认镜像
 parameterDefs: # 用户 use 这个测试工具时可以配置的 with 参数
