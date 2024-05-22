@@ -45,7 +45,7 @@ jobs:
         run: |
           git config --global user.name 'asiazhang'
           git config --global user.email 'asiazhang2002@gmail.com'
-          pip install solar-registry>=0.2.4
+          pip install solar-registry>=0.2.16
           solar-registry pull-request pytest
         env:
           GH_TOKEN: ${{ secrets.TESTSOLAR_TOKEN }}
