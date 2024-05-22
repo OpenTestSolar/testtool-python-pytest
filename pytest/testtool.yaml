@@ -4,8 +4,8 @@ nameZh: pytest自动化测试
 lang: python
 version: '0.1.6'
 langType: INTERPRETED
-description: |
-  pytest是一个成熟的全功能Python测试工具，可以帮助您编写更好的程序。此测试工具允许在TestSolar上运行pytest。
+description: |-
+  pytest是一个成熟的全功能Python测试工具，可以帮助您编写更好的程序。此测试工具允许您在TestSolar上运行pytest。
 homePage: https://github.com/OpenTestSolar/testtool-python-pytest
 versionFile: https://testsolar-1321258242.cos.ap-guangzhou.myqcloud.com/testtools/python/pytest/metadata.json
 indexFile: https://testsolar-1321258242.cos.ap-guangzhou.myqcloud.com/testtools/stable.index.json
