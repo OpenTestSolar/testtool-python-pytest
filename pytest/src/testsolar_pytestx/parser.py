@@ -12,7 +12,7 @@ from pytest import Item
 # - extra_attributes
 def parse_case_attributes(item: Item, desc_fields: List[str]) -> Dict[str, str]:
     """parse testcase attributes"""
-    desc: str = (str(item.function.__doc__) or "").strip() # type: ignore
+    desc: str = (str(item.function.__doc__) or "").strip()  # type: ignore
     attributes: Dict[str, str] = {
         "description": desc
     }
@@ -40,27 +40,26 @@ def parse_case_attributes(item: Item, desc_fields: List[str]) -> Dict[str, str]:
 
 def scan_desc_fields(desc: str, desc_fields: List[str], attributes: Dict[str, str]) -> Dict[str, str]:
     """add desc attr to attributes"""
-    
     for line in desc.splitlines():
         for field in desc_fields:
-            if not field in line:
+            if field not in line:
                 continue
-            value = handle_str_param(line, field)
-            if field in attributes.keys():
-                attributes[field].extend(value.split(","))
-            else:
-                attributes[field] = value.split(",")
+            field_value: List = attributes.get(field, [])
+            value = handle_str_param(line)
+            field_value.extend(value.split(","))
+            attributes[field] = json.dumps(field_value)
     return attributes
 
 
-def handle_str_param(line, field) -> str:
-    symbol = ""
+def handle_str_param(line: str) -> str:
+    """handle string parameter"""
+    symbol: str = ""
     if ":" in line:
         symbol = ":"
     elif "=" in line:
         symbol = "="
     if symbol:
-        value = line.split(symbol, 1)[1].strip().replace(" ", "")
+        value: str = line.split(symbol, 1)[1].strip().replace(" ", "")
         return value
     else:
         return ""
