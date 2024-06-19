@@ -44,7 +44,7 @@ def scan_desc_fields(desc: str, desc_fields: List[str], attributes: Dict[str, st
         for field in desc_fields:
             if field not in line:
                 continue
-            field_value: List = attributes.get(field, [])
+            field_value: List[str] = json.loads(attributes.get(field, "[]"))
             value = handle_str_param(line)
             field_value.extend(value.split(","))
             attributes[field] = json.dumps(field_value)
