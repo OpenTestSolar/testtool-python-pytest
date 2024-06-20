@@ -58,7 +58,7 @@ def collect_testcases(
 
     for item in my_plugin.collected:
         full_name = pytest_to_selector(item, entry_param.ProjectPath)
-        attributes = parse_case_attributes(item)
+        attributes = parse_case_attributes(item, entry_param.ScanDescFields)
         load_result.Tests.append(TestCase(Name=full_name, Attributes=attributes))
 
     load_result.Tests.sort(key=lambda x: x.Name)
