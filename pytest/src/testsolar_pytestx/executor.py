@@ -2,7 +2,7 @@ import logging
 import os
 import sys
 from datetime import datetime, timedelta
-from typing import BinaryIO, Optional, Dict, Any
+from typing import BinaryIO, Optional, Dict, Any, List
 
 import pytest
 from pytest import TestReport, Item, Session
@@ -22,7 +22,7 @@ from .filter import filter_invalid_selector_path
 from .parser import parse_case_attributes
 
 
-def run_testcases(entry: EntryParam, pipe_io: Optional[BinaryIO] = None) -> None:
+def run_testcases(entry: EntryParam, pipe_io: Optional[BinaryIO] = None, case_comment_fields: Optional[List[str]] = None) -> None:
     if entry.ProjectPath not in sys.path:
         sys.path.insert(0, entry.ProjectPath)
 
@@ -60,17 +60,18 @@ def run_testcases(entry: EntryParam, pipe_io: Optional[BinaryIO] = None) -> None
         args.append(f"--timeout={timeout}")
     logging.info(args)
 
-    my_plugin = PytestExecutor(pipe_io=pipe_io)
+    my_plugin = PytestExecutor(pipe_io=pipe_io, comment_fields=case_comment_fields)
     pytest.main(args, plugins=[my_plugin])
     logging.info("pytest process exit")
 
 
 class PytestExecutor:
-    def __init__(self, pipe_io: Optional[BinaryIO] = None):
+    def __init__(self, pipe_io: Optional[BinaryIO] = None, comment_fields: Optional[List[str]] = None) -> None:
         self.testcase_count = 0
         self.testdata: Dict[str, TestResult] = {}
         self.skipped_testcase: Dict[str, str] = {}
         self.reporter: Reporter = Reporter(pipe_io=pipe_io)
+        self.comment_fields = comment_fields
 
     def pytest_runtest_logstart(self, nodeid: str, location: Any) -> None:
         """
@@ -102,7 +103,7 @@ class PytestExecutor:
         testcase_name = normalize_testcase_name(item.nodeid)
         test_result = self.testdata[testcase_name]
         if test_result:
-            test_result.Test.Attributes = parse_case_attributes(item)
+            test_result.Test.Attributes = parse_case_attributes(item, self.comment_fields)
 
     def pytest_runtest_logreport(self, report: TestReport) -> None:
         """

@@ -19,7 +19,7 @@ from .parser import parse_case_attributes
 
 
 def collect_testcases(
-    entry_param: EntryParam, pipe_io: Optional[BinaryIO] = None
+    entry_param: EntryParam, pipe_io: Optional[BinaryIO] = None, case_comment_fields: Optional[List[str]] = None
 ) -> None:
     if entry_param.ProjectPath not in sys.path:
         sys.path.insert(0, entry_param.ProjectPath)
@@ -58,7 +58,7 @@ def collect_testcases(
 
     for item in my_plugin.collected:
         full_name = pytest_to_selector(item, entry_param.ProjectPath)
-        attributes = parse_case_attributes(item, entry_param.ScanDescFields)
+        attributes = parse_case_attributes(item, case_comment_fields)
         load_result.Tests.append(TestCase(Name=full_name, Attributes=attributes))
 
     load_result.Tests.sort(key=lambda x: x.Name)
