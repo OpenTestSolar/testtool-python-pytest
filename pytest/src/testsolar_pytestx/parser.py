@@ -60,7 +60,7 @@ def handle_str_param(desc: str) -> Dict[str, str]:
     return results
 
 
-def scan_comment_fields(desc: str, desc_fields: List[str]) -> Dict[str, str]:
+def scan_comment_fields(desc: str, desc_fields: List[str]) -> Dict[str, Union[str, List[str]]]:
     """
     从函数的注释中解析额外字段
     """
@@ -70,6 +70,8 @@ def scan_comment_fields(desc: str, desc_fields: List[str]) -> Dict[str, str]:
         if key not in desc_fields:
             continue
         if "," in value:
-            value = value.split(",")
-        results[key] = value
+            mutil_value = value.split(",")
+            results[key] = mutil_value
+        else:
+            results[key] = value
     return results
