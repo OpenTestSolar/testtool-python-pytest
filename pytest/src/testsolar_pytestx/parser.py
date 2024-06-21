@@ -65,7 +65,7 @@ def scan_comment_fields(desc: str, desc_fields: List[str]) -> Dict[str, Union[st
     从函数的注释中解析额外字段
     """
     all_fields = handle_str_param(desc)
-    results: Dict[str, str] = {}
+    results: Dict[str, Union[str, List[str]]] = {}
     for key, value in all_fields.items():
         if key not in desc_fields:
             continue
