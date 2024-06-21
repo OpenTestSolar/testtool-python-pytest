@@ -1,5 +1,6 @@
 import json
-from typing import Dict, List, Optional
+import re
+from typing import Dict, List, Optional, Union
 from pytest import Item
 
 
@@ -16,12 +17,12 @@ from pytest import Item
 # - tag
 # - owner
 # - extra_attributes
-def parse_case_attributes(item: Item, comment_fields: Optional[List[str]] = None) -> Dict[str, str]:
+def parse_case_attributes(
+    item: Item, comment_fields: Optional[List[str]] = None
+) -> Dict[str, str]:
     """parse testcase attributes"""
     desc: str = (str(item.function.__doc__) or "").strip()  # type: ignore
-    attributes: Dict[str, str] = {
-        "description": desc
-    }
+    attributes: Dict[str, Union[str, List[str]]] = {"description": desc}
     if comment_fields:
         attributes.update(scan_comment_fields(desc, comment_fields))
 
@@ -44,33 +45,31 @@ def parse_case_attributes(item: Item, comment_fields: Optional[List[str]] = None
     return attributes
 
 
+def handle_str_param(desc: str) -> Dict[str, str]:
+    """handle string parameter
+
+    解析注释中单行 a = b 或 a: b 为 (a, b)形式方便后续处理
+    """
+    results: Dict[str, str] = {}
+    pattern = re.compile(r".*?(\w+)\s*[:=]\s*(.+)")
+    for line in desc.splitlines():
+        match = pattern.match(line)
+        if match:
+            key, value = match.groups()
+            results[key.strip()] = value.strip()
+    return results
+
+
 def scan_comment_fields(desc: str, desc_fields: List[str]) -> Dict[str, str]:
     """
     从函数的注释中解析额外字段
     """
+    all_fields = handle_str_param(desc)
     results: Dict[str, str] = {}
-
-    for line in desc.splitlines():
-        for field in desc_fields:
-            if field in line:
-                value = handle_str_param(line)
-                field_value.extend(value.split(","))
-                attributes[field] = json.dumps(field_value)
+    for key, value in all_fields.items():
+        if key not in desc_fields:
+            continue
+        if "," in value:
+            value = value.split(",")
+        results[key] = value
     return results
-
-
-def handle_str_param(line: str) -> Optional[Dict[str, str]]:
-    """handle string parameter
-
-    解析注释中单行 a = b 为 (a, b)形式方便后续处理
-    """
-    symbol: str = ""
-    if ":" in line:
-        symbol = ":"
-    elif "=" in line:
-        symbol = "="
-    if symbol:
-        value: str = line.split(symbol, 1)[1].strip().replace(" ", "")
-        return value
-    else:
-        return ""
