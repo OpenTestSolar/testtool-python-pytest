@@ -11,6 +11,7 @@ versionFile: https://testsolar-1321258242.cos.ap-guangzhou.myqcloud.com/testtool
 indexFile: https://testsolar-1321258242.cos.ap-guangzhou.myqcloud.com/testtools/stable.index.json
 scaffoldRepo: https://github.com/OpenTestSolar/testtool-scaffold-pytest
 defaultBaseImage: python:3.10 # 用户在 TestContainer 配置中未指定 baseImage 时的默认镜像
+gitPkgUrl: https://github.com/OpenTestSolar/testtool-python-pytest.git
 parameterDefs: # 用户 use 这个测试工具时可以配置的 with 参数
   - name: workerCount
     value: 并发数
