@@ -15,15 +15,23 @@ parameterDefs: # 用户 use 这个测试工具时可以配置的 with 参数
   - name: workerCount
     value: 并发数
     default: '0'
+    desc: 用例并发数量
+    inputWidget: text
   - name: extraArgs
     value: 额外命令行参数
     default: ''
+    desc: 额外命令行参数
+    inputWidget: text
   - name: timeout
     value: 用例超时时间
     default: '0'
+    desc: 用例超时时间，单位秒
+    inputWidget: text
   - name: enableAllure
     value: 是否用allure生成报告
     default: 'false' # choice: true/false
+    desc: 是否用allure生成报告
+    inputWidget: choice
 entry:
   load: "python3 /testtools/pytest/src/load.py $1"
   run: "python3 /testtools/pytest/src/run.py $1"
