@@ -31,7 +31,7 @@ parameterDefs: # 用户 use 这个测试工具时可以配置的 with 参数
     value: 是否用allure生成报告
     default: 'false' # choice: true/false
     desc: 是否用allure生成报告
-    inputWidget: choice
+    inputWidget: text
 entry:
   load: "python3 /testtools/pytest/src/load.py $1"
   run: "python3 /testtools/pytest/src/run.py $1"
