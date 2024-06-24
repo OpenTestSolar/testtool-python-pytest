@@ -1,6 +1,6 @@
 import json
 import re
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional
 from pytest import Item
 
 
