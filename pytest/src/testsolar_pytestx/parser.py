@@ -19,10 +19,10 @@ from pytest import Item
 # - extra_attributes
 def parse_case_attributes(
     item: Item, comment_fields: Optional[List[str]] = None
-) -> Dict[str, Union[str, List[str]]]:
+) -> Dict[str, str]:
     """parse testcase attributes"""
     desc: str = (str(item.function.__doc__) or "").strip()  # type: ignore
-    attributes: Dict[str, Union[str, List[str]]] = {"description": desc}
+    attributes: Dict[str, str] = {"description": desc}
     if comment_fields:
         attributes.update(scan_comment_fields(desc, comment_fields))
 
@@ -60,18 +60,18 @@ def handle_str_param(desc: str) -> Dict[str, str]:
     return results
 
 
-def scan_comment_fields(desc: str, desc_fields: List[str]) -> Dict[str, Union[str, List[str]]]:
+def scan_comment_fields(desc: str, desc_fields: List[str]) -> Dict[str, str]:
     """
     从函数的注释中解析额外字段
     """
     all_fields = handle_str_param(desc)
-    results: Dict[str, Union[str, List[str]]] = {}
+    results: Dict[str, str] = {}
     for key, value in all_fields.items():
         if key not in desc_fields:
             continue
         if "," in value:
             mutil_value = value.split(",")
-            results[key] = mutil_value
+            results[key] = json.dumps(mutil_value)
         else:
             results[key] = value
     return results
