@@ -33,7 +33,7 @@ def test_scan_comment_fields():
     expected = {
         "description": "This is a test function",
         "owner": "test_owner",
-        "coding_testcase_id": ["123", "456"],
+        "coding_testcase_id": '["123", "456"]',
     }
     assert scan_comment_fields(desc, desc_fields) == expected
 
@@ -53,7 +53,7 @@ def test_parse_case_attributes():
     expected = {
         "description": "This is a test function",
         "owner": "test_owner",
-        "coding_testcase_id": ["123", "456"],
+        "coding_testcase_id": '["123", "456"]',
     }
     assert parse_case_attributes(item, comment_fields) == expected
 
