@@ -120,5 +120,5 @@ def normalize_testcase_name(name: str, case_config: str = None) -> str:
     )
     name = decode_datadrive(name)
     if case_config:
-        mame += case_config
+        name += case_config
     return name
