@@ -66,12 +66,13 @@ def run_testcases(entry: EntryParam, pipe_io: Optional[BinaryIO] = None, case_co
 
 
 class PytestExecutor:
-    def __init__(self, pipe_io: Optional[BinaryIO] = None, comment_fields: Optional[List[str]] = None) -> None:
+    def __init__(self, pipe_io: Optional[BinaryIO] = None, comment_fields: Optional[List[str]] = None, case_config: str = None) -> None:
         self.testcase_count = 0
         self.testdata: Dict[str, TestResult] = {}
         self.skipped_testcase: Dict[str, str] = {}
         self.reporter: Reporter = Reporter(pipe_io=pipe_io)
         self.comment_fields = comment_fields
+        self.case_config = case_config
 
     def pytest_runtest_logstart(self, nodeid: str, location: Any) -> None:
         """
@@ -79,7 +80,7 @@ class PytestExecutor:
         """
 
         # 通知ResultHouse用例开始运行
-        testcase_name = normalize_testcase_name(nodeid)
+        testcase_name = normalize_testcase_name(nodeid, self.case_config)
 
         test_result = TestResult(
             Test=TestCase(Name=testcase_name),
@@ -100,7 +101,7 @@ class PytestExecutor:
         """
 
         # 在Setup阶段将用例的属性解析出来并设置到Test中
-        testcase_name = normalize_testcase_name(item.nodeid)
+        testcase_name = normalize_testcase_name(item.nodeid, self.case_config)
         test_result = self.testdata[testcase_name]
         if test_result:
             test_result.Test.Attributes = parse_case_attributes(item, self.comment_fields)
@@ -111,7 +112,7 @@ class PytestExecutor:
         """
         logging.info(f"{report.nodeid} log report")
 
-        testcase_name = normalize_testcase_name(report.nodeid)
+        testcase_name = normalize_testcase_name(report.nodeid, self.case_config)
         test_result = self.testdata[testcase_name]
 
         step_end_time = datetime.now()
@@ -183,7 +184,7 @@ class PytestExecutor:
         """
         Called at the end of running the runtest protocol for a single item.
         """
-        testcase_name = normalize_testcase_name(nodeid)
+        testcase_name = normalize_testcase_name(nodeid, self.case_config)
 
         test_result = self.testdata[testcase_name]
         test_result.EndTime = datetime.now()

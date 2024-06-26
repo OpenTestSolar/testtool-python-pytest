@@ -50,6 +50,10 @@ def extract_case_and_datadrive(case_selector: str) -> Tuple[str, str]:
         if splits[1] and splits[1].startswith("[") and splits[1].endswith("]"):
             # part2确实是一个数据驱动
             return splits[0], splits[1]
+        elif "→" in case_selector:
+            # 数据驱动在用例名称里面
+            case_splits = case_selector.split("/[")
+            return case_splits[0], "[" + case_splits[1]
         else:
             return case_selector, ""
     else:
@@ -104,7 +108,7 @@ def decode_datadrive(name: str) -> str:
     return name
 
 
-def normalize_testcase_name(name: str) -> str:
+def normalize_testcase_name(name: str, case_config: str = None) -> str:
     """test_directory/test_module.py::TestExampleClass::test_example_function[datedrive]
     -> test_directory/test_module.py?TestExampleClass/test_example_function/[datedrive]
     """
@@ -115,4 +119,6 @@ def normalize_testcase_name(name: str) -> str:
         )  # 后续的分割符是测试用例名称，替换为/
     )
     name = decode_datadrive(name)
+    if case_config:
+        mame += case_config
     return name
