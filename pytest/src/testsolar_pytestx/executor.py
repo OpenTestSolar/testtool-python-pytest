@@ -67,7 +67,7 @@ def run_testcases(
         for it in valid_selectors:
             serial_args = args.copy()
             data_drive_key = extra_run_function(it, entry.ProjectPath, serial_args)
-            logging.info(f"Pytest single run args: {args}")
+            logging.info(f"Pytest single run args: {serial_args}")
             my_plugin = PytestExecutor(
                 pipe_io=pipe_io,
                 comment_fields=case_comment_fields,
