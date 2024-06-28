@@ -42,8 +42,8 @@ def collect_testcases(
 
     load_result.LoadErrors.extend(load_errors)
 
-    basic_testcases = {}
-    pytest_paths = []
+    basic_testcases: Dict[str, List[str]] = {}
+    pytest_paths: List[str] = []
     for it in valid_selectors:
         # 扫描用例是否是基础用例，如果是存入basic_testcases,预留接口方便后续扩展
         match = re.search(r"[\u2190-\u21FF](.*)$", it)
@@ -75,19 +75,15 @@ def collect_testcases(
 
     if exit_code != 0:
         print(f"[Warn][Load] collect testcases exit_code: {exit_code}")
+    
+    for item in my_plugin.collected:
+        full_name = pytest_to_selector(item, entry_param.ProjectPath)
+        attributes = parse_case_attributes(item)
+        load_result.Tests.append(TestCase(Name=full_name, Attributes=attributes))
+
+    # 增加额外功能，方便外部接入
     if extra_load_function:
-        extra_load_function(
-            entry_param.ProjectPath,
-            my_plugin.collected,
-            load_result,
-            basic_testcases,
-            case_comment_fields,
-        )
-    else:
-        for item in my_plugin.collected:
-            full_name = pytest_to_selector(item, entry_param.ProjectPath)
-            attributes = parse_case_attributes(item, case_comment_fields)
-            load_result.Tests.append(TestCase(Name=full_name, Attributes=attributes))
+        extra_load_function(entry_param.ProjectPath, load_result, basic_testcases)
     load_result.Tests.sort(key=lambda x: x.Name)
 
     for k, v in my_plugin.errors.items():
