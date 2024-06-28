@@ -78,7 +78,7 @@ def collect_testcases(
     
     for item in my_plugin.collected:
         full_name = pytest_to_selector(item, entry_param.ProjectPath)
-        attributes = parse_case_attributes(item)
+        attributes = parse_case_attributes(item, case_comment_fields)
         load_result.Tests.append(TestCase(Name=full_name, Attributes=attributes))
 
     # 增加额外功能，方便外部接入
