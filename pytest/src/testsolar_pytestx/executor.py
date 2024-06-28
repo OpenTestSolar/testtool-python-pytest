@@ -10,6 +10,7 @@ from testsolar_testtool_sdk.model.param import EntryParam
 from testsolar_testtool_sdk.model.test import TestCase
 from testsolar_testtool_sdk.model.testresult import TestResult, ResultType, TestCaseStep
 from testsolar_testtool_sdk.reporter import Reporter
+from enum import Enum
 
 from .case_log import gen_logs
 from .converter import selector_to_pytest, normalize_testcase_name
@@ -21,12 +22,16 @@ from .extend.allure_extend import (
 from .filter import filter_invalid_selector_path
 from .parser import parse_case_attributes
 
+class RunMode(Enum):
+    SINGLE = "single"
+    BATCH = "batch"
+
 
 def run_testcases(
     entry: EntryParam,
     pipe_io: Optional[BinaryIO] = None,
     case_comment_fields: Optional[List[str]] = None,
-    run_mode: str = None,
+    run_mode: Optional[RunMode] = RunMode.BATCH,
     extra_run_function: Optional[Callable[[str, str, List[str]], None]] = None,
 ) -> None:
     if entry.ProjectPath not in sys.path:
@@ -58,15 +63,15 @@ def run_testcases(
     if timeout > 0:
         args.append(f"--timeout={timeout}")
 
-    if run_mode == "serial":
+    if run_mode == RunMode.SINGLE:
         for it in valid_selectors:
             serial_args = args.copy()
-            sub_case_key = extra_run_function(it, entry.ProjectPath, serial_args)
-            logging.info(args)
+            data_drive_key = extra_run_function(it, entry.ProjectPath, serial_args)
+            logging.info(f"Pytest single run args: {args}")
             my_plugin = PytestExecutor(
                 pipe_io=pipe_io,
                 comment_fields=case_comment_fields,
-                sub_case_key=sub_case_key,
+                data_drive_key=data_drive_key,
             )
             pytest.main(serial_args, plugins=[my_plugin])
     else:
@@ -76,7 +81,7 @@ def run_testcases(
                 for it in valid_selectors
             ]
         )
-        logging.info(args)
+        logging.info(f"Pytest run args: {args}")
         my_plugin = PytestExecutor(pipe_io=pipe_io, comment_fields=case_comment_fields)
         pytest.main(args, plugins=[my_plugin])
     logging.info("pytest process exit")
@@ -88,7 +93,7 @@ class PytestExecutor:
         pipe_io: Optional[BinaryIO] = None,
         comment_fields: Optional[List[str]] = None,
         case_config: str = None,
-        sub_case_key: str = None,
+        data_drive_key: str = None,
     ) -> None:
         self.testcase_count = 0
         self.testdata: Dict[str, TestResult] = {}
@@ -96,7 +101,7 @@ class PytestExecutor:
         self.reporter: Reporter = Reporter(pipe_io=pipe_io)
         self.comment_fields = comment_fields
         self.case_config = case_config
-        self.sub_case_key = sub_case_key
+        self.data_drive_key = data_drive_key
 
     def pytest_runtest_logstart(self, nodeid: str, location: Any) -> None:
         """
@@ -105,7 +110,7 @@ class PytestExecutor:
 
         # 通知ResultHouse用例开始运行
         testcase_name = normalize_testcase_name(
-            nodeid, self.case_config, self.sub_case_key
+            nodeid, self.case_config, self.data_drive_key
         )
 
         test_result = TestResult(
@@ -128,7 +133,7 @@ class PytestExecutor:
 
         # 在Setup阶段将用例的属性解析出来并设置到Test中
         testcase_name = normalize_testcase_name(
-            item.nodeid, self.case_config, self.sub_case_key
+            item.nodeid, self.case_config, self.data_drive_key
         )
         test_result = self.testdata[testcase_name]
         if test_result:
@@ -143,7 +148,7 @@ class PytestExecutor:
         logging.info(f"{report.nodeid} log report")
 
         testcase_name = normalize_testcase_name(
-            report.nodeid, self.case_config, self.sub_case_key
+            report.nodeid, self.case_config, self.data_drive_key
         )
         test_result = self.testdata[testcase_name]
 
@@ -217,7 +222,7 @@ class PytestExecutor:
         Called at the end of running the runtest protocol for a single item.
         """
         testcase_name = normalize_testcase_name(
-            nodeid, self.case_config, self.sub_case_key
+            nodeid, self.case_config, self.data_drive_key
         )
 
         test_result = self.testdata[testcase_name]
