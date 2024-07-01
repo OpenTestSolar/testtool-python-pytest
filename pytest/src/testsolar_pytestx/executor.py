@@ -66,6 +66,10 @@ def run_testcases(
     if run_mode == RunMode.SINGLE:
         for it in valid_selectors:
             serial_args = args.copy()
+
+            if extra_run_function is None:
+                logging.info("[Error] Extra run function is not set, Please check extra_run_function")
+                return
             data_drive_key = extra_run_function(it, entry.ProjectPath, serial_args)
             logging.info(f"Pytest single run args: {serial_args}")
             my_plugin = PytestExecutor(
