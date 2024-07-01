@@ -1,7 +1,7 @@
 from unittest import TestCase
 from unittest.mock import MagicMock
 
-from src.testsolar_pytestx.converter import selector_to_pytest, pytest_to_selector
+from src.testsolar_pytestx.converter import selector_to_pytest, pytest_to_selector, extract_case_and_datadrive
 
 
 class InnerClass:
@@ -82,3 +82,33 @@ class Test(TestCase):
         re = pytest_to_selector(mock, "/data/tests/")
 
         self.assertEqual(re, "tests/test_data_drive_zh_cn.py?test_include/[AA-BB]")
+
+
+class TestExtractCaseAndDataDrive:
+    # 测试正常的数据驱动情况
+    def test_extract_case_and_datadrive_with_datadrive(self):
+        assert extract_case_and_datadrive("a/b/c/[data]") == ("a/b/c", "[data]")
+    
+    # 测试数据驱动包含特殊字符的情况
+    def test_extract_case_and_datadrive_special_chars(self):
+        assert extract_case_and_datadrive("a/b/c/[data→test]") == ("a/b/c", "[data→test]")
+    
+    # 测试数据驱动在用例名称内部的情况
+    def test_extract_case_and_datadrive_inside_name(self):
+        assert extract_case_and_datadrive("a/b/c/data→[test]") == ("a/b/c/data", "")
+    
+    # 测试没有数据驱动的情况
+    def test_extract_case_and_datadrive_no_datadrive(self):
+        assert extract_case_and_datadrive("a/b/c") == ("a/b/c", "")
+    
+    # 测试只有用例名称的情况
+    def test_extract_case_and_datadrive_only_case(self):
+        assert extract_case_and_datadrive("case") == ("case", "")
+    
+    # 测试复杂路径的情况
+    def test_extract_case_and_datadrive_complex_path(self):
+        assert extract_case_and_datadrive("a/b/c/d/e/[data]") == ("a/b/c/d/e", "[data]")
+    
+    # 测试数据驱动在路径的最后一部分但不是有效数据驱动的情况
+    def test_extract_case_and_datadrive_invalid_datadrive(self):
+        assert extract_case_and_datadrive("a/b/c/d/e/[data") == ("a/b/c/d/e/[data", "")
