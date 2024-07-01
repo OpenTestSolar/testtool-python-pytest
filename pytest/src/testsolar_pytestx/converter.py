@@ -1,6 +1,6 @@
 import re
 import os
-from typing import Tuple
+from typing import Tuple, Optional
 
 from pytest import Item
 
@@ -111,7 +111,7 @@ def decode_datadrive(name: str) -> str:
     return name
 
 
-def normalize_testcase_name(name: str, sub_case_key: str = None) -> str:
+def normalize_testcase_name(name: str, sub_case_key: Optional[str] = None) -> str:
     """test_directory/test_module.py::TestExampleClass::test_example_function[datedrive]
     -> test_directory/test_module.py?TestExampleClass/test_example_function/[datedrive]
     """

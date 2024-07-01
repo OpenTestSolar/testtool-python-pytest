@@ -25,7 +25,7 @@ def collect_testcases(
     pipe_io: Optional[BinaryIO] = None,
     case_comment_fields: Optional[List[str]] = None,
     extra_load_function: Optional[
-        Callable[[str, List[Item], LoadResult, Dict[str, List[str]], str], None]
+        Callable[[str, LoadResult, Dict[str, List[str]]], None]
     ] = None,
 ) -> None:
     if entry_param.ProjectPath not in sys.path:

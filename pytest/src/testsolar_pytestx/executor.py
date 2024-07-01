@@ -32,7 +32,7 @@ def run_testcases(
     pipe_io: Optional[BinaryIO] = None,
     case_comment_fields: Optional[List[str]] = None,
     run_mode: Optional[RunMode] = RunMode.BATCH,
-    extra_run_function: Optional[Callable[[str, str, List[str]], None]] = None,
+    extra_run_function: Optional[Callable[[str, str, List[str]], str]] = None,
 ) -> None:
     if entry.ProjectPath not in sys.path:
         sys.path.insert(0, entry.ProjectPath)
@@ -92,15 +92,13 @@ class PytestExecutor:
         self,
         pipe_io: Optional[BinaryIO] = None,
         comment_fields: Optional[List[str]] = None,
-        case_config: str = None,
-        data_drive_key: str = None,
+        data_drive_key: Optional[str] = None,
     ) -> None:
         self.testcase_count = 0
         self.testdata: Dict[str, TestResult] = {}
         self.skipped_testcase: Dict[str, str] = {}
         self.reporter: Reporter = Reporter(pipe_io=pipe_io)
         self.comment_fields = comment_fields
-        self.case_config = case_config
         self.data_drive_key = data_drive_key
 
     def pytest_runtest_logstart(self, nodeid: str, location: Any) -> None:
@@ -110,7 +108,7 @@ class PytestExecutor:
 
         # 通知ResultHouse用例开始运行
         testcase_name = normalize_testcase_name(
-            nodeid, self.case_config, self.data_drive_key
+            nodeid self.data_drive_key
         )
 
         test_result = TestResult(
@@ -133,7 +131,7 @@ class PytestExecutor:
 
         # 在Setup阶段将用例的属性解析出来并设置到Test中
         testcase_name = normalize_testcase_name(
-            item.nodeid, self.case_config, self.data_drive_key
+            item.nodeid, self.data_drive_key
         )
         test_result = self.testdata[testcase_name]
         if test_result:
@@ -148,7 +146,7 @@ class PytestExecutor:
         logging.info(f"{report.nodeid} log report")
 
         testcase_name = normalize_testcase_name(
-            report.nodeid, self.case_config, self.data_drive_key
+            report.nodeid, self.data_drive_key
         )
         test_result = self.testdata[testcase_name]
 
@@ -222,7 +220,7 @@ class PytestExecutor:
         Called at the end of running the runtest protocol for a single item.
         """
         testcase_name = normalize_testcase_name(
-            nodeid, self.case_config, self.data_drive_key
+            nodeid, self.data_drive_key
         )
 
         test_result = self.testdata[testcase_name]
