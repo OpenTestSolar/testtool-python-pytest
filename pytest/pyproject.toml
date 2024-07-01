@@ -1,6 +1,6 @@
 [project]
 name = "testsolar-pytestx"
-version = "0.1.8rc1"
+version = "0.1.8rc2"
 description = "Pytest tool for TestSolar"
 authors = [
     {name = "asiazhang2002", email = "asiazhang2002@gmail.com"},
@@ -21,7 +21,7 @@ classifiers = [
 dependencies = [
     "pytest>=7",
     "pytest-timeout>=2.3",
-    "testsolar-testtool-sdk>=0.2.1",
+    "testsolar-testtool-sdk==0.2.1rc1",
 ]
 requires-python = ">=3.7"
 readme = "README.md"
