@@ -121,5 +121,5 @@ def normalize_testcase_name(name: str, sub_case_key: Optional[str] = None) -> st
     )  # 后续的分割符是测试用例名称，替换为/
     name = decode_datadrive(name)
     if sub_case_key:
-        name += sub_case_key
+        name += "→" + sub_case_key
     return name
