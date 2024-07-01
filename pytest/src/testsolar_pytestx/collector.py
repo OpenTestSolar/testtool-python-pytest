@@ -1,10 +1,12 @@
 import os
 import sys
+import re
 import traceback
-from typing import BinaryIO, Sequence, Optional, List, Dict, Union
+from typing import BinaryIO, Sequence, Optional, List, Dict, Union, Callable
 
 import pytest
-from pytest import Item, Collector, CollectReport
+from pytest import Item, Collector
+from _pytest.reports import CollectReport # 兼容pytest低版本
 from testsolar_testtool_sdk.model.load import LoadResult, LoadError
 from testsolar_testtool_sdk.model.param import EntryParam
 from testsolar_testtool_sdk.model.test import TestCase
@@ -19,7 +21,12 @@ from .parser import parse_case_attributes
 
 
 def collect_testcases(
-    entry_param: EntryParam, pipe_io: Optional[BinaryIO] = None
+    entry_param: EntryParam,
+    pipe_io: Optional[BinaryIO] = None,
+    case_comment_fields: Optional[List[str]] = None,
+    extra_load_function: Optional[
+        Callable[[str, LoadResult, Dict[str, List[str]]], None]
+    ] = None,
 ) -> None:
     if entry_param.ProjectPath not in sys.path:
         sys.path.insert(0, entry_param.ProjectPath)
@@ -36,7 +43,21 @@ def collect_testcases(
 
     load_result.LoadErrors.extend(load_errors)
 
-    pytest_paths = [selector_to_pytest(test_selector=it) for it in valid_selectors]
+    basic_testcases: Dict[str, List[str]] = {}
+    pytest_paths: List[str] = []
+    for it in valid_selectors:
+        # 扫描用例是否是基础用例，如果是存入basic_testcases,预留接口方便后续扩展
+        match = re.search(r"[\u2190-\u21FF](.*)$", it)
+        if match:
+            it_case_name = it.split(match.group(0))[0]
+            case_key = match.group(1)
+            if it_case_name not in basic_testcases:
+                basic_testcases[it_case_name] = []
+            basic_testcases[it_case_name].append(case_key)
+            pytest_paths.append(selector_to_pytest(test_selector=it_case_name))
+        else:
+            pytest_paths.append(selector_to_pytest(test_selector=it))
+
     testcase_list = [
         os.path.join(entry_param.ProjectPath, it) for it in pytest_paths if it
     ]
@@ -55,12 +76,15 @@ def collect_testcases(
 
     if exit_code != 0:
         print(f"[Warn][Load] collect testcases exit_code: {exit_code}")
-
+    
     for item in my_plugin.collected:
         full_name = pytest_to_selector(item, entry_param.ProjectPath)
-        attributes = parse_case_attributes(item)
+        attributes = parse_case_attributes(item, case_comment_fields)
         load_result.Tests.append(TestCase(Name=full_name, Attributes=attributes))
 
+    # 增加额外功能，方便外部接入
+    if extra_load_function:
+        extra_load_function(entry_param.ProjectPath, load_result, basic_testcases)
     load_result.Tests.sort(key=lambda x: x.Name)
 
     for k, v in my_plugin.errors.items():

@@ -1,8 +1,15 @@
 import json
-from typing import Dict
+import re
+from typing import Dict, List, Optional
 from pytest import Item
 
 
+# 解析测试用例的属性字段
+#
+# 1. 从commit解析字段
+# 支持解析注释中的额外属性
+#
+# 2. 从mark解析字段
 # 支持 @pytest.mark.attributes({"key":"value"}) 这种用法
 #
 # 解析属性包括：
@@ -10,11 +17,15 @@ from pytest import Item
 # - tag
 # - owner
 # - extra_attributes
-def parse_case_attributes(item: Item) -> Dict[str, str]:
+def parse_case_attributes(
+    item: Item, comment_fields: Optional[List[str]] = None
+) -> Dict[str, str]:
     """parse testcase attributes"""
-    attributes: Dict[str, str] = {
-        "description": (str(item.function.__doc__) or "").strip()  # type: ignore
-    }
+    desc: str = (str(item.function.__doc__) or "").strip()  # type: ignore
+    attributes: Dict[str, str] = {"description": desc}
+    if comment_fields:
+        attributes.update(scan_comment_fields(desc, comment_fields))
+
     if not item.own_markers:
         return attributes
     for mark in item.own_markers:
@@ -32,3 +43,35 @@ def parse_case_attributes(item: Item) -> Dict[str, str]:
                 attr_list.append(extra_attr)
             attributes["extra_attributes"] = json.dumps(attr_list)
     return attributes
+
+
+def handle_str_param(desc: str) -> Dict[str, str]:
+    """handle string parameter
+
+    解析注释中单行 a = b 或 a: b 为 (a, b)形式方便后续处理
+    """
+    results: Dict[str, str] = {}
+    pattern = re.compile(r".*?(\w+)\s*[:=]\s*(.+)")
+    for line in desc.splitlines():
+        match = pattern.match(line)
+        if match:
+            key, value = match.groups()
+            results[key.strip()] = value.strip()
+    return results
+
+
+def scan_comment_fields(desc: str, desc_fields: List[str]) -> Dict[str, str]:
+    """
+    从函数的注释中解析额外字段
+    """
+    all_fields = handle_str_param(desc)
+    results: Dict[str, str] = {}
+    for key, value in all_fields.items():
+        if key not in desc_fields:
+            continue
+        if "," in value:
+            mutil_value = value.split(",")
+            results[key] = json.dumps(mutil_value)
+        else:
+            results[key] = value
+    return results

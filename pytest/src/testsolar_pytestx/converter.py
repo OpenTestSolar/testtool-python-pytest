@@ -1,6 +1,6 @@
 import re
 import os
-from typing import Tuple
+from typing import Tuple, Optional
 
 from pytest import Item
 
@@ -50,6 +50,13 @@ def extract_case_and_datadrive(case_selector: str) -> Tuple[str, str]:
         if splits[1] and splits[1].startswith("[") and splits[1].endswith("]"):
             # part2确实是一个数据驱动
             return splits[0], splits[1]
+        elif "→" in case_selector:
+            # 数据驱动在用例名称里面
+            case_splits = case_selector.split("/[")
+            if len(case_splits) > 1:
+                return case_splits[0], "[" + case_splits[1]
+            else:
+                return case_selector.split("→")[0], ""
         else:
             return case_selector, ""
     else:
@@ -104,15 +111,15 @@ def decode_datadrive(name: str) -> str:
     return name
 
 
-def normalize_testcase_name(name: str) -> str:
+def normalize_testcase_name(name: str, sub_case_key: Optional[str] = None) -> str:
     """test_directory/test_module.py::TestExampleClass::test_example_function[datedrive]
     -> test_directory/test_module.py?TestExampleClass/test_example_function/[datedrive]
     """
     assert "::" in name
-    name = (
-        name.replace("::", "?", 1).replace(  # 第一个分割符是文件，因此替换为?
-            "::", "/"
-        )  # 后续的分割符是测试用例名称，替换为/
-    )
+    name = name.replace("::", "?", 1).replace(  # 第一个分割符是文件，因此替换为?
+        "::", "/"
+    )  # 后续的分割符是测试用例名称，替换为/
     name = decode_datadrive(name)
+    if sub_case_key:
+        name += sub_case_key
     return name
