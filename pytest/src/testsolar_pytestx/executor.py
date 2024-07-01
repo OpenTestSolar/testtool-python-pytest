@@ -108,7 +108,7 @@ class PytestExecutor:
 
         # 通知ResultHouse用例开始运行
         testcase_name = normalize_testcase_name(
-            nodeid self.data_drive_key
+            nodeid, self.data_drive_key
         )
 
         test_result = TestResult(
