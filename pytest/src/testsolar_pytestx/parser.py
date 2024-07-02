@@ -70,7 +70,7 @@ def scan_comment_fields(desc: str, desc_fields: List[str]) -> Dict[str, str]:
         if key not in desc_fields:
             continue
         if "," in value:
-            mutil_value = value.split(",")
+            mutil_value = [v.strip() for v in value.split(",")]
             results[key] = json.dumps(mutil_value)
         else:
             results[key] = value
