@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from typing import List
 
-from pytest import TestReport
+from _pytest.reports import TestReport 
 from testsolar_testtool_sdk.model.testresult import TestCaseLog, LogLevel
 
 

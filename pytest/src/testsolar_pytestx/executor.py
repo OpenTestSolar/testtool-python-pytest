@@ -5,7 +5,8 @@ from datetime import datetime, timedelta
 from typing import BinaryIO, Optional, Dict, Any, List, Callable
 
 import pytest
-from pytest import TestReport, Item, Session
+from pytest import Item, Session
+from _pytest.reports import TestReport 
 from testsolar_testtool_sdk.model.param import EntryParam
 from testsolar_testtool_sdk.model.test import TestCase
 from testsolar_testtool_sdk.model.testresult import TestResult, ResultType, TestCaseStep
