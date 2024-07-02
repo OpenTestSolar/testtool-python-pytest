@@ -104,7 +104,7 @@ class PytestExecutor:
         data_drive_key: Optional[str] = None,
     ) -> None:
         
-        self.reporter: Reporter = reporter
+        self.reporter: Optional[Reporter] = reporter
         self.testcase_count = 0
         self.testdata: Dict[str, TestResult] = {}
         self.skipped_testcase: Dict[str, str] = {}
