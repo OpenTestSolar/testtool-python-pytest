@@ -64,6 +64,8 @@ def run_testcases(
     if timeout > 0:
         args.append(f"--timeout={timeout}")
 
+    reporter: Reporter = Reporter(pipe_io=pipe_io)
+
     if run_mode == RunMode.SINGLE:
         for it in valid_selectors:
             serial_args = args.copy()
@@ -76,7 +78,7 @@ def run_testcases(
             data_drive_key = extra_run_function(it, entry.ProjectPath, serial_args)
             logging.info(f"Pytest single run args: {serial_args}")
             my_plugin = PytestExecutor(
-                pipe_io=pipe_io,
+                reporter=reporter,
                 comment_fields=case_comment_fields,
                 data_drive_key=data_drive_key,
             )
@@ -89,7 +91,7 @@ def run_testcases(
             ]
         )
         logging.info(f"Pytest run args: {args}")
-        my_plugin = PytestExecutor(pipe_io=pipe_io, comment_fields=case_comment_fields)
+        my_plugin = PytestExecutor(reporter=reporter, comment_fields=case_comment_fields)
         pytest.main(args, plugins=[my_plugin])
     logging.info("pytest process exit")
 
@@ -97,14 +99,15 @@ def run_testcases(
 class PytestExecutor:
     def __init__(
         self,
-        pipe_io: Optional[BinaryIO] = None,
+        reporter: Optional[Reporter] = None,
         comment_fields: Optional[List[str]] = None,
         data_drive_key: Optional[str] = None,
     ) -> None:
+        
+        self.reporter: Reporter = reporter
         self.testcase_count = 0
         self.testdata: Dict[str, TestResult] = {}
         self.skipped_testcase: Dict[str, str] = {}
-        self.reporter: Reporter = Reporter(pipe_io=pipe_io)
         self.comment_fields = comment_fields
         self.data_drive_key = data_drive_key
 
