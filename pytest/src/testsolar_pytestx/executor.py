@@ -6,7 +6,7 @@ from typing import BinaryIO, Optional, Dict, Any, List, Callable
 
 import pytest
 from pytest import Item, Session
-from _pytest.reports import TestReport 
+from _pytest.reports import TestReport
 from testsolar_testtool_sdk.model.param import EntryParam
 from testsolar_testtool_sdk.model.test import TestCase
 from testsolar_testtool_sdk.model.testresult import TestResult, ResultType, TestCaseStep
@@ -92,7 +92,9 @@ def run_testcases(
             ]
         )
         logging.info(f"Pytest run args: {args}")
-        my_plugin = PytestExecutor(reporter=reporter, comment_fields=case_comment_fields)
+        my_plugin = PytestExecutor(
+            reporter=reporter, comment_fields=case_comment_fields
+        )
         pytest.main(args, plugins=[my_plugin])
     logging.info("pytest process exit")
 
@@ -104,7 +106,6 @@ class PytestExecutor:
         comment_fields: Optional[List[str]] = None,
         data_drive_key: Optional[str] = None,
     ) -> None:
-        
         self.reporter: Reporter = reporter
         self.testcase_count = 0
         self.testdata: Dict[str, TestResult] = {}

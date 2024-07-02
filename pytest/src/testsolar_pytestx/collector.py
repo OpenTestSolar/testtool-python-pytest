@@ -8,7 +8,7 @@ import pytest
 from pytest import Item, Collector
 
 try:
-    from pytest.reports import CollectReport
+    from pytest import CollectReport
 except ImportError:
     from _pytest.reports import CollectReport  # 兼容pytest低版本
 
