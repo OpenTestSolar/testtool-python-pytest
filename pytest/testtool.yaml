@@ -2,7 +2,7 @@ schemaVersion: 1.0
 name: pytest
 nameZh: pytest自动化测试
 lang: python
-version: '0.1.9'
+version: '0.1.10'
 langType: INTERPRETED
 description: |-
   pytest是一个成熟的全功能Python测试工具，可以帮助您编写更好的程序。此测试工具允许您在TestSolar上运行pytest。
@@ -12,6 +12,7 @@ indexFile: https://testsolar-1321258242.cos.ap-guangzhou.myqcloud.com/testtools/
 scaffoldRepo: https://github.com/OpenTestSolar/testtool-scaffold-pytest
 defaultBaseImage: python:3.10 # 用户在 TestContainer 配置中未指定 baseImage 时的默认镜像
 gitPkgUrl: https://github.com/OpenTestSolar/testtool-python-pytest.git
+httpPkgUrl: https://testsolar-1321258242.cos.ap-guangzhou.myqcloud.com/testtools/python@main:pytest
 parameterDefs: # 用户 use 这个测试工具时可以配置的 with 参数
   - name: workerCount
     value: 并发数

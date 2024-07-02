@@ -1,7 +1,10 @@
 from datetime import datetime, timedelta
 from typing import List
 
-from pytest import TestReport
+try:
+    from pytest import TestReport
+except ImportError:
+    from _pytest.reports import TestReport  # 兼容pytest低版本
 from testsolar_testtool_sdk.model.testresult import TestCaseLog, LogLevel
 
 
