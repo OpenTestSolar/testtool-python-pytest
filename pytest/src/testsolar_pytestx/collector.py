@@ -1,12 +1,17 @@
 import os
-import sys
 import re
+import sys
 import traceback
 from typing import BinaryIO, Sequence, Optional, List, Dict, Union, Callable
 
 import pytest
 from pytest import Item, Collector
-from _pytest.reports import CollectReport  # 兼容pytest低版本
+
+try:
+    from pytest.reports import CollectReport
+except ImportError:
+    from _pytest.reports import CollectReport  # 兼容pytest低版本
+
 from testsolar_testtool_sdk.model.load import LoadResult, LoadError
 from testsolar_testtool_sdk.model.param import EntryParam
 from testsolar_testtool_sdk.model.test import TestCase
