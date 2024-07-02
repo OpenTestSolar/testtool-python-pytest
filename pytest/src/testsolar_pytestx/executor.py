@@ -22,6 +22,7 @@ from .extend.allure_extend import (
 from .filter import filter_invalid_selector_path
 from .parser import parse_case_attributes
 
+
 class RunMode(Enum):
     SINGLE = "single"
     BATCH = "batch"
@@ -68,7 +69,9 @@ def run_testcases(
             serial_args = args.copy()
 
             if extra_run_function is None:
-                logging.info("[Error] Extra run function is not set, Please check extra_run_function")
+                logging.info(
+                    "[Error] Extra run function is not set, Please check extra_run_function"
+                )
                 return
             data_drive_key = extra_run_function(it, entry.ProjectPath, serial_args)
             logging.info(f"Pytest single run args: {serial_args}")
@@ -111,9 +114,7 @@ class PytestExecutor:
         """
 
         # 通知ResultHouse用例开始运行
-        testcase_name = normalize_testcase_name(
-            nodeid, self.data_drive_key
-        )
+        testcase_name = normalize_testcase_name(nodeid, self.data_drive_key)
 
         test_result = TestResult(
             Test=TestCase(Name=testcase_name),
@@ -134,9 +135,7 @@ class PytestExecutor:
         """
 
         # 在Setup阶段将用例的属性解析出来并设置到Test中
-        testcase_name = normalize_testcase_name(
-            item.nodeid, self.data_drive_key
-        )
+        testcase_name = normalize_testcase_name(item.nodeid, self.data_drive_key)
         test_result = self.testdata[testcase_name]
         if test_result:
             test_result.Test.Attributes = parse_case_attributes(
@@ -149,9 +148,7 @@ class PytestExecutor:
         """
         logging.info(f"{report.nodeid} log report")
 
-        testcase_name = normalize_testcase_name(
-            report.nodeid, self.data_drive_key
-        )
+        testcase_name = normalize_testcase_name(report.nodeid, self.data_drive_key)
         test_result = self.testdata[testcase_name]
 
         step_end_time = datetime.now()
@@ -223,9 +220,7 @@ class PytestExecutor:
         """
         Called at the end of running the runtest protocol for a single item.
         """
-        testcase_name = normalize_testcase_name(
-            nodeid, self.data_drive_key
-        )
+        testcase_name = normalize_testcase_name(nodeid, self.data_drive_key)
 
         test_result = self.testdata[testcase_name]
         test_result.EndTime = datetime.now()
