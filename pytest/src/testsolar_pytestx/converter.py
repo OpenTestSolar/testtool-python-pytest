@@ -4,6 +4,8 @@ from typing import Tuple, Optional
 
 from pytest import Item
 
+CASE_DRIVE_SEPARATOR = "→"
+
 
 def selector_to_pytest(test_selector: str) -> str:
     """translate from test selector format to pytest format"""
@@ -47,16 +49,16 @@ def extract_case_and_datadrive(case_selector: str) -> Tuple[str, str]:
     """
     splits = case_selector.rsplit("/", 1)
     if len(splits) == 2:
-        if splits[1] and splits[1].startswith("[") and splits[1].endswith("]"):
-            # part2确实是一个数据驱动
-            return splits[0], splits[1]
-        elif "→" in case_selector:
+        path, last_part = splits
+        if last_part.startswith("[") and last_part.endswith("]"):
+            # last_part确实是一个数据驱动
+            # 例子： testa/testb.py?case_name/[data]
+            return path, last_part
+        elif CASE_DRIVE_SEPARATOR in case_selector:
             # 数据驱动在用例名称里面
-            case_splits = case_selector.split("/[")
-            if len(case_splits) > 1:
-                return case_splits[0], "[" + case_splits[1]
-            else:
-                return case_selector.split("→")[0], ""
+            # 例子： testa/testb.py?case_name→data
+            case, _, drive_key = case_selector.partition(CASE_DRIVE_SEPARATOR)
+            return case, ""
         else:
             return case_selector, ""
     else:
@@ -121,5 +123,5 @@ def normalize_testcase_name(name: str, sub_case_key: Optional[str] = None) -> st
     )  # 后续的分割符是测试用例名称，替换为/
     name = decode_datadrive(name)
     if sub_case_key:
-        name += "→" + sub_case_key
+        name += CASE_DRIVE_SEPARATOR + sub_case_key
     return name
