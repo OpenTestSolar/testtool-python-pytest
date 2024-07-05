@@ -1,7 +1,7 @@
 from unittest import TestCase
 from unittest.mock import MagicMock
 
-from src.testsolar_pytestx.converter import (
+from testsolar_pytestx.converter import (
     selector_to_pytest,
     pytest_to_selector,
     extract_case_and_datadrive,

@@ -6,7 +6,7 @@ import dacite.exceptions
 from testsolar_testtool_sdk.model.testresult import ResultType
 from testsolar_testtool_sdk.pipe_reader import read_test_result
 
-from src.run import run_testcases_from_args
+from run import run_testcases_from_args
 
 
 class TestExecuteEntry(TestCase):

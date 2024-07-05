@@ -133,7 +133,9 @@ class CollectorTest(unittest.TestCase):
 
         case_records = {}
 
-        def loader_extend(param_1: str, param_2: LoadResult, param_3: Dict[str, List[str]]) -> None:
+        def loader_extend(
+            param_1: str, param_2: LoadResult, param_3: Dict[str, List[str]]
+        ) -> None:
             case_records.update(param_3)
 
         pipe_io = io.BytesIO()
@@ -145,14 +147,12 @@ class CollectorTest(unittest.TestCase):
         self.assertEqual(len(re.Tests), 1)
         self.assertEqual(len(re.LoadErrors), 0)
 
-        self.assertEqual(
-            re.Tests[0].Name, "test_normal_case.py?test_success"
-        )
+        self.assertEqual(re.Tests[0].Name, "test_normal_case.py?test_success")
 
         self.assertEqual(len(case_records), 1)
         self.assertIn("test_normal_case.py?test_success", case_records)
 
-        records = case_records['test_normal_case.py?test_success']
+        records = case_records["test_normal_case.py?test_success"]
         self.assertEqual(len(records), 3)
         self.assertEqual(records[0], "压缩机测试")
         self.assertEqual(records[1], "解压机测试")
