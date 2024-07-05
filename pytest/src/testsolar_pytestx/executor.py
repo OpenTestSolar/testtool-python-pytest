@@ -77,7 +77,7 @@ def run_testcases(
             serial_args = args.copy()
 
             if extra_run_function is None:
-                logging.info(
+                logging.error(
                     "[Error] Extra run function is not set, Please check extra_run_function"
                 )
                 return

@@ -1,11 +1,13 @@
 import io
 import unittest
 from pathlib import Path
+from typing import Dict, List
 
 from testsolar_testtool_sdk.model.param import EntryParam
+from testsolar_testtool_sdk.model.load import LoadResult
 from testsolar_testtool_sdk.pipe_reader import read_load_result
 
-from src.testsolar_pytestx.collector import collect_testcases
+from testsolar_pytestx.collector import collect_testcases
 
 
 class CollectorTest(unittest.TestCase):
@@ -116,3 +118,42 @@ class CollectorTest(unittest.TestCase):
             re.Tests[2].Name,
             "test_data_drive_zh_cn.py?test_include/[파일을 찾을 수 없습니다-ファイルが見つかりません]",
         )
+
+    def test_collect_testcases_with_case_drive_separator(self):
+        entry = EntryParam(
+            TaskId="aa",
+            ProjectPath=self.testdata_dir,
+            TestSelectors=[
+                "test_normal_case.py?test_success→压缩机测试",
+                "test_normal_case.py?test_success→解压机测试",
+                "test_normal_case.py?test_success→循环机测试",
+            ],
+            FileReportPath="",
+        )
+
+        case_records = {}
+
+        def loader_extend(
+            param_1: str, param_2: LoadResult, param_3: Dict[str, List[str]]
+        ) -> None:
+            case_records.update(param_3)
+
+        pipe_io = io.BytesIO()
+        collect_testcases(entry, pipe_io, extra_load_function=loader_extend)
+        pipe_io.seek(0)
+
+        re = read_load_result(pipe_io)
+
+        self.assertEqual(len(re.Tests), 1)
+        self.assertEqual(len(re.LoadErrors), 0)
+
+        self.assertEqual(re.Tests[0].Name, "test_normal_case.py?test_success")
+
+        self.assertEqual(len(case_records), 1)
+        self.assertIn("test_normal_case.py?test_success", case_records)
+
+        records = case_records["test_normal_case.py?test_success"]
+        self.assertEqual(len(records), 3)
+        self.assertEqual(records[0], "压缩机测试")
+        self.assertEqual(records[1], "解压机测试")
+        self.assertEqual(records[2], "循环机测试")

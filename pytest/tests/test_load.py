@@ -4,7 +4,7 @@ from unittest import TestCase
 
 from testsolar_testtool_sdk.pipe_reader import read_load_result
 
-from src.load import collect_testcases_from_args
+from load import collect_testcases_from_args
 
 
 class TestCollectorEntry(TestCase):

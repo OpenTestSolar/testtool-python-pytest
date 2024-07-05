@@ -6,7 +6,7 @@ from testsolar_testtool_sdk.model.param import EntryParam
 from testsolar_testtool_sdk.model.testresult import ResultType, LogLevel
 from testsolar_testtool_sdk.pipe_reader import read_test_result
 
-from src.testsolar_pytestx.executor import run_testcases
+from testsolar_pytestx.executor import run_testcases
 
 
 class ExecutorTest(unittest.TestCase):

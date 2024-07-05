@@ -1,7 +1,7 @@
 import os
-import re
 import sys
 import traceback
+from collections import defaultdict
 from typing import BinaryIO, Sequence, Optional, List, Dict, Union, Callable
 
 import pytest
@@ -17,10 +17,7 @@ from testsolar_testtool_sdk.model.param import EntryParam
 from testsolar_testtool_sdk.model.test import TestCase
 from testsolar_testtool_sdk.reporter import Reporter
 
-from .converter import (
-    selector_to_pytest,
-    pytest_to_selector,
-)
+from .converter import selector_to_pytest, pytest_to_selector, CASE_DRIVE_SEPARATOR
 from .filter import filter_invalid_selector_path
 from .parser import parse_case_attributes
 
@@ -48,20 +45,17 @@ def collect_testcases(
 
     load_result.LoadErrors.extend(load_errors)
 
-    basic_testcases: Dict[str, List[str]] = {}
+    case_drive_records: Dict[str, List[str]] = defaultdict(list)
     pytest_paths: List[str] = []
-    for it in valid_selectors:
-        # 扫描用例是否是基础用例，如果是存入basic_testcases,预留接口方便后续扩展
-        match = re.search(r"[\u2190-\u21FF](.*)$", it)
-        if match:
-            it_case_name = it.split(match.group(0))[0]
-            case_key = match.group(1)
-            if it_case_name not in basic_testcases:
-                basic_testcases[it_case_name] = []
-            basic_testcases[it_case_name].append(case_key)
-            pytest_paths.append(selector_to_pytest(test_selector=it_case_name))
+    for selector in valid_selectors:
+        # 扫描用例是否是基础用例，如果是存入 case_drive_records，方便后续扩展
+        if CASE_DRIVE_SEPARATOR in selector:
+            case_name, _, drive_key = selector.partition(CASE_DRIVE_SEPARATOR)
+            case_drive_records[case_name].append(drive_key)
+
+            pytest_paths.append(selector_to_pytest(test_selector=case_name))
         else:
-            pytest_paths.append(selector_to_pytest(test_selector=it))
+            pytest_paths.append(selector_to_pytest(test_selector=selector))
 
     testcase_list = [
         os.path.join(entry_param.ProjectPath, it) for it in pytest_paths if it
@@ -89,7 +83,7 @@ def collect_testcases(
 
     # 增加额外功能，方便外部接入
     if extra_load_function:
-        extra_load_function(entry_param.ProjectPath, load_result, basic_testcases)
+        extra_load_function(entry_param.ProjectPath, load_result, case_drive_records)
     load_result.Tests.sort(key=lambda x: x.Name)
 
     for k, v in my_plugin.errors.items():
