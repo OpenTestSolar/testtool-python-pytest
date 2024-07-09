@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = ["cross_platform", "inherit_metadata"]
 lock_version = "4.4.2"
-content_hash = "sha256:9f9e49b15eba3e32f9b01d4d78f57598bd63c40e01872d61e565353260875d41"
+content_hash = "sha256:28e0c9065271c8935c1488302b3d7249461f5714d00460ab15c94f7290d2ab88"
 
 [[package]]
 name = "allure-pytest"
@@ -378,20 +378,6 @@ dependencies = [
 files = [
     {file = "pytest-cov-4.1.0.tar.gz", hash = "sha256:3904b13dfbfec47f003b8e77fd5b589cd11904a21ddf1ab38a64f204d6a10ef6"},
     {file = "pytest_cov-4.1.0-py3-none-any.whl", hash = "sha256:6ba70b9e97e69fcc3fb45bfeab2d0a138fb65c4d0d6a41ef33983ad114be8c3a"},
-]
-
-[[package]]
-name = "pytest-timeout"
-version = "2.3.1"
-requires_python = ">=3.7"
-summary = "pytest plugin to abort hanging tests"
-groups = ["default"]
-dependencies = [
-    "pytest>=7.0.0",
-]
-files = [
-    {file = "pytest-timeout-2.3.1.tar.gz", hash = "sha256:12397729125c6ecbdaca01035b9e5239d4db97352320af155b3f5de1ba5165d9"},
-    {file = "pytest_timeout-2.3.1-py3-none-any.whl", hash = "sha256:68188cb703edfc6a18fad98dc25a3c61e9f24d644b0b70f33af545219fc7813e"},
 ]
 
 [[package]]
