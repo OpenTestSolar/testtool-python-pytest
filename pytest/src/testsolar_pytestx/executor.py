@@ -66,9 +66,6 @@ def run_testcases(
     extra_args = os.environ.get("TESTSOLAR_TTP_EXTRAARGS", "")
     if extra_args:
         args.extend(extra_args.split())
-    timeout = int(os.environ.get("TESTSOLAR_TTP_TIMEOUT", "0"))
-    if timeout > 0:
-        args.append(f"--timeout={timeout}")
 
     reporter: Reporter = Reporter(pipe_io=pipe_io)
 
