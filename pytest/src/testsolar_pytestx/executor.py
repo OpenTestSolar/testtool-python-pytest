@@ -2,7 +2,7 @@ import logging
 import os
 import sys
 from datetime import datetime, timedelta
-from typing import BinaryIO, Optional, Dict, Any, List, Callable
+from typing import BinaryIO, Optional, Dict, Any, List, Callable, Tuple
 
 import pytest
 from pytest import Item, Session
@@ -39,8 +39,9 @@ def run_testcases(
     pipe_io: Optional[BinaryIO] = None,
     case_comment_fields: Optional[List[str]] = None,
     run_mode: Optional[RunMode] = RunMode.BATCH,
-    extra_run_function: Optional[Callable[[str, str, List[str]], str]] = None,
+    extra_run_function: Optional[Callable[[str, str],Tuple[str, List[str]]]] = None,
 ) -> None:
+    print(f"Run testcase mode:{run_mode}")
     if entry.ProjectPath not in sys.path:
         sys.path.insert(0, entry.ProjectPath)
 
@@ -78,8 +79,9 @@ def run_testcases(
                     "[Error] Extra run function is not set, Please check extra_run_function"
                 )
                 return
-            data_drive_key = extra_run_function(it, entry.ProjectPath, serial_args)
-            logging.info(f"Pytest single run args: {serial_args}")
+            data_drive_key, parse_serial_args = extra_run_function(it, entry.ProjectPath)
+            serial_args.extend(parse_serial_args)
+            print(f"Pytest single run args: {serial_args}")
             my_plugin = PytestExecutor(
                 reporter=reporter,
                 comment_fields=case_comment_fields,
@@ -93,7 +95,7 @@ def run_testcases(
                 for it in valid_selectors
             ]
         )
-        logging.info(f"Pytest run args: {args}")
+        print(f"Pytest run args: {args}")
         my_plugin = PytestExecutor(
             reporter=reporter, comment_fields=case_comment_fields
         )
