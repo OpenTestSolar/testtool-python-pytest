@@ -15,24 +15,26 @@ repository: https://github.com/OpenTestSolar/testtool-python-pytest
 gitPkgUrl: https://github.com/OpenTestSolar/testtool-python-pytest.git
 httpPkgUrl: https://testsolar-1321258242.cos.ap-guangzhou.myqcloud.com/testtools/python/pytest/metadata.json@stable
 parameterDefs: # 用户 use 这个测试工具时可以配置的 with 参数
-  - name: workerCount
-    value: 并发数
-    default: '0'
-    desc: 用例并发数量
-    inputWidget: text
   - name: extraArgs
     value: 额外命令行参数
     default: ''
     desc: 额外命令行参数
     inputWidget: text
   - name: enableAllure
-    value: 是否用allure生成报告
-    desc: 是否用allure生成报告
+    value: 是否用Allure生成报告
+    desc: |-
+      是否用[Allure](https://allurereport.org/docs/pytest/)生成报告。
+      
+      > 注意： 
+      > 1. 开启此开关后，报告数据仅来源于Allure生成的json文件。
+      > 2. 用户需要自己安装Pytest的[allure插件](https://pypi.org/project/allure-pytest/)。
     default: 'false'
     choices:
-      - desc: 是
+      - desc: "使用Allure生成报告"
+        displayName: "是"
         value: 'true'
-      - desc: 否
+      - desc: "不使用Allure生成报告"
+        displayName: "否"
         value: 'false'
     inputWidget: choices
 entry:
