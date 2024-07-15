@@ -3,6 +3,7 @@ import os
 from typing import Tuple, Optional
 
 from pytest import Item
+from loguru import logger
 
 CASE_DRIVE_SEPARATOR = "→"
 
@@ -47,22 +48,24 @@ def extract_case_and_datadrive(case_selector: str) -> Tuple[str, str]:
 
     从用例名称中拆分用例和数据驱动名称，pytest的数据驱动为最终的/[....]，如果不存在则返回空即可
     """
-    splits = case_selector.rsplit("/", 1)
-    if len(splits) == 2:
-        path, last_part = splits
-        if last_part.startswith("[") and last_part.endswith("]"):
-            # last_part确实是一个数据驱动
-            # 例子： testa/testb.py?case_name/[data]
-            return path, last_part
-        elif CASE_DRIVE_SEPARATOR in case_selector:
-            # 数据驱动在用例名称里面
-            # 例子： testa/testb.py?case_name→data
-            case, _, drive_key = case_selector.partition(CASE_DRIVE_SEPARATOR)
-            return case, ""
+    if case_selector.endswith("]"):
+        if case_selector.count("/[") > 1:
+            logger.warning(
+                f"Selector {case_selector} has more than 1 `/[` .Please fix your case drive data."
+            )
         else:
-            return case_selector, ""
-    else:
-        return case_selector, ""
+            # 以]结尾，并且前面有/[，那么确实是一个数据驱动
+            # 例子： testa/testb.py?case_name/[data/myf9:y678]
+            case, _, drive_data = case_selector.partition("/[")
+            if drive_data:
+                return case, f"[{drive_data}"
+    elif CASE_DRIVE_SEPARATOR in case_selector:
+        # 数据驱动在用例名称里面
+        # 例子： testa/testb.py?case_name→data
+        case, _, drive_key = case_selector.partition(CASE_DRIVE_SEPARATOR)
+        return case, ""
+
+    return case_selector, ""
 
 
 def pytest_to_selector(item: Item, project_path: str) -> str:
