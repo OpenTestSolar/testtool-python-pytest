@@ -23,11 +23,11 @@ class Test(TestCase):
 
     def test_selector_to_pytest_with_datadrive(self):
         re = selector_to_pytest(
-            "/data/tests/tests/test_data_drive_zh_cn.py?aa/bb/test_include/[#?-#?^$%!]"
+            "/data/tests/tests/test_data_drive_zh_cn.py?aa/bb/test_include/[#?/-#?^$%!]"
         )
         self.assertEqual(
             re,
-            "/data/tests/tests/test_data_drive_zh_cn.py::aa::bb::test_include[#?-#?^$%!]",
+            "/data/tests/tests/test_data_drive_zh_cn.py::aa::bb::test_include[#?/-#?^$%!]",
         )
 
     def test_selector_to_pytest_with_utf8_string(self):
@@ -73,7 +73,7 @@ class Test(TestCase):
     def test_pytest_node_id_to_selector_with_datadrive(self):
         mock = MagicMock()
         mock.nodeid = (
-            "/data/tests/tests/test_data_drive_zh_cn.py::test_include[#?-[中文:203]]"
+            "/data/tests/tests/test_data_drive_zh_cn.py::test_include[#?-/[中文:203]]"
         )
         mock.path = None
         mock.cls = None
@@ -82,7 +82,7 @@ class Test(TestCase):
 
         self.assertEqual(
             re,
-            "/data/tests/tests/test_data_drive_zh_cn.py?test_include/[#?-[中文:203]]",
+            "/data/tests/tests/test_data_drive_zh_cn.py?test_include/[#?-/[中文:203]]",
         )
 
     def test_pytest_location_to_selector(self):
@@ -111,7 +111,14 @@ class TestExtractCaseAndDataDrive:
 
     # 测试数据驱动在用例名称内部的情况
     def test_extract_case_and_datadrive_inside_name(self):
-        assert extract_case_and_datadrive("a/b/c/data→[test]") == ("a/b/c/data", "")
+        assert extract_case_and_datadrive("a/b/c/data→[test]") == (
+            "a/b/c/data→[test]",
+            "",
+        )
+        assert extract_case_and_datadrive("a/b/c/data→/[test]") == (
+            "a/b/c/data→",
+            "[test]",
+        )
 
     # 测试没有数据驱动的情况
     def test_extract_case_and_datadrive_no_datadrive(self):
