@@ -1,0 +1,14 @@
+{
+  "TaskId": "aa",
+  "ProjectPath": "bb",
+  "FileReportPath": "",
+  "Collectors": [],
+  "Context": {},
+  "TestSelectors": [
+    "test_normal_case.py?test_success[not_found_1]",
+    "aa/bb/cc/test_in_sub_class.py",
+    "test_data_drive.py",
+    "errors/test_import_error.py",
+    "errors/test_load_error.py"
+  ]
+}

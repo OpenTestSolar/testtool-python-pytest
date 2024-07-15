@@ -1,10 +1,11 @@
-import logging
 import os
 import sys
 from datetime import datetime, timedelta
+from pathlib import Path
 from typing import BinaryIO, Optional, Dict, Any, List, Callable
 
 import pytest
+from loguru import logger
 from pytest import Item, Session
 
 try:
@@ -74,12 +75,12 @@ def run_testcases(
             serial_args = args.copy()
 
             if extra_run_function is None:
-                logging.error(
+                logger.error(
                     "[Error] Extra run function is not set, Please check extra_run_function"
                 )
                 return
             data_drive_key = extra_run_function(it, entry.ProjectPath, serial_args)
-            logging.info(f"Pytest single run args: {serial_args}")
+            logger.info(f"Pytest single run args: {serial_args}")
             my_plugin = PytestExecutor(
                 reporter=reporter,
                 comment_fields=case_comment_fields,
@@ -87,18 +88,19 @@ def run_testcases(
             )
             pytest.main(serial_args, plugins=[my_plugin])
     else:
-        args.extend(
-            [
-                os.path.join(entry.ProjectPath, selector_to_pytest(it))
-                for it in valid_selectors
-            ]
-        )
-        logging.info(f"Pytest run args: {args}")
-        my_plugin = PytestExecutor(
-            reporter=reporter, comment_fields=case_comment_fields
-        )
-        pytest.main(args, plugins=[my_plugin])
-    logging.info("pytest process exit")
+        for it in valid_selectors:
+            logger.info(f"Running testcase: {it}")
+
+            serial_args = args.copy()
+            serial_args.append(str(Path(entry.ProjectPath) / selector_to_pytest(it)))
+            logger.info(f"Pytest run args: {serial_args}")
+
+            my_plugin = PytestExecutor(
+                reporter=reporter, comment_fields=case_comment_fields
+            )
+            pytest.main(serial_args, plugins=[my_plugin])
+
+    logger.info("pytest process exit")
 
 
 class PytestExecutor:
@@ -132,7 +134,7 @@ class PytestExecutor:
 
         self.testdata[testcase_name] = test_result
 
-        logging.info(f"{nodeid} start")
+        logger.info(f"{nodeid} start")
 
         self.reporter.report_case_result(test_result)
 
@@ -153,7 +155,7 @@ class PytestExecutor:
         """
         Process the TestReport produced for each of the setup, call and teardown runtest phases of an item.
         """
-        logging.info(f"{report.nodeid} log report")
+        logger.info(f"{report.nodeid} log report")
 
         testcase_name = normalize_testcase_name(report.nodeid, self.data_drive_key)
         test_result = self.testdata[testcase_name]
@@ -233,8 +235,8 @@ class PytestExecutor:
         test_result.EndTime = datetime.now()
 
         # 检查是否allure报告，如果是在统一生成json文件后再上报
-        enable_alure = check_allure_enable()
-        if not enable_alure:
+        enable_allure = check_allure_enable()
+        if not enable_allure:
             self.reporter.report_case_result(test_result)
 
             # 上报完成后测试记录就没有用了，删除以节省内存
@@ -244,8 +246,8 @@ class PytestExecutor:
         """
         allure json报告在所有用例运行完才能生成, 故在运行用例结束后生成result并上报
         """
-        enable_alure = check_allure_enable()
-        if not enable_alure:
+        enable_allure = check_allure_enable()
+        if not enable_allure:
             return
         allure_dir = session.config.option.allure_report_dir
         for file_name in os.listdir(allure_dir):
