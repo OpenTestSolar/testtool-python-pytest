@@ -104,9 +104,14 @@ def decode_datadrive(name: str) -> str:
     https://docs.pytest.org/en/7.0.x/how-to/parametrize.html
 
     test_include[\u4e2d\u6587-\u4e2d\u6587\u6c49\u5b57] -> test_include[中文-中文汉字]
+
+    用例名称中不允许出现[，因此如果有，一定是数据驱动的开头
     """
-    if name.endswith("]") and "[" in name:
-        name = name.replace("[", "/[")
+    if name.endswith("]"):
+        start_index = name.find("[")
+        if start_index != -1:
+            name = name.replace(name[start_index], "/[", 1)
+
         if re.search(r"\\u\w{4}", name):
             name = name.encode().decode("unicode_escape")
 

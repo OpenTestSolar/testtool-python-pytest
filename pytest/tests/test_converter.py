@@ -39,6 +39,14 @@ class Test(TestCase):
             "/data/tests/tests/test_data_drive_zh_cn.py::aa::bb::test_include[\\u4e2d\\u6587-\\u4e2d\\u6587\\u6c49\\u5b57]",
         )
 
+        re = selector_to_pytest(
+            "/data/tests/tests/test_data_drive_zh_cn.py?aa/bb/test_include/[中文-[中文]汉字]"
+        )
+        self.assertEqual(
+            re,
+            "/data/tests/tests/test_data_drive_zh_cn.py::aa::bb::test_include[\\u4e2d\\u6587-[\\u4e2d\\u6587]\\u6c49\\u5b57]",
+        )
+
     def test_pytest_path_cls_to_selector(self):
         mock = MagicMock()
         mock.nodeid = None
@@ -65,7 +73,7 @@ class Test(TestCase):
     def test_pytest_node_id_to_selector_with_datadrive(self):
         mock = MagicMock()
         mock.nodeid = (
-            "/data/tests/tests/test_data_drive_zh_cn.py::test_include[#?-#?^$%!]"
+            "/data/tests/tests/test_data_drive_zh_cn.py::test_include[#?-[中文:203]]"
         )
         mock.path = None
         mock.cls = None
@@ -73,7 +81,8 @@ class Test(TestCase):
         re = pytest_to_selector(mock, "/data/tests/")
 
         self.assertEqual(
-            re, "/data/tests/tests/test_data_drive_zh_cn.py?test_include/[#?-#?^$%!]"
+            re,
+            "/data/tests/tests/test_data_drive_zh_cn.py?test_include/[#?-[中文:203]]",
         )
 
     def test_pytest_location_to_selector(self):
