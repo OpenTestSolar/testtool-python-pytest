@@ -1,0 +1,16 @@
+{
+  "TaskId": "aa",
+  "ProjectPath": "bb",
+  "FileReportPath": "",
+  "Collectors": [],
+  "Context": {},
+  "TestSelectors": [
+    "test_normal_case.py?test_success",
+    "test_data_drive.py?test_special_data_drive_name/[中文-分号+[id:32]]",
+    "test_data_drive.py?test_special_data_drive_name/[中文-分号+[id:32:34]]",
+    "aa/bb/cc/test_in_sub_class.py",
+    "test_data_drive.py",
+    "errors/test_import_error.py",
+    "errors/test_load_error.py"
+  ]
+}

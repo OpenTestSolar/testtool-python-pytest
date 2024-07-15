@@ -35,7 +35,7 @@ class CollectorTest(unittest.TestCase):
 
         re = read_load_result(pipe_io)
 
-        self.assertEqual(len(re.Tests), 5)
+        self.assertEqual(len(re.Tests), 6)
         self.assertEqual(len(re.LoadErrors), 2)
 
         self.assertEqual(
@@ -44,13 +44,17 @@ class CollectorTest(unittest.TestCase):
         self.assertEqual(re.Tests[1].Name, "test_data_drive.py?test_eval/[2+4-6]")
         self.assertEqual(re.Tests[2].Name, "test_data_drive.py?test_eval/[3+5-8]")
         self.assertEqual(re.Tests[3].Name, "test_data_drive.py?test_eval/[6*9-42]")
-
-        self.assertEqual(re.Tests[4].Name, "test_normal_case.py?test_success")
-        self.assertEqual(re.Tests[4].Attributes["owner"], "foo")
-        self.assertEqual(re.Tests[4].Attributes["description"], "测试获取答案")
-        self.assertEqual(re.Tests[4].Attributes["tag"], "high")
         self.assertEqual(
-            re.Tests[4].Attributes["extra_attributes"], '[{"env": ["AA", "BB"]}]'
+            re.Tests[4].Name,
+            "test_data_drive.py?test_special_data_drive_name/[中文-分号+[id:32]]",
+        )
+
+        self.assertEqual(re.Tests[5].Name, "test_normal_case.py?test_success")
+        self.assertEqual(re.Tests[5].Attributes["owner"], "foo")
+        self.assertEqual(re.Tests[5].Attributes["description"], "测试获取答案")
+        self.assertEqual(re.Tests[5].Attributes["tag"], "high")
+        self.assertEqual(
+            re.Tests[5].Attributes["extra_attributes"], '[{"env": ["AA", "BB"]}]'
         )
 
         self.assertEqual(
@@ -83,7 +87,7 @@ class CollectorTest(unittest.TestCase):
 
         re = read_load_result(pipe_io)
 
-        self.assertEqual(len(re.Tests), 3)
+        self.assertEqual(len(re.Tests), 4)
         self.assertEqual(len(re.LoadErrors), 1)
         self.assertIn(
             "test_not_exist.py does not exist, SKIP it", re.LoadErrors[0].message
