@@ -37,3 +37,18 @@ class TestExecuteEntry(TestCase):
                 workspace=self.testdata_dir,
                 pipe_io=pipe_io,
             )
+
+    def test_continue_run_when_one_case_is_not_found(self):
+        pipe_io = io.BytesIO()
+        run_testcases_from_args(
+            args=[
+                "run.py",
+                Path.joinpath(Path(self.testdata_dir), "entry_1_case_not_found.json"),
+            ],
+            workspace=self.testdata_dir,
+            pipe_io=pipe_io,
+        )
+
+        pipe_io.seek(0)
+        start = read_test_result(pipe_io)
+        self.assertEqual(start.ResultType, ResultType.RUNNING)

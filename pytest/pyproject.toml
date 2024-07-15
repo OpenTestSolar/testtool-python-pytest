@@ -21,6 +21,7 @@ classifiers = [
 dependencies = [
     "pytest>=7",
     "testsolar-testtool-sdk>=0.3.1",
+    "loguru>=0.7.2",
 ]
 requires-python = ">=3.7"
 readme = "README.md"
