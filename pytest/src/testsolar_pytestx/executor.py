@@ -1,7 +1,6 @@
 import os
 import sys
 from datetime import datetime, timedelta
-from pathlib import Path
 from typing import BinaryIO, Optional, Dict, Any, List, Callable
 
 import pytest
@@ -88,17 +87,19 @@ def run_testcases(
             )
             pytest.main(serial_args, plugins=[my_plugin])
     else:
-        for it in valid_selectors:
-            logger.info(f"Running testcase: {it}")
-
-            serial_args = args.copy()
-            serial_args.append(str(Path(entry.ProjectPath) / selector_to_pytest(it)))
-            logger.info(f"Pytest run args: {serial_args}")
-
-            my_plugin = PytestExecutor(
-                reporter=reporter, comment_fields=case_comment_fields
-            )
-            pytest.main(serial_args, plugins=[my_plugin])
+        # 注意：传递给pytest中的用例必须在执行时能找到，否则pytest会报错
+        # TODO: pytest执行出错时，将用例都设置为IGNORED，并设置错误原因
+        args.extend(
+            [
+                os.path.join(entry.ProjectPath, selector_to_pytest(it))
+                for it in valid_selectors
+            ]
+        )
+        logger.info(f"Pytest run args: {args}")
+        my_plugin = PytestExecutor(
+            reporter=reporter, comment_fields=case_comment_fields
+        )
+        pytest.main(args, plugins=[my_plugin])
 
     logger.info("pytest process exit")
 
