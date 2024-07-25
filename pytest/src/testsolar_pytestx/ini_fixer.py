@@ -39,7 +39,7 @@ def remove_conflict(ini_file: Path, backup_file: Path) -> bool:
         config.read(ini_file)
 
         if "pytest" in config and "addopts" in config["pytest"]:
-            logger.info(f"removing {config['pytest']['addopts']}")
+            logger.info("removing addopts in pytest.ini")
             del config["pytest"]["addopts"]
 
             shutil.copyfile(ini_file, backup_file)
