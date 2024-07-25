@@ -12,10 +12,11 @@ if parent not in sys.path:
     sys.path.append(parent)
 
 from testsolar_pytestx.executor import run_testcases  # noqa: E402
+from testsolar_pytestx.ini_fixer import fix_pytest_ini  # noqa: E402
 
 
 def run_testcases_from_args(
-    args: List[str], workspace: Optional[str] = None, pipe_io: Optional[BinaryIO] = None
+        args: List[str], workspace: Optional[str] = None, pipe_io: Optional[BinaryIO] = None
 ) -> None:
     if len(args) != 2:
         raise SystemExit("Usage: python run.py <entry_file>")
@@ -26,7 +27,10 @@ def run_testcases_from_args(
         entry = from_dict(data_class=EntryParam, data=json.loads(f.read()))
         if workspace:
             entry.ProjectPath = workspace
-        run_testcases(entry=entry, pipe_io=pipe_io)
+
+        # 检查用户的pytest.ini中是否有冲突配置，如果有冲突配置覆盖
+        with fix_pytest_ini(Path(entry.ProjectPath)):
+            run_testcases(entry=entry, pipe_io=pipe_io)
 
 
 if __name__ == "__main__":
