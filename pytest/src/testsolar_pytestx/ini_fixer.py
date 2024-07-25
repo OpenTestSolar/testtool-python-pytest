@@ -26,7 +26,7 @@ def fix_pytest_ini(workdir: Path) -> Generator[None, None, None]:
     finally:
         if has_conflict_options:
             os.remove(ini_file)
-            shutil.move(backup_file, ini_file)
+            shutil.move(str(backup_file), str(ini_file))
 
 
 def remove_conflict(ini_file: Path, backup_file: Path) -> bool:
@@ -46,7 +46,7 @@ def remove_conflict(ini_file: Path, backup_file: Path) -> bool:
             logger.info("removing addopts in pytest.ini")
             del config["pytest"]["addopts"]
 
-            shutil.copyfile(ini_file, backup_file)
+            shutil.copyfile(str(ini_file), str(backup_file))
 
             with open(ini_file, "w") as file:
                 config.write(file)
