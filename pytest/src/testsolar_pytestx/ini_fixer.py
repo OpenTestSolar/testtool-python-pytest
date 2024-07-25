@@ -4,14 +4,15 @@ import shutil
 import traceback
 from contextlib import contextmanager
 from pathlib import Path
+from typing import Generator
 
 from loguru import logger
 
 
 @contextmanager
-def fix_pytest_ini(workdir: Path):
-    ini_file = workdir / 'pytest.ini'
-    backup_file = workdir / '__pytest.ini.bak'
+def fix_pytest_ini(workdir: Path) -> Generator[None, None, None]:
+    ini_file = workdir / "pytest.ini"
+    backup_file = workdir / "__pytest.ini.bak"
     has_conflict_options = False
 
     try:
@@ -37,13 +38,13 @@ def remove_conflict(ini_file: Path, backup_file: Path) -> bool:
         config = configparser.ConfigParser()
         config.read(ini_file)
 
-        if 'pytest' in config and 'addopts' in config['pytest']:
+        if "pytest" in config and "addopts" in config["pytest"]:
             logger.info(f"removing {config['pytest']['addopts']}")
-            del config['pytest']['addopts']
+            del config["pytest"]["addopts"]
 
             shutil.copyfile(ini_file, backup_file)
 
-            with open(ini_file, 'w') as file:
+            with open(ini_file, "w") as file:
                 config.write(file)
 
             return True

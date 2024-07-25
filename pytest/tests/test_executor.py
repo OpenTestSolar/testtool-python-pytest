@@ -1,9 +1,7 @@
 import io
-import struct
 import unittest
 from pathlib import Path
 
-import pytest
 from testsolar_testtool_sdk.model.param import EntryParam
 from testsolar_testtool_sdk.model.testresult import ResultType, LogLevel
 from testsolar_testtool_sdk.pipe_reader import read_test_result
@@ -203,4 +201,3 @@ this is teardown
         end = read_test_result(pipe_io)
         self.assertEqual(end.ResultType, ResultType.SUCCEED)
         self.assertEqual(len(end.Steps), 3)
-
