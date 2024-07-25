@@ -31,6 +31,10 @@ def fix_pytest_ini(workdir: Path) -> Generator[None, None, None]:
 
 def remove_conflict(ini_file: Path, backup_file: Path) -> bool:
     """
+    去除冲突选项，参考pytest文档：
+
+    https://docs.pytest.org/en/latest/reference/customize.html#initialization-determining-rootdir-and-configfile
+
     The --rootdir=path command-line option can be used to force a specific directory. Note that contrary to other command-line options,
     --rootdir cannot be used with addopts inside pytest.ini because the rootdir is used to find pytest.ini already.
     """
