@@ -49,6 +49,9 @@ def run_testcases(
         selectors=entry.TestSelectors,
     )
 
+    if not valid_selectors:
+        raise ValueError("No valid selectors found")
+
     args = [
         f"--rootdir={entry.ProjectPath}",
         "--continue-on-collection-errors",

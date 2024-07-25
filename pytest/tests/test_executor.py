@@ -10,14 +10,12 @@ from testsolar_pytestx.executor import run_testcases
 
 
 class ExecutorTest(unittest.TestCase):
-    testdata_dir: str = str(
-        Path(__file__).parent.parent.absolute().joinpath("testdata")
-    )
+    testdata_dir = Path(__file__).parent.parent.absolute().joinpath("testdata")
 
     def test_run_success_testcase_with_logs(self):
         entry = EntryParam(
             TaskId="aa",
-            ProjectPath=self.testdata_dir,
+            ProjectPath=str(self.testdata_dir),
             TestSelectors=[
                 "test_normal_case.py?name=test_success&tag=A&priority=High",
             ],
@@ -68,7 +66,7 @@ this is teardown
     def test_run_success_testcase_with_one_invalid_selector(self):
         entry = EntryParam(
             TaskId="aa",
-            ProjectPath=self.testdata_dir,
+            ProjectPath=str(self.testdata_dir),
             TestSelectors=[
                 "test_normal_case.py?name=test_success",
                 "test_invalid_case.py?test_success",
@@ -86,7 +84,7 @@ this is teardown
     def test_run_failed_testcase_with_log(self):
         entry = EntryParam(
             TaskId="aa",
-            ProjectPath=self.testdata_dir,
+            ProjectPath=str(self.testdata_dir),
             TestSelectors=[
                 "test_normal_case.py?test_failed&priority=High",
             ],
@@ -114,7 +112,7 @@ this is teardown
     def test_run_failed_testcase_with_raise_error(self):
         entry = EntryParam(
             TaskId="aa",
-            ProjectPath=self.testdata_dir,
+            ProjectPath=str(self.testdata_dir),
             TestSelectors=[
                 "test_normal_case.py?test_raise_error",
             ],
@@ -143,7 +141,7 @@ this is teardown
     def test_run_skipped_testcase(self):
         entry = EntryParam(
             TaskId="aa",
-            ProjectPath=self.testdata_dir,
+            ProjectPath=str(self.testdata_dir),
             TestSelectors=[
                 "test_skipped.py?test_filtered",
             ],
@@ -165,7 +163,7 @@ this is teardown
     def test_run_datadrive_with_single_value(self):
         entry = EntryParam(
             TaskId="aa",
-            ProjectPath=self.testdata_dir,
+            ProjectPath=str(self.testdata_dir),
             TestSelectors=[
                 "test_data_drive.py?test_eval/[2+4-6]",
             ],
@@ -186,7 +184,7 @@ this is teardown
     def test_run_datadrive_with_utf8_str(self):
         entry = EntryParam(
             TaskId="aa",
-            ProjectPath=self.testdata_dir,
+            ProjectPath=str(self.testdata_dir),
             TestSelectors=[
                 "test_data_drive_zh_cn.py?test_include/[中文-中文汉字]",
             ],
