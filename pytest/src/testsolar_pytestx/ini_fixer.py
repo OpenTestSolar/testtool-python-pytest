@@ -1,7 +1,7 @@
 import configparser
 import os
 import shutil
-from configparser import ConfigParser
+import traceback
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -17,15 +17,7 @@ def fix_pytest_ini(workdir: Path):
     try:
         # 如果有pytest.ini文件才处理
         if ini_file.exists():
-            config = configparser.ConfigParser()
-            config.read(ini_file)
-
-            if remove_conflict(config):
-                has_conflict_options = True
-                shutil.copyfile(ini_file, backup_file)
-
-                with open(ini_file, 'w') as file:
-                    config.write(file)
+            has_conflict_options = remove_conflict(ini_file, backup_file)
 
         # 执行原有业务逻辑
         yield
@@ -36,14 +28,27 @@ def fix_pytest_ini(workdir: Path):
             shutil.move(backup_file, ini_file)
 
 
-def remove_conflict(config: ConfigParser) -> bool:
+def remove_conflict(ini_file: Path, backup_file: Path) -> bool:
     """
     The --rootdir=path command-line option can be used to force a specific directory. Note that contrary to other command-line options,
     --rootdir cannot be used with addopts inside pytest.ini because the rootdir is used to find pytest.ini already.
     """
-    if 'pytest' in config and 'addopts' in config['pytest']:
-        logger.info(f"removing {config['pytest']['addopts']}")
-        del config['pytest']['addopts']
-        return True
+    try:
+        config = configparser.ConfigParser()
+        config.read(ini_file)
+
+        if 'pytest' in config and 'addopts' in config['pytest']:
+            logger.info(f"removing {config['pytest']['addopts']}")
+            del config['pytest']['addopts']
+
+            shutil.copyfile(ini_file, backup_file)
+
+            with open(ini_file, 'w') as file:
+                config.write(file)
+
+            return True
+    except Exception as e:
+        logger.warning(e)
+        logger.warning(traceback.format_exc())
 
     return False
