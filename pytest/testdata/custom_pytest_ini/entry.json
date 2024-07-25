@@ -1,0 +1,10 @@
+{
+  "TaskId": "error_pytest_ini",
+  "ProjectPath": "bb",
+  "FileReportPath": "",
+  "Collectors": [],
+  "Context": {},
+  "TestSelectors": [
+    "many/v1/test_normal_case_01.py?test_success"
+  ]
+}
