@@ -125,6 +125,7 @@ class PytestExecutor:
         """
         Called at the start of running the runtest protocol for a single item.
         """
+        logger.info(f"{nodeid} start")
 
         # 通知ResultHouse用例开始运行
         testcase_name = normalize_testcase_name(nodeid, self.data_drive_key)
@@ -137,8 +138,6 @@ class PytestExecutor:
         )
 
         self.testdata[testcase_name] = test_result
-
-        logger.info(f"{nodeid} start")
 
         self.reporter.report_case_result(test_result)
 
@@ -159,7 +158,7 @@ class PytestExecutor:
         """
         Process the TestReport produced for each of the setup, call and teardown runtest phases of an item.
         """
-        logger.info(f"{report.nodeid} log report")
+        logger.info(f"S {report.nodeid} log report")
 
         testcase_name = normalize_testcase_name(report.nodeid, self.data_drive_key)
         test_result = self.testdata[testcase_name]
@@ -189,7 +188,7 @@ class PytestExecutor:
 
             if report.skipped and isinstance(report.longrepr, tuple):
                 file, line, reason = report.longrepr
-                print(f"Skipped {file}:{line}: {reason}")
+                logger.info(f"Skipped {file}:{line}: {reason}")
                 test_result.Message = reason[:1000]
 
         elif report.when == "call":
@@ -205,9 +204,8 @@ class PytestExecutor:
                 )
             )
 
-            print(
-                f"[{self.__class__.__name__}] Testcase {report.nodeid} run {report.outcome},"
-                f" total {self.testcase_count} testcases complete"
+            logger.info(
+                f"Testcase {report.nodeid} run {report.outcome}, total {self.testcase_count} testcases complete"
             )
 
             if not test_result.Message and report.failed:
@@ -229,10 +227,13 @@ class PytestExecutor:
             if not test_result.is_final():
                 test_result.ResultType = result_type
 
+        logger.info(f"E {report.nodeid} log report")
+
     def pytest_runtest_logfinish(self, nodeid: str, location: Any) -> None:
         """
         Called at the end of running the runtest protocol for a single item.
         """
+        logger.info(f"S {nodeid} runtest_logfinish")
         testcase_name = normalize_testcase_name(nodeid, self.data_drive_key)
 
         test_result = self.testdata[testcase_name]
@@ -245,11 +246,13 @@ class PytestExecutor:
 
             # 上报完成后测试记录就没有用了，删除以节省内存
             self.testdata.pop(testcase_name, None)
+        logger.info(f"E {nodeid} runtest_logfinish")
 
     def pytest_sessionfinish(self, session: Session, exitstatus: int) -> None:
         """
         allure json报告在所有用例运行完才能生成, 故在运行用例结束后生成result并上报
         """
+        logger.info(f"S {session.nodeid} session finish")
         enable_allure = check_allure_enable()
         if not enable_allure:
             return
@@ -260,3 +263,4 @@ class PytestExecutor:
             generate_allure_results(self.testdata, os.path.join(allure_dir, file_name))
         for _, test_result in self.testdata.items():
             self.reporter.report_case_result(test_result)
+        logger.info(f"E {session.nodeid} session finish")
