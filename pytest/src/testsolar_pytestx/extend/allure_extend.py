@@ -55,7 +55,7 @@ class AllureData:
 
 
 def check_allure_enable() -> bool:
-    return os.getenv("TESTSOLAR_TTP_ENABLEALLURE", "") != ""
+    return os.getenv("TESTSOLAR_TTP_ENABLEALLURE", "") in ["1", "true"]
 
 
 def initialization_allure_dir(allure_dir: str) -> None:
