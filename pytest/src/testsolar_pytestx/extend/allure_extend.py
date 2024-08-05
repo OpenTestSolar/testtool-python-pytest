@@ -77,6 +77,7 @@ def generate_allure_results(test_data: Dict[str, TestResult], file_name: str) ->
         allure_data = from_dict(data_class=AllureData, data=json.loads(fp.read()))
         full_name = allure_data.fullName.replace("#", ".")
         for testcase_name in test_data.keys():
+            step_info: List[TestCaseStep] = []
             testcase_format_name = ".".join(
                 testcase_name.replace(".py?", os.sep).split(os.sep)
             )
