@@ -7,7 +7,7 @@ from unittest.mock import patch, mock_open
 from datetime import datetime
 
 from testsolar_testtool_sdk.pipe_reader import read_test_result
-from testsolar_sdk.model.test import TestCase as TestSolar_TestCase
+from testsolar_testtool_sdk.model.test import TestCase as TestSolar_TestCase
 from testsolar_testtool_sdk.model.testresult import (
     TestResult,
     ResultType,
