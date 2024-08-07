@@ -1,18 +1,18 @@
 import io
 import os
-import pytest
+from datetime import datetime
 from pathlib import Path
 from unittest import TestCase
 from unittest.mock import patch, mock_open
-from datetime import datetime
 
-from testsolar_testtool_sdk.pipe_reader import read_test_result
+import pytest
 from testsolar_testtool_sdk.model.test import TestCase as TestSolar_TestCase
 from testsolar_testtool_sdk.model.testresult import (
     TestResult,
-    ResultType,
 )
+from testsolar_testtool_sdk.pipe_reader import read_test_result
 
+from run import run_testcases_from_args
 from testsolar_pytestx.extend.allure_extend import (
     generate_allure_results,
     gen_allure_step_info,
@@ -20,9 +20,6 @@ from testsolar_pytestx.extend.allure_extend import (
     ResultType,
     Step,
 )
-
-from run import run_testcases_from_args
-
 
 allure_json = """
 {

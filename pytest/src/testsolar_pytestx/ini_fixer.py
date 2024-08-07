@@ -42,9 +42,14 @@ def remove_conflict(ini_file: Path, backup_file: Path) -> bool:
         config = configparser.ConfigParser()
         config.read(ini_file)
 
-        if "pytest" in config and "addopts" in config["pytest"]:
-            logger.info("removing addopts in pytest.ini")
-            del config["pytest"]["addopts"]
+        if "pytest" in config:
+            if "addopts" in config["pytest"]:
+                logger.info("removing addopts in pytest.ini")
+                del config["pytest"]["addopts"]
+            # 如果用户重设置了错误的testpaths，也需要去除
+            if "testpaths" in config["pytest"]:
+                logger.info("removing testpaths in pytest.ini")
+                del config["pytest"]["testpaths"]
 
             shutil.copyfile(str(ini_file), str(backup_file))
 
