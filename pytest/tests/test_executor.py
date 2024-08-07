@@ -1,5 +1,6 @@
 import io
 import unittest
+from datetime import datetime, timedelta
 from pathlib import Path
 
 from testsolar_testtool_sdk.model.param import EntryParam
@@ -7,6 +8,11 @@ from testsolar_testtool_sdk.model.testresult import ResultType, LogLevel
 from testsolar_testtool_sdk.pipe_reader import read_test_result
 
 from testsolar_pytestx.executor import run_testcases
+
+
+def convert_to_datetime(raw: str) -> datetime:
+    dt = datetime.strptime(raw, "%Y-%m-%dT%H:%M:%S.%fZ")
+    return dt
 
 
 class ExecutorTest(unittest.TestCase):
@@ -22,6 +28,8 @@ class ExecutorTest(unittest.TestCase):
             FileReportPath="",
         )
 
+        current_time = datetime.utcnow()
+
         pipe_io = io.BytesIO()
         run_testcases(entry, pipe_io)
         pipe_io.seek(0)
@@ -33,8 +41,16 @@ class ExecutorTest(unittest.TestCase):
         self.assertEqual(end.Test.Name, "test_normal_case.py?test_success")
         self.assertEqual(end.Test.Attributes["tag"], "high")
         self.assertEqual(end.Test.Attributes["owner"], "foo")
+        elapse: timedelta = convert_to_datetime(str(end.StartTime)) - current_time
+        self.assertLess(elapse.total_seconds(), 1)
+        elapse_end: timedelta = convert_to_datetime(str(end.EndTime)) - current_time
+        self.assertLess(elapse_end.total_seconds(), 1)
         self.assertEqual(end.ResultType, ResultType.SUCCEED)
         self.assertEqual(len(end.Steps), 3)
+        elapse = current_time - convert_to_datetime(str(end.Steps[0].StartTime))
+        self.assertLess(elapse.total_seconds(), 1)
+        elapse = current_time - convert_to_datetime(str(end.Steps[0].EndTime))
+        self.assertLess(elapse.total_seconds(), 1)
 
         step1 = end.Steps[0]
         self.assertEqual(step1.Title, "Setup")

@@ -133,7 +133,7 @@ class PytestExecutor:
         test_result = TestResult(
             Test=TestCase(Name=testcase_name),
             ResultType=ResultType.RUNNING,
-            StartTime=datetime.now(),
+            StartTime=datetime.utcnow(),
             Message="",
         )
 
@@ -163,7 +163,7 @@ class PytestExecutor:
         testcase_name = normalize_testcase_name(report.nodeid, self.data_drive_key)
         test_result = self.testdata[testcase_name]
 
-        step_end_time = datetime.now()
+        step_end_time = datetime.utcnow()
 
         result_type: ResultType
         if report.failed:
@@ -178,7 +178,7 @@ class PytestExecutor:
                 TestCaseStep(
                     Title="Setup",
                     Logs=[gen_logs(report)],
-                    StartTime=step_end_time - timedelta(report.duration),
+                    StartTime=step_end_time - timedelta(seconds=report.duration),
                     EndTime=step_end_time,
                     ResultType=result_type,
                 )
@@ -198,7 +198,7 @@ class PytestExecutor:
                 TestCaseStep(
                     Title="Run TestCase",
                     Logs=[gen_logs(report)],
-                    StartTime=step_end_time - timedelta(report.duration),
+                    StartTime=step_end_time - timedelta(seconds=report.duration),
                     EndTime=step_end_time,
                     ResultType=result_type,
                 )
@@ -237,7 +237,7 @@ class PytestExecutor:
         testcase_name = normalize_testcase_name(nodeid, self.data_drive_key)
 
         test_result = self.testdata[testcase_name]
-        test_result.EndTime = datetime.now()
+        test_result.EndTime = datetime.utcnow()
 
         # 检查是否allure报告，如果是在统一生成json文件后再上报
         enable_allure = check_allure_enable()

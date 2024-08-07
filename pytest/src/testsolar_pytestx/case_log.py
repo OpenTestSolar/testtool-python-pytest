@@ -26,7 +26,7 @@ def gen_logs(report: TestReport) -> TestCaseLog:
             log += error_log
 
     return TestCaseLog(
-        Time=datetime.now() - timedelta(report.duration),
+        Time=datetime.utcnow() - timedelta(report.duration),
         Level=LogLevel.ERROR if report.failed else LogLevel.INFO,
         Content=log,
     )
