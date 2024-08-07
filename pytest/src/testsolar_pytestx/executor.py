@@ -219,7 +219,7 @@ class PytestExecutor:
                 TestCaseStep(
                     Title="Teardown",
                     Logs=[gen_logs(report)],
-                    StartTime=step_end_time - timedelta(report.duration),
+                    StartTime=step_end_time - timedelta(seconds=report.duration),
                     EndTime=step_end_time,
                     ResultType=result_type,
                 )
