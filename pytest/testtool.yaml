@@ -37,6 +37,27 @@ parameterDefs: # 用户 use 这个测试工具时可以配置的 with 参数
         displayName: "否"
         value: 'false'
     inputWidget: choices
+  - name: enableCoverage
+    value: 是否生成覆盖率报告
+    desc: |-
+      是否生成覆盖率报告。
+
+      > 注意：
+      > 1. 开启此开关后，会采集覆盖率，并在报告中的覆盖率TAB页展示。
+    default: 'false'
+    choices:
+      - desc: "生成覆盖率报告"
+        displayName: "是"
+        value: 'true'
+      - desc: "不生成覆盖率报告"
+        displayName: "否"
+        value: 'false'
+      inputWidget: choices
+  - name: coverageSourceList
+    value: 覆盖率采集包名
+    default: ''
+    desc: 用于指定在代码覆盖率报告中需要保留的包名列表，多个包名用;分隔。
+    inputWidget: text
 entry:
   load: "python3 /testtools/pytest/src/load.py $1"
   run: "python3 /testtools/pytest/src/run.py $1"
