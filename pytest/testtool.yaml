@@ -52,7 +52,7 @@ parameterDefs: # 用户 use 这个测试工具时可以配置的 with 参数
       - desc: "不生成覆盖率报告"
         displayName: "否"
         value: 'false'
-      inputWidget: choices
+    inputWidget: choices
   - name: coverageSourceList
     value: 覆盖率采集包名
     default: ''
