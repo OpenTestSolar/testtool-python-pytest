@@ -1,11 +1,9 @@
-import ast
 import json
 import os
 import shutil
 import sys
-import traceback
 import time
-from typing import List, Dict, Optional
+from typing import List, Dict
 from dataclasses import dataclass, field
 import coverage.data
 from xml.dom import minidom
