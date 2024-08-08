@@ -2,12 +2,13 @@ import io
 import unittest
 from datetime import datetime, timedelta
 from pathlib import Path
+from unittest import mock
 
 from testsolar_testtool_sdk.model.param import EntryParam
 from testsolar_testtool_sdk.model.testresult import ResultType, LogLevel
 from testsolar_testtool_sdk.pipe_reader import read_test_result
 
-from testsolar_pytestx.executor import run_testcases
+from testsolar_pytestx.executor import run_testcases, append_extra_args
 
 
 def convert_to_datetime(raw: str) -> datetime:
@@ -243,3 +244,21 @@ this is teardown
         end = read_test_result(pipe_io)
         self.assertEqual(end.ResultType, ResultType.SUCCEED)
         self.assertEqual(len(end.Steps), 3)
+
+    def test_split_args_with_space(self):
+        args = []
+
+        with mock.patch.dict(
+            "os.environ",
+            {"TESTSOLAR_TTP_EXTRAARGS": '-m "not p3" -t timeout -l "fast iu897 nuh"'},
+            clear=True,
+        ):
+            append_extra_args(args)
+
+            self.assertEqual(len(args), 6)
+            self.assertEqual(args[0], "-m")
+            self.assertEqual(args[1], "not p3")
+            self.assertEqual(args[2], "-t")
+            self.assertEqual(args[3], "timeout")
+            self.assertEqual(args[4], "-l")
+            self.assertEqual(args[5], "fast iu897 nuh")
