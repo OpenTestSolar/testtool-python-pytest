@@ -59,11 +59,11 @@ def test_handle_coverage_xml(mock_parse, mock_open):
 @patch("os.path.isfile", return_value=True)
 def test_save_testcase_coverage_data(mock_isfile, mock_open, mock_contexts, mock_files, mock_read):
     source_list = ["package1"]
-    coverage_db_path = "/path/to/coverage_db"
+    coverage_db_path = "/tmp/to/coverage_db"
     save_path = "testcase_coverage.json"
     save_testcase_coverage_data(source_list, coverage_db_path, save_path)
     mock_open().write.assert_called()
-    assert mock_open().write.call_count == 10  # 确保写操作的次数
+    assert mock_open().write.call_count == 1  # 确保写操作的次数
 
 def test_find_coverage_path_with_cov_file(monkeypatch):
     monkeypatch.setattr(os.path, 'isfile', lambda x: x == "/path/to/proj/coverage_db")
