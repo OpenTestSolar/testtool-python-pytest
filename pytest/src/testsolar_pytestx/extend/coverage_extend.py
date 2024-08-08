@@ -13,6 +13,7 @@ from xml.dom import minidom
 
 COVERAGE_DIR: str = "testsolar_coverage"
 
+
 @dataclass
 class CoverageData:
     """
@@ -187,6 +188,26 @@ def find_coverage_path(proj: str, cov_file: str) -> str:
     return cov_file
 
 
+def ensure_directory_exists_and_clear(directory: str) -> None:
+    """
+    确保指定的目录存在。如果目录不存在，则创建它。
+    如果目录存在，则清空其内容。
+
+    Args:
+        directory (str): 要检查或创建的目录路径。
+    """
+    try:
+        if os.path.exists(directory):
+            shutil.rmtree(directory)  # 删除目录及其所有内容
+            print(f"Directory '{directory}' was cleared.")
+        
+        os.makedirs(directory) # 创建目录
+        print(f"Directory '{directory}' is ready.")
+        
+    except OSError as e:
+        print(f"Error: {e.strerror}")
+
+
 def handle_coverage(proj_path: str, source_list: List[str]) -> None:
     """
     处理覆盖率。
@@ -195,6 +216,7 @@ def handle_coverage(proj_path: str, source_list: List[str]) -> None:
         proj_path (str): 项目路径。
         source_list (List[str]): 被测代码包列表。
     """
+    ensure_directory_exists_and_clear(os.path.join(proj_path, COVERAGE_DIR))
     coverage_file_path: str = os.path.join(proj_path, "coverage.xml")
     coverage_save_path: str = os.path.join(proj_path, COVERAGE_DIR, "coverage.xml")
     coverage_json_file: str = os.path.join(proj_path, COVERAGE_DIR, "testcase_coverage.json")
