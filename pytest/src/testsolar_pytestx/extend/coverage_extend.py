@@ -10,6 +10,9 @@ from dataclasses import dataclass, field
 import coverage.data
 from xml.dom import minidom
 
+
+COVERAGE_DIR: str = "testsolar_coverage"
+
 @dataclass
 class CoverageData:
     """
@@ -68,7 +71,7 @@ def compute_source_list(testcase_list: List[str]) -> List[str]:
     return source_list
 
 
-def handle_coverage_xml(xml_path: str, source_list: List[str]) -> None:
+def handle_coverage_xml(xml_path: str, save_path, source_list: List[str]) -> None:
     """
     处理 coverage.xml 文件。
 
@@ -93,7 +96,7 @@ def handle_coverage_xml(xml_path: str, source_list: List[str]) -> None:
                     print("Package %s ignored" % name)
                     package.parentNode.removeChild(package)
 
-        with open(xml_path, "w") as fd:
+        with open(save_path, "w") as fd:
             dom.writexml(fd)
     print("handle_coverage_xml cost time: %s" % (time.time() - start_time))
 
@@ -193,11 +196,12 @@ def handle_coverage(proj_path: str, source_list: List[str]) -> None:
         source_list (List[str]): 被测代码包列表。
     """
     coverage_file_path: str = os.path.join(proj_path, "coverage.xml")
-    
+    coverage_save_path: str = os.path.join(proj_path, COVERAGE_DIR, "coverage.xml")
+    coverage_json_file: str = os.path.join(proj_path, COVERAGE_DIR, "testcase_coverage.json")
     if not os.path.exists(coverage_file_path):
         print("File coverage.xml not exist", file=sys.stderr)
     else:
         print("handle coverage.xml")
-        handle_coverage_xml(coverage_file_path, source_list)
-        coverage_path = find_coverage_path(proj_path, ".coverage")
-        save_testcase_coverage_data(source_list, coverage_path, "testcase_coverage.json")
+        handle_coverage_xml(coverage_file_path, coverage_save_path, source_list)
+        coverage_db_path = find_coverage_path(proj_path, ".coverage")
+        save_testcase_coverage_data(source_list, coverage_db_path, coverage_json_file)
