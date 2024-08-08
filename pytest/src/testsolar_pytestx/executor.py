@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from typing import BinaryIO, Optional, Dict, Any, List, Callable
 
 import pytest
+import shlex
 from loguru import logger
 from pytest import Item, Session
 
@@ -66,9 +67,7 @@ def run_testcases(
         args.append("--alluredir={}".format(allure_dir))
         initialization_allure_dir(allure_dir)
 
-    extra_args = os.environ.get("TESTSOLAR_TTP_EXTRAARGS", "")
-    if extra_args:
-        args.extend(extra_args.split())
+    append_extra_args(args)
 
     reporter: Reporter = Reporter(pipe_io=pipe_io)
 
@@ -105,6 +104,12 @@ def run_testcases(
         pytest.main(args, plugins=[my_plugin])
 
     logger.info("pytest process exit")
+
+
+def append_extra_args(args: List[str]) -> None:
+    extra_args = os.environ.get("TESTSOLAR_TTP_EXTRAARGS", "")
+    if extra_args:
+        args.extend(shlex.split(extra_args))
 
 
 class PytestExecutor:
