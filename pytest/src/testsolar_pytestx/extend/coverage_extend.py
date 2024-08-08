@@ -5,9 +5,8 @@ import sys
 import time
 from typing import List, Dict
 from dataclasses import dataclass, field
-import coverage.data
 from xml.dom import minidom
-
+import coverage
 
 COVERAGE_DIR: str = "testsolar_coverage"
 
@@ -70,12 +69,13 @@ def compute_source_list(testcase_list: List[str]) -> List[str]:
     return source_list
 
 
-def handle_coverage_xml(xml_path: str, save_path, source_list: List[str]) -> None:
+def handle_coverage_xml(xml_path: str, save_path: str, source_list: List[str]) -> None:
     """
     处理 coverage.xml 文件。
 
     Args:
         xml_path (str): coverage.xml 文件路径。
+        save_path (str): 处理后的 coverage.xml 文件保存路径。
         source_list (List[str]): 被测代码包列表。
     """
     start_time: float = time.time()
@@ -115,9 +115,11 @@ def save_testcase_coverage_data(source_list: List[str], coverage_db_path: str, s
         raise RuntimeError(f"Coverage db {coverage_db_path} not exist")
     root_path: str = os.path.dirname(os.path.abspath(coverage_db_path))
     result: Dict[str, CoverageData] = {}
-    coverage_data = coverage.data.CoverageData(basename=coverage_db_path)
-    coverage_data.read()
-    file_set = coverage_data.measured_files()
+
+    # 使用 coverage.Coverage 类
+    cov = coverage.Coverage(data_file=coverage_db_path)
+    cov.load()
+    file_set = cov.get_data().measured_files()
     for fn in file_set:
         rav_fn = fn
         if rav_fn.startswith(root_path):
@@ -128,25 +130,27 @@ def save_testcase_coverage_data(source_list: List[str], coverage_db_path: str, s
         else:
             continue
 
-        line_map = coverage_data.contexts_by_lineno(fn)
-        for line in line_map:
-            test_case_list = line_map[line]
-            for test_case in test_case_list:  # type: str
-                if not test_case:
-                    continue
-                try:
-                    name = test_case[: test_case.index("|")]
-                except ValueError:
-                    name = test_case
-                items = name.split("::")
-                if items[0].endswith(".py"):
-                    items[0] = items[0][:-3].replace(os.sep, ".")
-                name = ".".join(items)
-                if name not in result:
-                    result[name] = CoverageData(name=name)
-                if rav_fn not in result[name].files:
-                    result[name].files[rav_fn] = []
-                result[name].files[rav_fn].append(line)
+        line_map = cov.get_data().lines(fn)
+        context_map = cov.get_data().contexts_by_lineno(fn)
+        if line_map is not None:  # 添加检查
+            for line in line_map:
+                test_case_list = context_map.get(line, [])
+                for test_case in test_case_list:
+                    if not test_case:
+                        continue
+                    try:
+                        name = test_case[: test_case.index("|")]
+                    except ValueError:
+                        name = test_case
+                    items = name.split("::")
+                    if items[0].endswith(".py"):
+                        items[0] = items[0][:-3].replace(os.sep, ".")
+                    name = ".".join(items)
+                    if name not in result:
+                        result[name] = CoverageData(name=name)
+                    if rav_fn not in result[name].files:
+                        result[name].files[rav_fn] = []
+                    result[name].files[rav_fn].append(line)
 
     with open(save_path, "w") as fp:
         json.dump({name: data.files for name, data in result.items()}, fp)
