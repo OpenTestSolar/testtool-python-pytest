@@ -24,7 +24,6 @@ dependencies = [
     "loguru>=0.7.2",
     "coverage>=7.2.7",
     "pytest-cov>=4.1.0",
-    "typed-ast>=1.5.5",
     "importlib-metadata>=6.7.0",
 ]
 requires-python = ">=3.7"
@@ -42,6 +41,7 @@ dev = [
     "pytest-cov>=4",
     "allure-pytest>=2.13",
     "requests>=2.31.0",
+    "typed-ast>=1.5.5",
 ]
 
 [tool.setuptools.package-data]
