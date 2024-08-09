@@ -1,4 +1,4 @@
-import pytest
+import json
 from unittest.mock import patch, mock_open, MagicMock
 from typing import List, Dict
 import os
@@ -9,7 +9,7 @@ from testsolar_pytestx.extend.coverage_extend import (
     check_coverage_enable,
     compute_source_list,
     handle_coverage_xml,
-    save_testcase_coverage_data,
+    get_testcase_coverage_data,
     find_coverage_path,
     handle_coverage,
     CoverageData
@@ -50,20 +50,18 @@ def test_handle_coverage_xml(mock_parse, mock_open):
     mock_dom.documentElement = MagicMock()
     mock_dom.documentElement.getElementsByTagName.return_value = [MagicMock()]
     source_list = ["package1", "package2"]
-    handle_coverage_xml("coverage.xml", "coverage.xml", source_list)
+    handle_coverage_xml("coverage.xml", source_list)
 
 @patch("coverage.data.CoverageData.read")
 @patch("coverage.data.CoverageData.measured_files", return_value=["/path/to/package1/file1.py"])
 @patch("coverage.data.CoverageData.contexts_by_lineno", return_value={10: ["test.package1::test_func|context"]})
 @patch("builtins.open", new_callable=mock_open)
 @patch("os.path.isfile", return_value=True)
-def test_save_testcase_coverage_data(mock_isfile, mock_open, mock_contexts, mock_files, mock_read):
+def test_get_testcase_coverage_data(mock_isfile, mock_open, mock_contexts, mock_files, mock_read):
     source_list = ["package1"]
     coverage_db_path = "/tmp/to/coverage_db"
-    save_path = "testcase_coverage.json"
-    save_testcase_coverage_data(source_list, coverage_db_path, save_path)
-    mock_open().write.assert_called()
-    assert mock_open().write.call_count == 1  # 确保写操作的次数
+    get_testcase_coverage_data(source_list, coverage_db_path)
+
 
 def test_find_coverage_path_with_cov_file(monkeypatch):
     monkeypatch.setattr(os.path, 'isfile', lambda x: x == "/path/to/proj/coverage_db")
@@ -82,40 +80,36 @@ def test_find_coverage_path_with_walk(monkeypatch):
 @patch("os.path.exists", return_value=True)
 @patch("shutil.rmtree")
 @patch("os.makedirs")
-@patch("builtins.open", new_callable=mock_open, read_data="""<?xml version="1.0" ?>
-<coverage version="7.2.7" timestamp="1723108113303" lines-valid="40" lines-covered="25" line-rate="0.625" branches-covered="0" branches-valid="0" branch-rate="0" complexity="0">
-	<sources>
-		<source>/data/tests</source>
-	</sources>
-	<packages>
-		<package name="multiply_mod" line-rate="0" branch-rate="0" complexity="0">
-			<classes>
-				<class name="__init__.py" filename="multiply_mod/__init__.py" complexity="0" line-rate="1" branch-rate="0">
-					<methods/>
-					<lines/>
-				</class>
-				<class name="multiply.py" filename="multiply_mod/multiply.py" complexity="0" line-rate="0" branch-rate="0">
-					<methods/>
-					<lines>
-						<line number="2" hits="0"/>
-						<line number="3" hits="0"/>
-						<line number="4" hits="0"/>
-						<line number="5" hits="0"/>
-						<line number="7" hits="0"/>
-					</lines>
-				</class>
-			</classes>
-		</package>
-	</packages>
-</coverage>
-""")
 @patch("testsolar_pytestx.extend.coverage_extend.find_coverage_path", return_value="/path/to/proj/.coverage")
-@patch("testsolar_pytestx.extend.coverage_extend.save_testcase_coverage_data")
-def test_handle_coverage(mock_save_testcase_coverage_data, mock_find_coverage_path, mock_open, mock_makedirs, mock_rmtree, mock_exists):
+@patch("testsolar_pytestx.extend.coverage_extend.get_testcase_coverage_data", return_value={
+    "test_case_1": {
+        "file1.py": [1, 2, 3],
+        "file2.py": [4, 5, 6]
+    },
+    "test_case_2": {
+        "file3.py": [7, 8, 9],
+        "file4.py": [10, 11, 12]
+    }
+})
+def test_handle_coverage(mock_get_testcase_coverage_data, mock_find_coverage_path, mock_makedirs, mock_rmtree, mock_exists):
     source_list = ["package1"]
-    handle_coverage(testdata_dir, source_list)
     
+    # 运行 handle_coverage 函数
+    handle_coverage(testdata_dir, source_list)
+
     # 验证文件操作
-    mock_open.assert_called()
     mock_find_coverage_path.assert_called_once_with(testdata_dir, ".coverage")
-    mock_save_testcase_coverage_data.assert_called_once()
+    mock_get_testcase_coverage_data.assert_called_once()
+
+    # 验证 JSON 内容
+    coverage_json_file = testdata_dir / "testsolar_coverage" / "testsolar_coverage.json"
+    with open(coverage_json_file, "r") as f:
+        written_data = json.load(f)
+    
+    assert written_data["coverageFile"] == str(testdata_dir / "coverage.xml")
+    assert written_data["coverageType"] == "cobertura_xml"
+    assert written_data["projectPath"]["projectPath"] == str(testdata_dir)
+    assert "caseCoverage" in written_data
+    assert len(written_data["caseCoverage"]) == 2
+    assert written_data["caseCoverage"][0]["caseName"] == "test_case_1"
+    assert written_data["caseCoverage"][1]["caseName"] == "test_case_2"
