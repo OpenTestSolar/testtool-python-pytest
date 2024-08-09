@@ -1,0 +1,55 @@
+{
+    "coverageFile": "/root/work/testsolar/github/tools-github/pytest/pytest/testdata/coverage.xml",
+    "coverageType": "cobertura_xml",
+    "reportId": "",
+    "resultHouseReportId": "",
+    "projectPath": {
+        "projectPath": "/root/work/testsolar/github/tools-github/pytest/pytest/testdata",
+        "beforeMove": "",
+        "afterMove": ""
+    },
+    "caseCoverage": [
+        {
+            "caseName": "test_case_1",
+            "testFiles": [
+                {
+                    "fileName": "file1.py",
+                    "fileLines": [
+                        1,
+                        2,
+                        3
+                    ]
+                },
+                {
+                    "fileName": "file2.py",
+                    "fileLines": [
+                        4,
+                        5,
+                        6
+                    ]
+                }
+            ]
+        },
+        {
+            "caseName": "test_case_2",
+            "testFiles": [
+                {
+                    "fileName": "file3.py",
+                    "fileLines": [
+                        7,
+                        8,
+                        9
+                    ]
+                },
+                {
+                    "fileName": "file4.py",
+                    "fileLines": [
+                        10,
+                        11,
+                        12
+                    ]
+                }
+            ]
+        }
+    ]
+}
