@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field, asdict
-from typing import List, Dict
+from typing import List, Dict, Union
 import json
 import os
 import shutil
@@ -37,11 +37,11 @@ class Coverage:
     caseCoverage: List[TestCaseCoverage] = field(default_factory=list)
 
     def to_json(self) -> str:
-        def convert(obj):
+        def convert(obj: Union[Path, TestFileLines, TestCaseCoverage, ProjectPath, Coverage]) -> Union[str, dict]:
             if isinstance(obj, Path):
                 return str(obj)
-            if hasattr(obj, "__dict__"):
-                return obj.__dict__
+            if isinstance(obj, (TestFileLines, TestCaseCoverage, ProjectPath, Coverage)):
+                return asdict(obj)
             return str(obj)
 
         return json.dumps(asdict(self), default=convert, indent=4)
