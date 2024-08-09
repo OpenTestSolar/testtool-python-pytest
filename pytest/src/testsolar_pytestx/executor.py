@@ -4,7 +4,6 @@ from datetime import datetime, timedelta
 from typing import BinaryIO, Optional, Dict, Any, List, Callable
 
 import pytest
-import shlex
 from loguru import logger
 from pytest import Item, Session
 
@@ -26,11 +25,13 @@ from .extend.allure_extend import (
     initialization_allure_dir,
     generate_allure_results,
 )
+
 from .extend.coverage_extend import (
     check_coverage_enable,
     compute_source_list,
     handle_coverage
 )
+from .util import append_extra_args
 from .filter import filter_invalid_selector_path
 from .parser import parse_case_attributes
 
@@ -120,12 +121,6 @@ def run_testcases(
     if len(source_list) > 0:
         handle_coverage(entry.ProjectPath, source_list)
     logger.info("pytest process exit")
-
-
-def append_extra_args(args: List[str]) -> None:
-    extra_args = os.environ.get("TESTSOLAR_TTP_EXTRAARGS", "")
-    if extra_args:
-        args.extend(shlex.split(extra_args))
 
 
 class PytestExecutor:
