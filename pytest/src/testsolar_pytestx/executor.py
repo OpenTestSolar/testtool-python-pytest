@@ -25,6 +25,12 @@ from .extend.allure_extend import (
     initialization_allure_dir,
     generate_allure_results,
 )
+
+from .extend.coverage_extend import (
+    check_coverage_enable,
+    compute_source_list,
+    handle_coverage
+)
 from .util import append_extra_args
 from .filter import filter_invalid_selector_path
 from .parser import parse_case_attributes
@@ -67,6 +73,15 @@ def run_testcases(
         args.append("--alluredir={}".format(allure_dir))
         initialization_allure_dir(allure_dir)
 
+    enable_coverage = check_coverage_enable()
+    source_list = []
+    if enable_coverage:
+        source_list = compute_source_list(valid_selectors)
+        if source_list:
+            args.extend("--cov=. --cov-report=xml:coverage.xml --cov-context=test".split())
+        else:
+            logger.warning("No source files found, coverage will not be collected")
+       
     append_extra_args(args)
 
     reporter: Reporter = Reporter(pipe_io=pipe_io)
@@ -103,6 +118,8 @@ def run_testcases(
         )
         pytest.main(args, plugins=[my_plugin])
 
+    if len(source_list) > 0:
+        handle_coverage(entry.ProjectPath, source_list)
     logger.info("pytest process exit")
 
 

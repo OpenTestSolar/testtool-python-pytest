@@ -17,4 +17,5 @@ tomli==2.0.1; python_version < "3.11"
 typing-extensions==4.7.1
 win32-setctime==1.1.0; sys_platform == "win32"
 zipp==3.15.0; python_version < "3.8"
-
+pytest-cov==4.1.0
+coverage==7.2.7
