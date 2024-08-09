@@ -19,4 +19,3 @@ win32-setctime==1.1.0; sys_platform == "win32"
 zipp==3.15.0; python_version < "3.8"
 pytest-cov==4.1.0
 coverage==7.2.7
-importlib-metadata==6.7.0; python_version < "3.8"
