@@ -20,6 +20,7 @@ from testsolar_testtool_sdk.reporter import Reporter
 from .converter import selector_to_pytest, pytest_to_selector, CASE_DRIVE_SEPARATOR
 from .filter import filter_invalid_selector_path
 from .parser import parse_case_attributes
+from .util import append_extra_args
 
 
 def collect_testcases(
@@ -68,6 +69,8 @@ def collect_testcases(
         "--continue-on-collection-errors",
         "-v",
     ]
+    append_extra_args(args)
+
     args.extend(testcase_list)
 
     print(f"[Load] try to collect testcases: {args}")
