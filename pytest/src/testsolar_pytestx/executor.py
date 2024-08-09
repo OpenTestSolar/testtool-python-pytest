@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from typing import BinaryIO, Optional, Dict, Any, List, Callable
 
 import pytest
+import shlex
 from loguru import logger
 from pytest import Item, Session
 
@@ -79,10 +80,8 @@ def run_testcases(
             args.extend("--cov=. --cov-report=xml:coverage.xml --cov-context=test".split())
         else:
             logger.warning("No source files found, coverage will not be collected")
-
-    extra_args = os.environ.get("TESTSOLAR_TTP_EXTRAARGS", "")
-    if extra_args:
-        args.extend(extra_args.split())
+       
+    append_extra_args(args)
 
     reporter: Reporter = Reporter(pipe_io=pipe_io)
 
@@ -121,6 +120,12 @@ def run_testcases(
     if len(source_list) > 0:
         handle_coverage(entry.ProjectPath, source_list)
     logger.info("pytest process exit")
+
+
+def append_extra_args(args: List[str]) -> None:
+    extra_args = os.environ.get("TESTSOLAR_TTP_EXTRAARGS", "")
+    if extra_args:
+        args.extend(shlex.split(extra_args))
 
 
 class PytestExecutor:
