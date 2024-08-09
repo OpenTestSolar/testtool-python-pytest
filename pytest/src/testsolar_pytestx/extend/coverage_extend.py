@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field, asdict
-from typing import List, Dict, Union
+from typing import List, Dict
 import json
 import os
 import shutil
@@ -7,7 +7,6 @@ import sys
 import time
 from xml.dom import minidom
 import coverage
-from pathlib import Path
 
 COVERAGE_DIR: str = "testsolar_coverage"
 
