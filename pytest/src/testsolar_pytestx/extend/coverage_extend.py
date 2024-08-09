@@ -37,14 +37,7 @@ class Coverage:
     caseCoverage: List[TestCaseCoverage] = field(default_factory=list)
 
     def to_json(self) -> str:
-        def convert(obj: Union[Path, TestFileLines, TestCaseCoverage, ProjectPath, Coverage]) -> Union[str, dict]:
-            if isinstance(obj, Path):
-                return str(obj)
-            if isinstance(obj, (TestFileLines, TestCaseCoverage, ProjectPath, Coverage)):
-                return asdict(obj)
-            return str(obj)
-
-        return json.dumps(asdict(self), default=convert, indent=4)
+        return json.dumps(asdict(self), indent=4)
 
 @dataclass
 class CoverageData:
@@ -107,22 +100,32 @@ def get_testcase_coverage_data(source_list: List[str], coverage_db_path: str) ->
         raise RuntimeError(f"Coverage db {coverage_db_path} not exist")
     root_path: str = os.path.dirname(os.path.abspath(coverage_db_path))
     result: Dict[str, CoverageData] = {}
-
+    source_list = ['multiply_mod', 'addition_mod']
     cov = coverage.Coverage(data_file=coverage_db_path)
     cov.load()
     file_set = cov.get_data().measured_files()
+    print("so")
     for fn in file_set:
+        print("====111", fn)
+
         rav_fn = fn
+        print("====1.5", rav_fn)
+        print("====1.6", root_path)
         if rav_fn.startswith(root_path):
+            print("====1.7")
             rav_fn = rav_fn[len(root_path) + 1 :]
         for source in source_list:
+            print("====1.8", source)
             if rav_fn.startswith(source):
+                print("=====1.9")
                 break
         else:
+            print("====333")
             continue
 
         line_map = cov.get_data().lines(fn)
         context_map = cov.get_data().contexts_by_lineno(fn)
+        print("====222", line_map)
         if line_map is not None:
             for line in line_map:
                 test_case_list = context_map.get(line, [])
@@ -205,10 +208,11 @@ def handle_coverage(proj_path: str, source_list: List[str]) -> None:
         resultHouseReportId=os.getenv("QTA_RESULT_HOUSE_REPORTID", ""),
         projectPath=project_path
     )
-
+    print("=====123123123", cov_file_info)
     for case_name, file_covs in cov_file_info.items():
+
         test_files = [TestFileLines(fileName=file_name, fileLines=file_lines)
-                      for file_name, file_lines in file_covs.items()]
+                      for file_name, file_lines in file_covs.files.items()]
         test_case_coverage = TestCaseCoverage(caseName=case_name, testFiles=test_files)
         coverage_data.caseCoverage.append(test_case_coverage)
 
@@ -216,3 +220,9 @@ def handle_coverage(proj_path: str, source_list: List[str]) -> None:
         f.write(coverage_data.to_json())
 
     print(f"Coverage data saved to {coverage_json_file}")
+
+
+if __name__ == "__main__":
+    testcase_list: List[str] = ["uttest/test_add.py?test_add_2_numbers", "uttest/test_add.py?test_add_dict"]
+    source_list = compute_source_list(testcase_list)
+    handle_coverage(os.getcwd(), source_list)

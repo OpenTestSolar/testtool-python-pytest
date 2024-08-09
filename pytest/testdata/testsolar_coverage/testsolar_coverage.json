@@ -10,41 +10,23 @@
     },
     "caseCoverage": [
         {
-            "caseName": "test_case_1",
+            "caseName": "uttest.test_add.test_add_2_numbers",
             "testFiles": [
                 {
-                    "fileName": "file1.py",
+                    "fileName": "addition_mod/add.py",
                     "fileLines": [
-                        1,
-                        2,
-                        3
-                    ]
-                },
-                {
-                    "fileName": "file2.py",
-                    "fileLines": [
-                        4,
-                        5,
-                        6
+                        11,
+                        12
                     ]
                 }
             ]
         },
         {
-            "caseName": "test_case_2",
+            "caseName": "uttest.test_add.test_add_param",
             "testFiles": [
                 {
-                    "fileName": "file3.py",
+                    "fileName": "addition_mod/add.py",
                     "fileLines": [
-                        7,
-                        8,
-                        9
-                    ]
-                },
-                {
-                    "fileName": "file4.py",
-                    "fileLines": [
-                        10,
                         11,
                         12
                     ]

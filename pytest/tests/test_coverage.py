@@ -82,14 +82,26 @@ def test_find_coverage_path_with_walk(monkeypatch):
 @patch("os.makedirs")
 @patch("testsolar_pytestx.extend.coverage_extend.find_coverage_path", return_value="/path/to/proj/.coverage")
 @patch("testsolar_pytestx.extend.coverage_extend.get_testcase_coverage_data", return_value={
-    "test_case_1": {
-        "file1.py": [1, 2, 3],
-        "file2.py": [4, 5, 6]
-    },
-    "test_case_2": {
-        "file3.py": [7, 8, 9],
-        "file4.py": [10, 11, 12]
-    }
+  "uttest.test_add.test_add_2_numbers": 
+  CoverageData(
+      name="uttest.test_add.test_add_2_numbers", 
+      files={
+            "addition_mod/add.py": [
+            11,
+            12
+            ]
+        }
+    ),
+  "uttest.test_add.test_add_param": 
+  CoverageData(
+      name="uttest.test_add.test_add_param", 
+      files={
+            "addition_mod/add.py": [
+            11,
+            12
+            ]
+        }
+    )
 })
 def test_handle_coverage(mock_get_testcase_coverage_data, mock_find_coverage_path, mock_makedirs, mock_rmtree, mock_exists):
     source_list = ["package1"]
@@ -111,5 +123,5 @@ def test_handle_coverage(mock_get_testcase_coverage_data, mock_find_coverage_pat
     assert written_data["projectPath"]["projectPath"] == str(testdata_dir)
     assert "caseCoverage" in written_data
     assert len(written_data["caseCoverage"]) == 2
-    assert written_data["caseCoverage"][0]["caseName"] == "test_case_1"
-    assert written_data["caseCoverage"][1]["caseName"] == "test_case_2"
+    assert written_data["caseCoverage"][0]["caseName"] == "uttest.test_add.test_add_2_numbers"
+    assert written_data["caseCoverage"][1]["caseName"] == "uttest.test_add.test_add_param"
