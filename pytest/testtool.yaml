@@ -50,17 +50,17 @@ parameterDefs: # 用户 use 这个测试工具时可以配置的 with 参数
     value: 覆盖率采集包名
     default: ''
     desc: |-
-    **覆盖率采集包名**
+      **覆盖率采集包名**
 
-    用于指定在代码覆盖率报告中需要保留的包名列表，多个包名用 `;` 分隔。
+      用于指定在代码覆盖率报告中需要保留的包名列表，多个包名用 `;` 分隔，填写相对路径。
 
-    **示例**:
-    ```
-    - name: TESTSOLAR_TTP_COVERAGECODEPACKAGES
-      value: my_package;another_package
-    ```
+      **示例**:
+      ```
+      环境变量名称: TESTSOLAR_TTP_COVERAGECODEPACKAGES
+      环境变量值: my_package;another_package
+      ```
 
-    inputWidget: text
+      inputWidget: text
 entry:
   load: "python3 /testtools/pytest/src/load.py $1"
   run: "python3 /testtools/pytest/src/run.py $1"
