@@ -27,8 +27,6 @@ from .extend.allure_extend import (
 )
 
 from .extend.coverage_extend import (
-    check_coverage_enable,
-    collect_code_packages,
     collect_coverage_report,
 )
 from .util import append_extra_args, append_coverage_args
