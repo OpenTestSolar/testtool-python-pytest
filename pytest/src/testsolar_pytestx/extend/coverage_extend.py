@@ -300,7 +300,7 @@ def find_coverage_db_path(proj: str, cov_file: str) -> str:
             coverage_path = config["run"]["data_file"].strip()
             if os.path.isfile(coverage_path):
                 logger.info("Found coverage db file: {}", coverage_path)
-                return coverage_path
+                return str(coverage_path)
 
     # 遍历项目目录，查找 .coverage 文件
     for root, _, files in os.walk(proj):
@@ -319,7 +319,7 @@ def generate_coverage_json_file(
     coverage_file_path: Path,
     cov_file_info: Dict[str, CoverageData],
     coverage_json_file: Path,
-):
+) -> None:
     """
     生成覆盖率 JSON 文件。
 
