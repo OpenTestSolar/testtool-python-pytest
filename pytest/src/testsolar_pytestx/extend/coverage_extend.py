@@ -200,7 +200,7 @@ def convert_coverage_data(
 
 
 def get_testcase_coverage_data(
-    code_package: List[str], coverage_db_path: str
+    code_package: List[str], coverage_db_path: Path
 ) -> Dict[str, CoverageData]:
     """
     获取测试用例的覆盖率数据。
@@ -272,7 +272,7 @@ def is_file_in_code_package(fn: str, code_package: List[str]) -> bool:
     return False
 
 
-def find_coverage_db_path(proj: str, cov_file: str) -> str:
+def find_coverage_db_path(proj: str, cov_file: str) -> Path:
     """
     查找覆盖率数据库文件路径。
 
@@ -287,7 +287,7 @@ def find_coverage_db_path(proj: str, cov_file: str) -> str:
     coverage_db_path = Path(proj) / cov_file
     if os.path.isfile(coverage_db_path):
         logger.info("Found coverage db file: {}", coverage_db_path)
-        return str(coverage_db_path)
+        return coverage_db_path
 
     # 查找 .coveragerc 文件 data_file 配置
     coveragerc_file_path = Path(proj) / ".coveragerc"
@@ -300,7 +300,7 @@ def find_coverage_db_path(proj: str, cov_file: str) -> str:
             coverage_path = config["run"]["data_file"].strip()
             if os.path.isfile(coverage_path):
                 logger.info("Found coverage db file: {}", coverage_path)
-                return str(coverage_path)
+                return Path(coverage_path)
 
     # 遍历项目目录，查找 .coverage 文件
     for root, _, files in os.walk(proj):
@@ -308,10 +308,10 @@ def find_coverage_db_path(proj: str, cov_file: str) -> str:
             if f_name == ".coverage":
                 coverage_path = Path(root) / f_name
                 logger.info("Found coverage db file: {}", coverage_path)
-                return str(coverage_path)
+                return coverage_path
 
     # 如果未找到覆盖率数据库文件，返回空字符串
-    return ""
+    return Path("")
 
 
 def generate_coverage_json_file(
