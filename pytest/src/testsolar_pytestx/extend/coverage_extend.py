@@ -338,8 +338,8 @@ def generate_coverage_json_file(
     coverage_data = Coverage(
         coverageFile=str(coverage_file_path),
         coverageType="cobertura_xml",
-        reportId=os.getenv("QTA_REPORTID", ""),
-        resultHouseReportId=os.getenv("QTA_RESULT_HOUSE_REPORTID", ""),
+        reportId=os.getenv("QTAP_REPORT_ID", ""),
+        resultHouseReportId=os.getenv("QTA_JOBID", ""),
         projectPath=project_path,
     )
 
@@ -404,3 +404,5 @@ def collect_coverage_report(
     generate_coverage_json_file(
         proj_path, coverage_file_path, cov_file_info, coverage_json_file
     )
+
+    logger.info("collect coverage report done")

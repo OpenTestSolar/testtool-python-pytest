@@ -1,0 +1,23 @@
+<?xml version="1.0" ?>
+    <coverage>
+      <sources>
+        <source>/src</source>
+      </sources>
+      <packages>
+        <package name="package1">
+          <classes>
+            <class name="Class1" filename="file1.py" />
+          </classes>
+        </package>
+        <package name="package2">
+          <classes>
+            <class name="Class2" filename="file2.py" />
+          </classes>
+        </package>
+        <package name="package3">
+          <classes>
+            <class name="Class3" filename="file3.py" />
+          </classes>
+        </package>
+      </packages>
+    </coverage>

@@ -1,0 +1,3 @@
+[run]
+omit = testdata/*
+data_file = ./testsolar_coverage/.coverage_db
