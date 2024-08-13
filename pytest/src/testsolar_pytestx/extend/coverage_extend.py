@@ -281,26 +281,26 @@ def find_coverage_db_path(proj: str, cov_file: str) -> Path:
         cov_file (str): 覆盖率文件名。
 
     Returns:
-        str: 覆盖率数据库文件路径。如果未找到，返回空字符串。
+        Path: 覆盖率数据库文件路径。如果未找到，返回空路径。
     """
     # 检查是否根目录存在db文件
     coverage_db_path = Path(proj) / cov_file
-    if os.path.isfile(coverage_db_path):
+    if coverage_db_path.is_file():
         logger.info("Found coverage db file: {}", coverage_db_path)
         return coverage_db_path
 
     # 查找 .coveragerc 文件 data_file 配置
     coveragerc_file_path = Path(proj) / ".coveragerc"
-    if os.path.isfile(coveragerc_file_path):
+    if coveragerc_file_path.is_file():
         config = configparser.ConfigParser()
         config.read(coveragerc_file_path)
 
         # 检查 [run] 部分中的 data_file 配置项
         if "run" in config and "data_file" in config["run"]:
-            coverage_path = config["run"]["data_file"].strip()
-            if os.path.isfile(coverage_path):
+            coverage_path = Path(config["run"]["data_file"].strip())
+            if coverage_path.is_file():
                 logger.info("Found coverage db file: {}", coverage_path)
-                return Path(coverage_path)
+                return coverage_path
 
     # 遍历项目目录，查找 .coverage 文件
     for root, _, files in os.walk(proj):
@@ -310,7 +310,7 @@ def find_coverage_db_path(proj: str, cov_file: str) -> Path:
                 logger.info("Found coverage db file: {}", coverage_path)
                 return coverage_path
 
-    # 如果未找到覆盖率数据库文件，返回空字符串
+    # 如果未找到覆盖率数据库文件，返回空路径
     return Path("")
 
 
