@@ -58,8 +58,6 @@ def test_coverage_to_json():
     coverage = Coverage(
         coverageFile="/path/to/coverage.xml",
         coverageType="cobertura_xml",
-        reportId="12345",
-        resultHouseReportId="67890",
         projectPath=project_path,
         caseCoverage=[test_case_coverage1, test_case_coverage2],
     )
@@ -303,10 +301,6 @@ class TestGenerateCoverageJsonFile:
             coverage_json_file,
         ) = setup_test_environment
 
-        # Mock environment variables
-        monkeypatch.setenv("QTAP_REPORT_ID", "12345")
-        monkeypatch.setenv("QTA_JOBID", "67890")
-
         # 调用方法
         generate_coverage_json_file(
             proj_path=proj_path,
@@ -322,8 +316,6 @@ class TestGenerateCoverageJsonFile:
         expected_data = {
             "coverageFile": str(coverage_file_path),
             "coverageType": "cobertura_xml",
-            "reportId": "12345",
-            "resultHouseReportId": "67890",
             "projectPath": {
                 "projectPath": str(proj_path),
                 "beforeMove": "",

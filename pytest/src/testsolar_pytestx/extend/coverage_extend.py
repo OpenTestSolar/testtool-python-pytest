@@ -52,8 +52,6 @@ class Coverage:
 
     coverageFile: str
     coverageType: str
-    reportId: str
-    resultHouseReportId: str
     projectPath: ProjectPath
     caseCoverage: List[TestCaseCoverage] = field(default_factory=list)
 
@@ -338,8 +336,6 @@ def generate_coverage_json_file(
     coverage_data = Coverage(
         coverageFile=str(coverage_file_path),
         coverageType="cobertura_xml",
-        reportId=os.getenv("QTAP_REPORT_ID", ""),
-        resultHouseReportId=os.getenv("QTA_JOBID", ""),
         projectPath=project_path,
     )
 
