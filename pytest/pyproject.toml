@@ -1,6 +1,6 @@
 [project]
 name = "testsolar-pytestx"
-version = "0.1.28"
+version = "0.1.29"
 description = "Pytest tool for TestSolar"
 authors = [
     {name = "asiazhang2002", email = "asiazhang2002@gmail.com"},
@@ -22,6 +22,9 @@ dependencies = [
     "pytest>=7",
     "testsolar-testtool-sdk>=0.4",
     "loguru>=0.7.2",
+    "coverage>=7.2.7",
+    "pytest-cov>=4.1.0",
+    "importlib-metadata>=6.7.0",
 ]
 requires-python = ">=3.7"
 readme = "README.md"
@@ -38,6 +41,7 @@ dev = [
     "pytest-cov>=4",
     "allure-pytest>=2.13",
     "requests>=2.31.0",
+    "typed-ast>=1.5.5",
 ]
 
 [tool.setuptools.package-data]
