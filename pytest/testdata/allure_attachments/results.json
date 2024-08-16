@@ -19,7 +19,7 @@
         "attachments": [
           {
             "name": "创建仓库",
-            "source": "创建仓库-attachment.txt",
+            "source": "create_attachment.txt",
             "type": "text/plain"
           }
         ]
