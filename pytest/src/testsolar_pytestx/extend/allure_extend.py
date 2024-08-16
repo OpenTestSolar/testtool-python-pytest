@@ -4,6 +4,8 @@ import shutil
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import List, Dict, Optional
+from loguru import logger
+from pathlib import Path
 
 from dacite import from_dict
 from testsolar_testtool_sdk.model.testresult import (
@@ -14,18 +16,16 @@ from testsolar_testtool_sdk.model.testresult import (
     TestCaseStep,
 )
 
-
+# 定义数据类，用于表示Allure报告中的各种结构
 @dataclass
 class StatusDetails:
     message: Optional[str] = None
     trace: Optional[str] = None
 
-
 @dataclass
 class Parameter:
     name: str
     value: str
-
 
 @dataclass
 class Attachments:
@@ -33,20 +33,16 @@ class Attachments:
     source: str
     type: str
 
-
 @dataclass
 class Step:
     name: str
     status: str
     start: int
     stop: int
-    parameters: Optional[List[Parameter]] = field(default_factory=list)  # type: ignore
-    steps: Optional[List["Step"]] = field(  # type: ignore
-        default_factory=list
-    )  # Note the forward reference for recursive type
+    parameters: Optional[List[Parameter]] = field(default_factory=list)
+    steps: Optional[List["Step"]] = field(default_factory=list)  # 递归类型
     statusDetails: Optional[StatusDetails] = None
     attachments: Optional[List[Attachments]] = None
-
 
 @dataclass
 class AllureData:
@@ -62,47 +58,67 @@ class AllureData:
     labels: List[Dict[str, str]] = field(default_factory=list)
     attachments: Optional[List[Attachments]] = None
 
-
 def check_allure_enable() -> bool:
+    """
+    检查环境变量以确定是否启用Allure报告。
+    """
     return os.getenv("TESTSOLAR_TTP_ENABLEALLURE", "") in ["1", "true"]
-
 
 def initialization_allure_dir(allure_dir: str) -> None:
     """
-    初始化 Allure 报告目录。
-    如果指定的目录存在，则删除该目录及其所有内容。然后重新创建一个空目录。
+    初始化 Allure 报告目录。如果指定的目录存在，则删除该目录及其所有内容。然后重新创建一个空目录。
+    
+    :param allure_dir: Allure 报告目录路径
     """
-    # 检查目录是否存在
-    if os.path.isdir(allure_dir):
-        # 目录存在，删除目录及其所有内容
+    logger.info(f"Initializing Allure directory: {allure_dir}")
+    if Path(allure_dir).exists():
+        logger.info(f"Directory {allure_dir} exists. Removing it.")
         shutil.rmtree(allure_dir)
-    # 创建一个新的空目录
     os.makedirs(allure_dir, exist_ok=True)
-
+    logger.info(f"Directory {allure_dir} created.")
 
 def generate_allure_results(
     test_data: Dict[str, TestResult], file_name: str, attachment_dir: str
 ) -> None:
-    print("Start to generate allure results")
+    """
+    生成 Allure 报告结果。
+
+    :param test_data: 测试数据字典
+    :param file_name: 包含 Allure 报告的 JSON 文件的名称
+    :param attachment_dir: 附件目录
+    """
+    logger.info("Start to generate allure results")
+    logger.debug(f"Reading Allure data from file: {file_name}")
     with open(file_name) as fp:
         allure_data = from_dict(data_class=AllureData, data=json.loads(fp.read()))
         full_name = allure_data.fullName.replace("#", ".")
+        logger.debug(f"Parsed Allure data for test case: {full_name}")
+
         for testcase_name in test_data.keys():
+            logger.info(f"Processing test case: {testcase_name}")
             step_info: List[TestCaseStep] = []
             testcase_format_name = ".".join(
                 testcase_name.replace(".py?", os.sep).split(os.sep)
             )
+            logger.debug(f"Formatted test case name: {testcase_format_name}")
+
             if full_name != testcase_format_name:
+                logger.info(f"Test case name {full_name} does not match {testcase_format_name}. Skipping.")
                 continue
+
             if allure_data.steps:
+                logger.info(f"Generating step info for test case {full_name}")
                 step_info = gen_allure_step_info(allure_data.steps, attachment_dir)
+
             if allure_data.attachments:
+                logger.info(f"Processing attachments for test case {full_name}")
                 for attachment in allure_data.attachments:
-                    attachment_path = os.path.join(attachment_dir, attachment.source)
-                    if os.path.isfile(attachment_path):
-                        with open(
-                            attachment_path, "r", encoding="utf-8", errors="ignore"
-                        ) as f:
+                    attachment_path = Path(attachment_dir).joinpath(attachment.source)
+                    logger.debug(f"Attachment path: {str(attachment_path)}")
+
+                    if Path(attachment_path).is_file():
+                        logger.info(f"Reading attachment: {attachment_path}")
+                        with open(attachment_path, "r", encoding="utf-8", errors="ignore") as f:
                             log_content = f.read()
                             log_info = TestCaseLog(
                                 Time=format_allure_time(allure_data.start),
@@ -122,16 +138,31 @@ def generate_allure_results(
                             )
             test_data[testcase_name].Steps.clear()
             test_data[testcase_name].Steps.extend(step_info)
-
+            logger.info(f"Finished processing test case: {testcase_name}")
 
 def format_allure_time(timestamp: float) -> datetime:
-    return datetime.fromtimestamp(timestamp / 1000)
+    """
+    格式化 Allure 时间戳。
 
+    :param timestamp: 时间戳
+    :return: 格式化的日期时间对象
+    """
+    formatted_time = datetime.fromtimestamp(timestamp / 1000)
+    logger.debug(f"Formatted timestamp {timestamp} to {formatted_time}")
+    return formatted_time
 
 def gen_allure_step_info(
     steps: List[Step], attachment_dir: str, index: int = 0
 ) -> List[TestCaseStep]:
-    print("Gen allure step")
+    """
+    生成 Allure 步骤信息。
+
+    :param steps: 步骤列表
+    :param attachment_dir: 附件目录
+    :param index: 步骤索引
+    :return: 测试用例步骤列表
+    """
+    logger.info("Generating allure step info")
     case_steps = []
     for step in steps:
         index += 1
@@ -156,8 +187,11 @@ def gen_allure_step_info(
                 log += step.statusDetails.message + step.statusDetails.trace
         if step.attachments:
             for attachment in step.attachments:
-                attachment_path = os.path.join(attachment_dir, attachment.source)
-                if os.path.isfile(attachment_path):
+                attachment_path = Path(attachment_dir).joinpath(attachment.source)
+                logger.debug(f"Attachment path: {str(attachment_path)}")
+
+                if Path(attachment_path).exists():
+                    logger.info(f"Reading attachment: {attachment_path}")
                     with open(attachment_path, "r") as f:
                         log += f"\n{attachment.name}:\n" + f.read() + "\n\n"
 
@@ -174,10 +208,58 @@ def gen_allure_step_info(
             ResultType=result_type,
         )
 
-        print("Get allure step from json file: ", step_info)
+        logger.info(f"Generated step info: {step_info}")
         case_steps.append(step_info)
         if step.steps:
             case_steps.extend(
                 gen_allure_step_info(step.steps, attachment_dir, index * 10)
             )
     return case_steps
+
+
+class CustomJSONEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, datetime):
+            return obj.isoformat()
+        if isinstance(obj, TestCaseLog):
+            return obj.__dict__
+        if isinstance(obj, TestCaseStep):
+            return obj.__dict__
+        if isinstance(obj, TestResult):
+            return {
+                "Test": obj.Test.__dict__,
+                "StartTime": obj.StartTime.isoformat(),
+                "EndTime": obj.EndTime.isoformat(),
+                "ResultType": obj.ResultType.name,
+                "Steps": obj.Steps,
+                "Message": obj.Message
+            }
+        if isinstance(obj, TestCase):
+            return obj.__dict__
+        if isinstance(obj, LogLevel):
+            return obj.name
+        if isinstance(obj, ResultType):
+            return obj.name
+        return super().default(obj)
+
+
+if __name__ == "__main__":
+    from testsolar_testtool_sdk.model.test import TestCase
+    test_data = {'test_module.test_case_1': TestResult(
+            Test=TestCase(
+                Name="test1111",
+                Attributes = {}
+            ),
+            StartTime=datetime.now(),
+            EndTime=datetime.now(),
+            ResultType=ResultType.SUCCEED,
+            Steps=[],
+            Message=""
+        )
+    }
+    file_name = "/root/work/123test/tmp/allure/pytest-pip/allure_results/outputs/tmp/0ac186ef-3abc-4ce2-b7fb-fbb5eee67bf9-result.json"
+    attachment_dir = "/root/work/123test/tmp/allure/pytest-pip/allure_results/outputs/tmp"
+
+    generate_allure_results(test_data, file_name, attachment_dir)
+
+    print(json.dumps(test_data, cls=CustomJSONEncoder, indent=4, ensure_ascii=False))
