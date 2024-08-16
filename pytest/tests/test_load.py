@@ -23,10 +23,14 @@ class TestCollectorEntry(TestCase):
         pipe_io.seek(0)
         re = read_load_result(pipe_io)
 
-        self.assertEqual(len(re.Tests), 6)
+        self.assertEqual(len(re.Tests), 7)
         self.assertEqual(
             re.Tests[4].Name,
             "test_data_drive.py?test_special_data_drive_name/[中文-分号+[id:32]]",
+        )
+        self.assertEqual(
+            re.Tests[6].Name,
+            "test_unit_test_case.py?TestInnerCase/test_inner_case",
         )
 
     def test_raise_error_when_param_is_invalid(self):
