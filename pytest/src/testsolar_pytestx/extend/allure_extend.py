@@ -39,8 +39,8 @@ class Step:
     status: str
     start: int
     stop: int
-    parameters: Optional[List[Parameter]] = field(default_factory=list)
-    steps: Optional[List["Step"]] = field(default_factory=list)  # 递归类型
+    parameters: Optional[List[Parameter]] = field(default_factory=list) # type: ignore
+    steps: Optional[List["Step"]] = field(default_factory=list)  # type: ignore
     statusDetails: Optional[StatusDetails] = None
     attachments: Optional[List[Attachments]] = None
 
