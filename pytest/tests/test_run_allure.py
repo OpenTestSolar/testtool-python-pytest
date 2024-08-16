@@ -19,54 +19,8 @@ from testsolar_pytestx.extend.allure_extend import (
     format_allure_time,
     ResultType,
     Step,
+    Attachments,
 )
-
-allure_json = """
-{
-  "name": "test_case_1",
-  "status": "passed",
-  "start": 1622547800000,
-  "stop": 1622547900000,
-  "uuid": "12345",
-  "historyId": "67890",
-  "testCaseId": "abcde",
-  "fullName": "test_module.test_case_1",
-  "steps": [
-    {
-      "name": "step1",
-      "status": "passed",
-      "start": 1622547800000,
-      "stop": 1622547810000,
-      "parameters": [],
-      "steps": [],
-      "statusDetails": null
-    },
-    {
-      "name": "step2",
-      "status": "skipped",
-      "start": 1622547800000,
-      "stop": 1622547810000,
-      "parameters": [],
-      "steps": [],
-      "statusDetails": null
-    },
-    {
-      "name": "step3",
-      "status": "failed",
-      "start": 1622547800000,
-      "stop": 1622547810000,
-      "parameters": [],
-      "steps": [],
-      "statusDetails": 
-        {
-          "message": "step3 failed",
-          "trace": "trace info"
-        }
-    }
-  ],
-  "labels": []
-}
-"""
 
 
 @pytest.fixture
@@ -91,15 +45,19 @@ def test_data():
 
 class TestAllureResults:
     def test_generate_allure_results(self, test_data):
-        with patch("builtins.open", mock_open(read_data=allure_json)):
-            generate_allure_results(test_data, "dummy_file.json")
+        test_attachments_path = Path(__file__).parent.parent.absolute().joinpath("testdata/allure_attachments")
+        result_file_path = Path(test_attachments_path).joinpath("results.json")
+        generate_allure_results(test_data, result_file_path, test_attachments_path)
 
-        assert len(test_data["test_module.test_case_1"].Steps) == 3
+        assert len(test_data["test_module.test_case_1"].Steps) == 4
         assert test_data["test_module.test_case_1"].Steps[0].Title == "1: step1"
         assert (
             test_data["test_module.test_case_1"].Steps[0].ResultType
             == ResultType.SUCCEED
         )
+        # Check the content of the attachment
+        assert "This is the content of 创建仓库 attachment." in test_data["test_module.test_case_1"].Steps[0].Logs[0].Content
+        assert "This is the content of stdout attachment." in test_data["test_module.test_case_1"].Steps[-1].Logs[0].Content
 
     def test_gen_allure_step_info(self):
         steps = [
@@ -111,9 +69,16 @@ class TestAllureResults:
                 parameters=[],
                 steps=[],
                 statusDetails=None,
+                attachments=[
+                    Attachments(
+                        name="example attachment",
+                        source="example-attachment.txt",
+                        type="text/plain"
+                    )
+                ]
             )
         ]
-        result = gen_allure_step_info(steps)
+        result = gen_allure_step_info(steps, "")
         assert len(result) == 1
         assert result[0].Title == "1: step1"
         assert result[0].ResultType == ResultType.SUCCEED

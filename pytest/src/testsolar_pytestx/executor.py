@@ -270,7 +270,7 @@ class PytestExecutor:
         for file_name in os.listdir(allure_dir):
             if not file_name.endswith("result.json"):
                 continue
-            generate_allure_results(self.testdata, os.path.join(allure_dir, file_name))
+            generate_allure_results(self.testdata, os.path.join(allure_dir, file_name), allure_dir)
         for _, test_result in self.testdata.items():
             self.reporter.report_case_result(test_result)
         logger.info(f"E {session.nodeid} session finish")
