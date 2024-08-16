@@ -80,7 +80,9 @@ def initialization_allure_dir(allure_dir: str) -> None:
     os.makedirs(allure_dir, exist_ok=True)
 
 
-def generate_allure_results(test_data: Dict[str, TestResult], file_name: str, attachment_dir: str) -> None:
+def generate_allure_results(
+    test_data: Dict[str, TestResult], file_name: str, attachment_dir: str
+) -> None:
     print("Start to generate allure results")
     with open(file_name) as fp:
         allure_data = from_dict(data_class=AllureData, data=json.loads(fp.read()))
@@ -98,12 +100,14 @@ def generate_allure_results(test_data: Dict[str, TestResult], file_name: str, at
                 for attachment in allure_data.attachments:
                     attachment_path = os.path.join(attachment_dir, attachment.source)
                     if os.path.isfile(attachment_path):
-                        with open(attachment_path, 'r', encoding='utf-8', errors='ignore') as f:
+                        with open(
+                            attachment_path, "r", encoding="utf-8", errors="ignore"
+                        ) as f:
                             log_content = f.read()
                             log_info = TestCaseLog(
                                 Time=format_allure_time(allure_data.start),
                                 Level=LogLevel.INFO,
-                                Content=f"Attachment {attachment.name}:\n{log_content}"
+                                Content=f"Attachment {attachment.name}:\n{log_content}",
                             )
                             step_info.append(
                                 TestCaseStep(
@@ -111,7 +115,9 @@ def generate_allure_results(test_data: Dict[str, TestResult], file_name: str, at
                                     Logs=[log_info],
                                     StartTime=format_allure_time(allure_data.start),
                                     EndTime=format_allure_time(allure_data.stop),
-                                    ResultType=ResultType.SUCCEED if allure_data.status == "passed" else ResultType.FAILED,
+                                    ResultType=ResultType.SUCCEED
+                                    if allure_data.status == "passed"
+                                    else ResultType.FAILED,
                                 )
                             )
             test_data[testcase_name].Steps.clear()
@@ -122,7 +128,9 @@ def format_allure_time(timestamp: float) -> datetime:
     return datetime.fromtimestamp(timestamp / 1000)
 
 
-def gen_allure_step_info(steps: List[Step], attachment_dir: str, index: int = 0) -> List[TestCaseStep]:
+def gen_allure_step_info(
+    steps: List[Step], attachment_dir: str, index: int = 0
+) -> List[TestCaseStep]:
     print("Gen allure step")
     case_steps = []
     for step in steps:
@@ -150,7 +158,7 @@ def gen_allure_step_info(steps: List[Step], attachment_dir: str, index: int = 0)
             for attachment in step.attachments:
                 attachment_path = os.path.join(attachment_dir, attachment.source)
                 if os.path.isfile(attachment_path):
-                    with open(attachment_path, 'r') as f:
+                    with open(attachment_path, "r") as f:
                         log += f"\n{attachment.name}:\n" + f.read() + "\n\n"
 
         log_info = TestCaseLog(
@@ -169,5 +177,7 @@ def gen_allure_step_info(steps: List[Step], attachment_dir: str, index: int = 0)
         print("Get allure step from json file: ", step_info)
         case_steps.append(step_info)
         if step.steps:
-            case_steps.extend(gen_allure_step_info(step.steps, attachment_dir, index * 10))
+            case_steps.extend(
+                gen_allure_step_info(step.steps, attachment_dir, index * 10)
+            )
     return case_steps
