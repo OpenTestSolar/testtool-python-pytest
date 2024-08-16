@@ -107,7 +107,7 @@ def generate_allure_results(test_data: Dict[str, TestResult], file_name: str, at
                             )
                             step_info.append(
                                 TestCaseStep(
-                                    Title=f"Testcase Stdout:",
+                                    Title="Testcase Stdout:",
                                     Logs=[log_info],
                                     StartTime=format_allure_time(allure_data.start),
                                     EndTime=format_allure_time(allure_data.stop),
