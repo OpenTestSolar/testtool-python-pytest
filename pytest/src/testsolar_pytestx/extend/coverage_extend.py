@@ -329,7 +329,9 @@ def generate_coverage_json_file(
     """
     # 创建 ProjectPath 对象，存储项目路径信息
     project_path = ProjectPath(
-        projectPath=str(proj_path), beforeMove="", afterMove=""  # 确保转换为字符串
+        projectPath=str(proj_path),
+        beforeMove="",
+        afterMove="",  # 确保转换为字符串
     )
 
     # 创建 Coverage 对象，存储覆盖率信息
