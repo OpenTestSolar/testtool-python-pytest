@@ -1,15 +1,15 @@
 import json
-from unittest.mock import patch, mock_open, MagicMock
-from typing import List, Dict
+import logging
 import os
-import pytest
 import shutil
 import sys
-import logging
 import tempfile
-from pathlib import Path
 from dataclasses import asdict
+from pathlib import Path
+from unittest.mock import MagicMock
 from xml.dom import minidom
+
+import pytest
 
 from testsolar_pytestx.extend.coverage_extend import (
     ProjectPath,

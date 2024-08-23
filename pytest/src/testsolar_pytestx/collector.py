@@ -2,6 +2,7 @@ import os
 import sys
 import traceback
 from collections import defaultdict
+from pathlib import Path
 from typing import BinaryIO, Sequence, Optional, List, Dict, Union, Callable
 
 import pytest
@@ -33,6 +34,8 @@ def collect_testcases(
 ) -> None:
     if entry_param.ProjectPath not in sys.path:
         sys.path.insert(0, entry_param.ProjectPath)
+
+    show_workspace_files(entry_param.ProjectPath)
 
     load_result: LoadResult = LoadResult(
         Tests=[],
@@ -68,6 +71,7 @@ def collect_testcases(
         "--collect-only",
         "--continue-on-collection-errors",
         "-v",
+        "--trace-config",
     ]
     append_extra_args(args)
 
@@ -104,6 +108,16 @@ def collect_testcases(
 
     reporter = Reporter(pipe_io=pipe_io)
     reporter.report_load_result(load_result)
+
+
+def show_workspace_files(workdir: str) -> None:
+    print()
+    print(f"Workspace [{workdir}] files:")
+    for item in Path(workdir).iterdir():
+        if item.is_file():
+            print(f" - {item}")
+
+    print()
 
 
 class PytestCollector:
