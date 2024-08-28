@@ -16,5 +16,6 @@ def test_get_unique_string():
 
 def test_get_unique_string_empty():
     report_path = ""
-    unique_string = get_unique_string(report_path)
-    assert unique_string == str(os.getpid())
+    with patch("uuid.uuid4", return_value="123123123"):
+        unique_string = get_unique_string(report_path)
+    assert unique_string == "123123123"

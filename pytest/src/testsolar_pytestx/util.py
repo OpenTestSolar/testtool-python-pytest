@@ -1,4 +1,5 @@
 import os
+import uuid
 import shlex
 from typing import List
 from loguru import logger
@@ -56,11 +57,11 @@ def append_extra_args(args: List[str]) -> None:
 
 def get_unique_string(report_path: str) -> str:
     """
-    将fileReportPath的唯一标识或者当前进程id作为唯一数组传递
+    将fileReportPath的唯一标识或者uuid作为唯一数组传递
     
     Args:
         report_path str: 报告存放目录
     
     return: 唯一标识
     """
-    return report_path.split("/")[-2] if report_path else str(os.getpid())
+    return report_path.split("/")[-2] if report_path else str(uuid.uuid4())
