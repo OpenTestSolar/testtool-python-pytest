@@ -5,6 +5,7 @@ import os
 import configparser
 import sys
 import time
+import uuid
 from xml.dom import minidom
 import coverage
 from loguru import logger
@@ -364,7 +365,7 @@ def generate_coverage_json_file(
 
 
 def collect_coverage_report(
-    proj_path: str, file_report_path: str, code_package: List[str], unique_string: str
+    proj_path: str, file_report_path: str, code_package: List[str]
 ) -> None:
     """
     处理覆盖率并生成覆盖率报告。
@@ -378,6 +379,7 @@ def collect_coverage_report(
     coverage_json_dir = Path(proj_path) / "testsolar_coverage"
     if not coverage_json_dir.exists():
         coverage_json_dir.mkdir()
+    unique_string = str(uuid.uuid4())
     coverage_json_file: Path = coverage_json_dir / f"{unique_string}.json"
     
     # 检查覆盖率文件是否存在
