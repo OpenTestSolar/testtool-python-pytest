@@ -376,7 +376,7 @@ def collect_coverage_report(
     coverage_json_file: Path = (
         Path(proj_path) / file_report_path / "testsolar_coverage.json"
     )
-    
+
     # 检查覆盖率文件是否存在
     if not os.path.exists(coverage_file_path):
         logger.error("File coverage.xml not exist", file=sys.stderr)
