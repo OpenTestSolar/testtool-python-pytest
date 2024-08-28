@@ -5,6 +5,7 @@ import os
 import configparser
 import sys
 import time
+import uuid
 from xml.dom import minidom
 import coverage
 from loguru import logger
@@ -375,10 +376,12 @@ def collect_coverage_report(
     """
     # 定义覆盖率文件路径和 JSON 文件路径
     coverage_file_path: Path = Path(proj_path) / file_report_path / "coverage.xml"
-    coverage_json_file: Path = (
-        Path(proj_path) / file_report_path / "testsolar_coverage.json"
-    )
-
+    coverage_json_dir = Path(proj_path) / "testsolar_coverage"
+    if not coverage_json_dir.exists():
+        coverage_json_dir.mkdir()
+    unique_string = str(uuid.uuid4())
+    coverage_json_file: Path = coverage_json_dir / f"{unique_string}.json"
+    
     # 检查覆盖率文件是否存在
     if not os.path.exists(coverage_file_path):
         logger.error("File coverage.xml not exist", file=sys.stderr)
