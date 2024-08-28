@@ -394,7 +394,7 @@ class TestCollectCoverageReport:
         monkeypatch.setattr("testsolar_pytestx.extend.coverage_extend.logger", logger)
 
         # Call the method
-        collect_coverage_report(proj_path, file_report_path, ["package1", "package2"], "123123")
+        collect_coverage_report(proj_path, file_report_path, ["package1", "package2"])
 
         # Assert calls
         filter_coverage_xml_packages.assert_called_once_with(
@@ -421,7 +421,7 @@ class TestCollectCoverageReport:
         monkeypatch.setattr("testsolar_pytestx.extend.coverage_extend.logger", logger)
 
         # Call the method
-        collect_coverage_report(proj_path, file_report_path, ["package1", "package2"], "123123")
+        collect_coverage_report(proj_path, file_report_path, ["package1", "package2"])
 
         # Assert that error log is called
         logger.error.assert_called_once_with(

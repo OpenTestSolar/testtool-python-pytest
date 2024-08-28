@@ -29,11 +29,7 @@ from .extend.allure_extend import (
 from .extend.coverage_extend import (
     collect_coverage_report,
 )
-from .util import (
-    append_extra_args, 
-    append_coverage_args, 
-    get_unique_string
-)
+from .util import append_extra_args, append_coverage_args
 from .filter import filter_invalid_selector_path
 from .parser import parse_case_attributes
 
@@ -115,10 +111,9 @@ def run_testcases(
         )
         pytest.main(args, plugins=[my_plugin])
 
-    unique_string = get_unique_string(entry.FileReportPath)
     if len(code_packages) > 0:
         # 如果存在需要采集覆盖率的代码包，则生成覆盖率报告
-        collect_coverage_report(entry.ProjectPath, entry.FileReportPath, code_packages, unique_string)
+        collect_coverage_report(entry.ProjectPath, entry.FileReportPath, code_packages)
     logger.info("pytest process exit")
 
 
