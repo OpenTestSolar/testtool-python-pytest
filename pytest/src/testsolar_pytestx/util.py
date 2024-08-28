@@ -1,5 +1,4 @@
 import os
-import uuid
 import shlex
 from typing import List
 from loguru import logger
