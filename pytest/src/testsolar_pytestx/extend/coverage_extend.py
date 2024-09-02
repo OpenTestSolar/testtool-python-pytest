@@ -31,6 +31,7 @@ class TestCaseCoverage:
     """
     数据类，用于存储测试用例覆盖率。
     """
+
     __test__ = False
 
     caseName: str
@@ -157,9 +158,7 @@ def filter_coverage_xml_packages(xml_path: Path, code_package: List[str]) -> Non
 
         with open(xml_path, "w") as fd:
             dom.writexml(fd)
-    logger.info(
-        "filter_coverage_xml_packages cost time: %s" % (time.time() - start_time)
-    )
+    logger.info("filter_coverage_xml_packages cost time: %s" % (time.time() - start_time))
 
 
 def convert_coverage_data(
@@ -352,9 +351,7 @@ def generate_coverage_json_file(
                 TestFileLines(fileName=file_name, fileLines=file_lines)
                 for file_name, file_lines in file_covs.files.items()
             ]
-            test_case_coverage = TestCaseCoverage(
-                caseName=case_name, testFiles=test_files
-            )
+            test_case_coverage = TestCaseCoverage(caseName=case_name, testFiles=test_files)
             coverage_data.caseCoverage.append(test_case_coverage)
     else:
         logger.warning("No test case coverage data found")
@@ -367,9 +364,7 @@ def generate_coverage_json_file(
     logger.info(f"Coverage data saved to {coverage_json_file}")
 
 
-def collect_coverage_report(
-    proj_path: str, file_report_path: str, code_package: List[str]
-) -> None:
+def collect_coverage_report(proj_path: str, file_report_path: str, code_package: List[str]) -> None:
     """
     处理覆盖率并生成覆盖率报告。
 
@@ -384,7 +379,7 @@ def collect_coverage_report(
         coverage_json_dir.mkdir()
     unique_string = str(uuid.uuid4())
     coverage_json_file: Path = coverage_json_dir / f"{unique_string}.json"
-    
+
     # 检查覆盖率文件是否存在
     if not os.path.exists(coverage_file_path):
         logger.error("File coverage.xml not exist", file=sys.stderr)
@@ -405,8 +400,6 @@ def collect_coverage_report(
         cov_file_info = {}
 
     # 生成覆盖率 JSON 文件
-    generate_coverage_json_file(
-        proj_path, coverage_file_path, cov_file_info, coverage_json_file
-    )
+    generate_coverage_json_file(proj_path, coverage_file_path, cov_file_info, coverage_json_file)
 
     logger.info("collect coverage report done")

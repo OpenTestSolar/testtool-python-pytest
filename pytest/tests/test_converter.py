@@ -14,12 +14,8 @@ class InnerClass:
 
 class Test(TestCase):
     def test_selector_to_pytest_without_datadrive(self):
-        re = selector_to_pytest(
-            "/data/tests/tests/test_data_drive_zh_cn.py?aa/bb/test_include"
-        )
-        self.assertEqual(
-            re, "/data/tests/tests/test_data_drive_zh_cn.py::aa::bb::test_include"
-        )
+        re = selector_to_pytest("/data/tests/tests/test_data_drive_zh_cn.py?aa/bb/test_include")
+        self.assertEqual(re, "/data/tests/tests/test_data_drive_zh_cn.py::aa::bb::test_include")
 
     def test_selector_to_pytest_with_datadrive(self):
         re = selector_to_pytest(
@@ -56,9 +52,7 @@ class Test(TestCase):
 
         re = pytest_to_selector(mock, "/data/tests/")
 
-        self.assertEqual(
-            re, "tests/test_data_drive_zh_cn.py?InnerClass/test_include/[2-8]"
-        )
+        self.assertEqual(re, "tests/test_data_drive_zh_cn.py?InnerClass/test_include/[2-8]")
 
     def test_pytest_node_id_to_selector_without_datadrive(self):
         mock = MagicMock()
@@ -72,9 +66,7 @@ class Test(TestCase):
 
     def test_pytest_node_id_to_selector_with_datadrive(self):
         mock = MagicMock()
-        mock.nodeid = (
-            "/data/tests/tests/test_data_drive_zh_cn.py::test_include[#?-/[中文:203]]"
-        )
+        mock.nodeid = "/data/tests/tests/test_data_drive_zh_cn.py::test_include[#?-/[中文:203]]"
         mock.path = None
         mock.cls = None
 

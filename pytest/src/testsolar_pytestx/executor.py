@@ -71,9 +71,7 @@ def run_testcases(
         args.append("--alluredir={}".format(allure_dir))
         initialization_allure_dir(allure_dir)
 
-    code_packages: List[str] = append_coverage_args(
-        args, valid_selectors, entry.FileReportPath
-    )
+    code_packages: List[str] = append_coverage_args(args, valid_selectors, entry.FileReportPath)
 
     append_extra_args(args)
 
@@ -100,15 +98,10 @@ def run_testcases(
         # 注意：传递给pytest中的用例必须在执行时能找到，否则pytest会报错
         # TODO: pytest执行出错时，将用例都设置为IGNORED，并设置错误原因
         args.extend(
-            [
-                os.path.join(entry.ProjectPath, selector_to_pytest(it))
-                for it in valid_selectors
-            ]
+            [os.path.join(entry.ProjectPath, selector_to_pytest(it)) for it in valid_selectors]
         )
         logger.info(f"Pytest run args: {args}")
-        my_plugin = PytestExecutor(
-            reporter=reporter, comment_fields=case_comment_fields
-        )
+        my_plugin = PytestExecutor(reporter=reporter, comment_fields=case_comment_fields)
         pytest.main(args, plugins=[my_plugin])
 
     if len(code_packages) > 0:
@@ -160,9 +153,7 @@ class PytestExecutor:
         testcase_name = normalize_testcase_name(item.nodeid, self.data_drive_key)
         test_result = self.testdata[testcase_name]
         if test_result:
-            test_result.Test.Attributes = parse_case_attributes(
-                item, self.comment_fields
-            )
+            test_result.Test.Attributes = parse_case_attributes(item, self.comment_fields)
 
     def pytest_runtest_logreport(self, report: TestReport) -> None:
         """

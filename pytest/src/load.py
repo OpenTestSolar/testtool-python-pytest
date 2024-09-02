@@ -15,7 +15,7 @@ from testsolar_pytestx.collector import collect_testcases  # type: ignore[import
 
 
 def collect_testcases_from_args(
-        args: List[str], workspace: Optional[str] = None, pipe_io: Optional[BinaryIO] = None
+    args: List[str], workspace: Optional[str] = None, pipe_io: Optional[BinaryIO] = None
 ) -> None:
     if len(args) != 2:
         raise SystemExit("Usage: python load.py <entry_file>")

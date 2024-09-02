@@ -44,19 +44,24 @@ def test_data():
 
 class TestAllureResults:
     def test_generate_allure_results(self, test_data):
-        test_attachments_path = Path(__file__).parent.parent.absolute().joinpath("testdata/allure_attachments")
+        test_attachments_path = (
+            Path(__file__).parent.parent.absolute().joinpath("testdata/allure_attachments")
+        )
         result_file_path = Path(test_attachments_path).joinpath("results.json")
         generate_allure_results(test_data, result_file_path, test_attachments_path)
 
         assert len(test_data["test_module.test_case_1"].Steps) == 4
         assert test_data["test_module.test_case_1"].Steps[0].Title == "1: step1"
-        assert (
-            test_data["test_module.test_case_1"].Steps[0].ResultType
-            == ResultType.SUCCEED
-        )
+        assert test_data["test_module.test_case_1"].Steps[0].ResultType == ResultType.SUCCEED
         # Check the content of the attachment
-        assert "This is the content of 创建仓库 attachment." in test_data["test_module.test_case_1"].Steps[0].Logs[0].Content
-        assert "This is the content of stdout attachment." in test_data["test_module.test_case_1"].Steps[-1].Logs[0].Content
+        assert (
+            "This is the content of 创建仓库 attachment."
+            in test_data["test_module.test_case_1"].Steps[0].Logs[0].Content
+        )
+        assert (
+            "This is the content of stdout attachment."
+            in test_data["test_module.test_case_1"].Steps[-1].Logs[0].Content
+        )
 
     def test_gen_allure_step_info(self):
         steps = [
@@ -72,9 +77,9 @@ class TestAllureResults:
                     Attachments(
                         name="example attachment",
                         source="example-attachment.txt",
-                        type="text/plain"
+                        type="text/plain",
                     )
-                ]
+                ],
             )
         ]
         result = gen_allure_step_info(steps, "")
@@ -89,9 +94,7 @@ class TestAllureResults:
 
 
 class TestExecuteEntry(TestCase):
-    testdata_dir: str = str(
-        Path(__file__).parent.parent.absolute().joinpath("testdata")
-    )
+    testdata_dir: str = str(Path(__file__).parent.parent.absolute().joinpath("testdata"))
 
     def test_run_testcases_from_args(self):
         os.environ["TESTSOLAR_TTP_ENABLEALLURE"] = "1"

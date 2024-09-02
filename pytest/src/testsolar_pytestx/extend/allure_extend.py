@@ -16,16 +16,19 @@ from testsolar_testtool_sdk.model.testresult import (
     TestCaseStep,
 )
 
+
 # 定义数据类，用于表示Allure报告中的各种结构
 @dataclass
 class StatusDetails:
     message: Optional[str] = None
     trace: Optional[str] = None
 
+
 @dataclass
 class Parameter:
     name: str
     value: str
+
 
 @dataclass
 class Attachments:
@@ -33,16 +36,18 @@ class Attachments:
     source: str
     type: str
 
+
 @dataclass
 class Step:
     name: str
     status: str
     start: int
     stop: int
-    parameters: Optional[List[Parameter]] = field(default_factory=list) # type: ignore
+    parameters: Optional[List[Parameter]] = field(default_factory=list)  # type: ignore
     steps: Optional[List["Step"]] = field(default_factory=list)  # type: ignore
     statusDetails: Optional[StatusDetails] = None
     attachments: Optional[List[Attachments]] = None
+
 
 @dataclass
 class AllureData:
@@ -58,16 +63,18 @@ class AllureData:
     labels: List[Dict[str, str]] = field(default_factory=list)
     attachments: Optional[List[Attachments]] = None
 
+
 def check_allure_enable() -> bool:
     """
     检查环境变量以确定是否启用Allure报告。
     """
     return os.getenv("TESTSOLAR_TTP_ENABLEALLURE", "") in ["1", "true"]
 
+
 def initialization_allure_dir(allure_dir: str) -> None:
     """
     初始化 Allure 报告目录。如果指定的目录存在，则删除该目录及其所有内容。然后重新创建一个空目录。
-    
+
     :param allure_dir: Allure 报告目录路径
     """
     logger.info(f"Initializing Allure directory: {allure_dir}")
@@ -76,6 +83,7 @@ def initialization_allure_dir(allure_dir: str) -> None:
         shutil.rmtree(allure_dir)
     os.makedirs(allure_dir, exist_ok=True)
     logger.info(f"Directory {allure_dir} created.")
+
 
 def generate_allure_results(
     test_data: Dict[str, TestResult], file_name: str, attachment_dir: str
@@ -97,13 +105,13 @@ def generate_allure_results(
         for testcase_name in test_data.keys():
             logger.info(f"Processing test case: {testcase_name}")
             step_info: List[TestCaseStep] = []
-            testcase_format_name = ".".join(
-                testcase_name.replace(".py?", os.sep).split(os.sep)
-            )
+            testcase_format_name = ".".join(testcase_name.replace(".py?", os.sep).split(os.sep))
             logger.debug(f"Formatted test case name: {testcase_format_name}")
 
             if full_name != testcase_format_name:
-                logger.info(f"Test case name {full_name} does not match {testcase_format_name}. Skipping.")
+                logger.info(
+                    f"Test case name {full_name} does not match {testcase_format_name}. Skipping."
+                )
                 continue
 
             if allure_data.steps:
@@ -140,6 +148,7 @@ def generate_allure_results(
             test_data[testcase_name].Steps.extend(step_info)
             logger.info(f"Finished processing test case: {testcase_name}")
 
+
 def format_allure_time(timestamp: float) -> datetime:
     """
     格式化 Allure 时间戳。
@@ -150,6 +159,7 @@ def format_allure_time(timestamp: float) -> datetime:
     formatted_time = datetime.fromtimestamp(timestamp / 1000)
     logger.debug(f"Formatted timestamp {timestamp} to {formatted_time}")
     return formatted_time
+
 
 def gen_allure_step_info(
     steps: List[Step], attachment_dir: str, index: int = 0
@@ -211,7 +221,5 @@ def gen_allure_step_info(
         logger.info(f"Generated step info: {step_info}")
         case_steps.append(step_info)
         if step.steps:
-            case_steps.extend(
-                gen_allure_step_info(step.steps, attachment_dir, index * 10)
-            )
+            case_steps.extend(gen_allure_step_info(step.steps, attachment_dir, index * 10))
     return case_steps

@@ -11,9 +11,7 @@ from src.testsolar_pytestx.collector import collect_testcases
 
 
 class CollectorTest(unittest.TestCase):
-    testdata_dir: str = str(
-        Path(__file__).parent.parent.absolute().joinpath("testdata")
-    )
+    testdata_dir: str = str(Path(__file__).parent.parent.absolute().joinpath("testdata"))
 
     def test_collect_testcases_when_selector_is_valid(self):
         entry = EntryParam(
@@ -38,9 +36,7 @@ class CollectorTest(unittest.TestCase):
         self.assertEqual(len(re.Tests), 6)
         self.assertEqual(len(re.LoadErrors), 2)
 
-        self.assertEqual(
-            re.Tests[0].Name, "aa/bb/cc/test_in_sub_class.py?TestCompute/test_add"
-        )
+        self.assertEqual(re.Tests[0].Name, "aa/bb/cc/test_in_sub_class.py?TestCompute/test_add")
         self.assertEqual(re.Tests[1].Name, "test_data_drive.py?test_eval/[2+4-6]")
         self.assertEqual(re.Tests[2].Name, "test_data_drive.py?test_eval/[3+5-8]")
         self.assertEqual(re.Tests[3].Name, "test_data_drive.py?test_eval/[6*9-42]")
@@ -53,9 +49,7 @@ class CollectorTest(unittest.TestCase):
         self.assertEqual(re.Tests[5].Attributes["owner"], "foo")
         self.assertEqual(re.Tests[5].Attributes["description"], "测试获取答案")
         self.assertEqual(re.Tests[5].Attributes["tag"], "high")
-        self.assertEqual(
-            re.Tests[5].Attributes["extra_attributes"], '[{"env": ["AA", "BB"]}]'
-        )
+        self.assertEqual(re.Tests[5].Attributes["extra_attributes"], '[{"env": ["AA", "BB"]}]')
 
         self.assertEqual(
             re.LoadErrors[0].name,
@@ -89,9 +83,7 @@ class CollectorTest(unittest.TestCase):
 
         self.assertEqual(len(re.Tests), 4)
         self.assertEqual(len(re.LoadErrors), 1)
-        self.assertIn(
-            "test_not_exist.py does not exist, SKIP it", re.LoadErrors[0].message
-        )
+        self.assertIn("test_not_exist.py does not exist, SKIP it", re.LoadErrors[0].message)
 
     def test_collect_testcases_with_utf8_chars(self):
         entry = EntryParam(
@@ -112,12 +104,8 @@ class CollectorTest(unittest.TestCase):
         self.assertEqual(len(re.Tests), 3)
         self.assertEqual(len(re.LoadErrors), 0)
 
-        self.assertEqual(
-            re.Tests[0].Name, "test_data_drive_zh_cn.py?test_include/[#?-#?^$%!/]"
-        )
-        self.assertEqual(
-            re.Tests[1].Name, "test_data_drive_zh_cn.py?test_include/[中文-中文汉字]"
-        )
+        self.assertEqual(re.Tests[0].Name, "test_data_drive_zh_cn.py?test_include/[#?-#?^$%!/]")
+        self.assertEqual(re.Tests[1].Name, "test_data_drive_zh_cn.py?test_include/[中文-中文汉字]")
         self.assertEqual(
             re.Tests[2].Name,
             "test_data_drive_zh_cn.py?test_include/[파일을 찾을 수 없습니다-ファイルが見つかりません]",
@@ -137,9 +125,7 @@ class CollectorTest(unittest.TestCase):
 
         case_records = {}
 
-        def loader_extend(
-            param_1: str, param_2: LoadResult, param_3: Dict[str, List[str]]
-        ) -> None:
+        def loader_extend(param_1: str, param_2: LoadResult, param_3: Dict[str, List[str]]) -> None:
             case_records.update(param_3)
 
         pipe_io = io.BytesIO()

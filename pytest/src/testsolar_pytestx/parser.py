@@ -17,9 +17,7 @@ from pytest import Item
 # - tag
 # - owner
 # - extra_attributes
-def parse_case_attributes(
-    item: Item, comment_fields: Optional[List[str]] = None
-) -> Dict[str, str]:
+def parse_case_attributes(item: Item, comment_fields: Optional[List[str]] = None) -> Dict[str, str]:
     """parse testcase attributes"""
     desc: str = (str(item.function.__doc__) or "").strip()  # type: ignore
     attributes: Dict[str, str] = {"description": desc}

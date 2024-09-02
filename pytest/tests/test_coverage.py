@@ -28,9 +28,7 @@ from src.testsolar_pytestx.extend.coverage_extend import (
     collect_coverage_report,
 )
 
-testdata_dir = (
-    Path(__file__).parent.parent.absolute().joinpath("testdata/testsolar_coverage")
-)
+testdata_dir = Path(__file__).parent.parent.absolute().joinpath("testdata/testsolar_coverage")
 logger = logging.getLogger(__name__)
 
 
@@ -47,12 +45,8 @@ def test_coverage_to_json():
     test_file_lines2 = TestFileLines(fileName="file2.py", fileLines=[4, 5, 6])
 
     # 创建 TestCaseCoverage 对象
-    test_case_coverage1 = TestCaseCoverage(
-        caseName="test_case_1", testFiles=[test_file_lines1]
-    )
-    test_case_coverage2 = TestCaseCoverage(
-        caseName="test_case_2", testFiles=[test_file_lines2]
-    )
+    test_case_coverage1 = TestCaseCoverage(caseName="test_case_1", testFiles=[test_file_lines1])
+    test_case_coverage2 = TestCaseCoverage(caseName="test_case_2", testFiles=[test_file_lines2])
 
     # 创建 Coverage 对象
     coverage = Coverage(
@@ -283,12 +277,8 @@ class TestGenerateCoverageJsonFile:
         coverage_json_file = proj_path / "coverage.json"
 
         cov_file_info = {
-            "test_case1": CoverageData(
-                name="test_case1", files={"file1.py": [1, 2, 3]}
-            ),
-            "test_case2": CoverageData(
-                name="test_case2", files={"file2.py": [4, 5, 6]}
-            ),
+            "test_case1": CoverageData(name="test_case1", files={"file1.py": [1, 2, 3]}),
+            "test_case2": CoverageData(name="test_case2", files={"file2.py": [4, 5, 6]}),
         }
 
         return proj_path, coverage_file_path, cov_file_info, coverage_json_file
@@ -366,9 +356,7 @@ class TestCollectCoverageReport:
         filter_coverage_xml_packages = MagicMock()
         find_coverage_db_path = MagicMock(return_value=coverage_db_path)
         get_testcase_coverage_data = MagicMock(
-            return_value={
-                "test_case1": {"name": "test_case1", "files": {"file1.py": [1, 2, 3]}}
-            }
+            return_value={"test_case1": {"name": "test_case1", "files": {"file1.py": [1, 2, 3]}}}
         )
         generate_coverage_json_file = MagicMock()
 
@@ -408,9 +396,7 @@ class TestCollectCoverageReport:
 
         logger.info.assert_called_with("collect coverage report done")
 
-    def test_collect_coverage_report_no_coverage_file(
-        self, setup_test_environment, monkeypatch
-    ):
+    def test_collect_coverage_report_no_coverage_file(self, setup_test_environment, monkeypatch):
         proj_path, file_report_path, coverage_file_path, _ = setup_test_environment
 
         # Remove the coverage.xml file to test the error case
@@ -424,6 +410,4 @@ class TestCollectCoverageReport:
         collect_coverage_report(proj_path, file_report_path, ["package1", "package2"])
 
         # Assert that error log is called
-        logger.error.assert_called_once_with(
-            "File coverage.xml not exist", file=sys.stderr
-        )
+        logger.error.assert_called_once_with("File coverage.xml not exist", file=sys.stderr)
