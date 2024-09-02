@@ -7,7 +7,7 @@ from testsolar_testtool_sdk.model.param import EntryParam
 from testsolar_testtool_sdk.model.load import LoadResult
 from testsolar_testtool_sdk.pipe_reader import read_load_result
 
-from testsolar_pytestx.collector import collect_testcases
+from src.testsolar_pytestx.collector import collect_testcases
 
 
 class CollectorTest(unittest.TestCase):

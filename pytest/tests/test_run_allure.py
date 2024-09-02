@@ -3,7 +3,6 @@ import os
 from datetime import datetime
 from pathlib import Path
 from unittest import TestCase
-from unittest.mock import patch, mock_open
 
 import pytest
 from testsolar_testtool_sdk.model.test import TestCase as TestSolar_TestCase

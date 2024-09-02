@@ -43,3 +43,8 @@ dev-dependencies = [
     "ruff>=0.6.3",
     "typed-ast>=1.5.5",
 ]
+package = false
+
+[tool.ruff]
+line-length = 140
+

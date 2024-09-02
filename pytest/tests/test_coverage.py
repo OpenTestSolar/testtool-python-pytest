@@ -11,7 +11,7 @@ from xml.dom import minidom
 
 import pytest
 
-from testsolar_pytestx.extend.coverage_extend import (
+from src.testsolar_pytestx.extend.coverage_extend import (
     ProjectPath,
     TestFileLines,
     TestCaseCoverage,
