@@ -20,6 +20,8 @@ class TestFileLines:
     数据类，用于存储测试文件名称和行号。
     """
 
+    __test__ = False
+
     fileName: str
     fileLines: List[int]
 
@@ -29,6 +31,7 @@ class TestCaseCoverage:
     """
     数据类，用于存储测试用例覆盖率。
     """
+    __test__ = False
 
     caseName: str
     testFiles: List[TestFileLines] = field(default_factory=list)

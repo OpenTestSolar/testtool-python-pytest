@@ -1,6 +1,6 @@
 [project]
 name = "testsolar-pytestx"
-version = "0.1.31"
+version = "0.1.32"
 description = "Pytest tool for TestSolar"
 authors = [
     {name = "asiazhang2002", email = "asiazhang2002@gmail.com"},
@@ -30,19 +30,21 @@ requires-python = ">=3.7"
 readme = "README.md"
 license = {text = "Apache-2.0"}
 
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.pdm]
-distribution = true
-
-[tool.pdm.dev-dependencies]
-dev = [
-    "ruff>=0.3.5",
-    "mypy>=1",
-    "pytest-cov>=4",
-    "allure-pytest>=2.13",
+[tool.uv]
+dev-dependencies = [
+    "allure-pytest>=2.13.5",
+    "mypy>=1.4.1",
+    "pytest-cov>=4.1.0",
     "requests>=2.31.0",
+    "ruff>=0.6.3",
     "typed-ast>=1.5.5",
 ]
+package = false
 
-[tool.setuptools.package-data]
-"testsolar_pytestx" = ["py.typed"]
+[tool.ruff]
+line-length = 140
+

@@ -11,7 +11,7 @@ from xml.dom import minidom
 
 import pytest
 
-from testsolar_pytestx.extend.coverage_extend import (
+from src.testsolar_pytestx.extend.coverage_extend import (
     ProjectPath,
     TestFileLines,
     TestCaseCoverage,
@@ -373,25 +373,25 @@ class TestCollectCoverageReport:
         generate_coverage_json_file = MagicMock()
 
         monkeypatch.setattr(
-            "testsolar_pytestx.extend.coverage_extend.filter_coverage_xml_packages",
+            "src.testsolar_pytestx.extend.coverage_extend.filter_coverage_xml_packages",
             filter_coverage_xml_packages,
         )
         monkeypatch.setattr(
-            "testsolar_pytestx.extend.coverage_extend.find_coverage_db_path",
+            "src.testsolar_pytestx.extend.coverage_extend.find_coverage_db_path",
             find_coverage_db_path,
         )
         monkeypatch.setattr(
-            "testsolar_pytestx.extend.coverage_extend.get_testcase_coverage_data",
+            "src.testsolar_pytestx.extend.coverage_extend.get_testcase_coverage_data",
             get_testcase_coverage_data,
         )
         monkeypatch.setattr(
-            "testsolar_pytestx.extend.coverage_extend.generate_coverage_json_file",
+            "src.testsolar_pytestx.extend.coverage_extend.generate_coverage_json_file",
             generate_coverage_json_file,
         )
 
         # Mock logger
         logger = MagicMock()
-        monkeypatch.setattr("testsolar_pytestx.extend.coverage_extend.logger", logger)
+        monkeypatch.setattr("src.testsolar_pytestx.extend.coverage_extend.logger", logger)
 
         # Call the method
         collect_coverage_report(proj_path, file_report_path, ["package1", "package2"])
@@ -418,7 +418,7 @@ class TestCollectCoverageReport:
 
         # Mock logger
         logger = MagicMock()
-        monkeypatch.setattr("testsolar_pytestx.extend.coverage_extend.logger", logger)
+        monkeypatch.setattr("src.testsolar_pytestx.extend.coverage_extend.logger", logger)
 
         # Call the method
         collect_coverage_report(proj_path, file_report_path, ["package1", "package2"])

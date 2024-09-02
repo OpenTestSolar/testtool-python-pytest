@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import MagicMock
-from testsolar_pytestx.parser import (
+from src.testsolar_pytestx.parser import (
     parse_case_attributes,
     handle_str_param,
     scan_comment_fields,
