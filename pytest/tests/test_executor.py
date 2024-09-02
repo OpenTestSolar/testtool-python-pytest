@@ -177,9 +177,7 @@ this is teardown
         self.assertEqual(len(step2.Logs), 1)
         self.assertEqual(step2.Logs[0].Level, LogLevel.ERROR)
         self.assertEqual(step2.ResultType, ResultType.FAILED)
-        self.assertIn(
-            "E       RuntimeError: this is raise runtime error", step2.Logs[0].Content
-        )
+        self.assertIn("E       RuntimeError: this is raise runtime error", step2.Logs[0].Content)
 
     def test_run_skipped_testcase(self):
         entry = EntryParam(

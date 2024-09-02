@@ -5,9 +5,9 @@ set -exu -o pipefail
 if [[ -z "${GITHUB_ACTIONS+x}" ]]; then
   echo "GITHUB_ACTIONS environment variable is not set.Use local mode."
   uv sync --all-extras --dev
-  #uv run ruff format src
-  #uv run ruff format tests
-  #uv run ruff check src
+  uv run ruff format src
+  uv run ruff format tests
+  uv run ruff check src
   uv run ruff check tests
   uv run mypy src/testsolar_pytestx --strict
   uv run mypy src/load.py src/run.py --strict

@@ -8,9 +8,7 @@ from src.load import collect_testcases_from_args
 
 
 class TestCollectorEntry(TestCase):
-    testdata_dir: str = str(
-        Path(__file__).parent.parent.absolute().joinpath("testdata")
-    )
+    testdata_dir: str = str(Path(__file__).parent.parent.absolute().joinpath("testdata"))
 
     def test_collect_testcases_from_args(self):
         pipe_io = io.BytesIO()

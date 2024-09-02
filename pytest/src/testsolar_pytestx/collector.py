@@ -28,9 +28,7 @@ def collect_testcases(
     entry_param: EntryParam,
     pipe_io: Optional[BinaryIO] = None,
     case_comment_fields: Optional[List[str]] = None,
-    extra_load_function: Optional[
-        Callable[[str, LoadResult, Dict[str, List[str]]], None]
-    ] = None,
+    extra_load_function: Optional[Callable[[str, LoadResult, Dict[str, List[str]]], None]] = None,
 ) -> None:
     if entry_param.ProjectPath not in sys.path:
         sys.path.insert(0, entry_param.ProjectPath)
@@ -61,9 +59,7 @@ def collect_testcases(
         else:
             pytest_paths.append(selector_to_pytest(test_selector=selector))
 
-    testcase_list = [
-        os.path.join(entry_param.ProjectPath, it) for it in pytest_paths if it
-    ]
+    testcase_list = [os.path.join(entry_param.ProjectPath, it) for it in pytest_paths if it]
 
     my_plugin = PytestCollector(pipe_io)
     args = [
@@ -126,9 +122,7 @@ class PytestCollector:
         self.errors: Dict[str, str] = {}
         self.reporter: Reporter = Reporter(pipe_io=pipe_io)
 
-    def pytest_collection_modifyitems(
-        self, items: Sequence[Union[Item, Collector]]
-    ) -> None:
+    def pytest_collection_modifyitems(self, items: Sequence[Union[Item, Collector]]) -> None:
         for item in items:
             if isinstance(item, Item):
                 self.collected.append(item)

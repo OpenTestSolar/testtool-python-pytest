@@ -16,7 +16,7 @@ from testsolar_pytestx.ini_fixer import fix_pytest_ini  # type: ignore[import] #
 
 
 def run_testcases_from_args(
-        args: List[str], workspace: Optional[str] = None, pipe_io: Optional[BinaryIO] = None
+    args: List[str], workspace: Optional[str] = None, pipe_io: Optional[BinaryIO] = None
 ) -> None:
     if len(args) != 2:
         raise SystemExit("Usage: python run.py <entry_file>")

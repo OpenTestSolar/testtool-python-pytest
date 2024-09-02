@@ -24,16 +24,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Set up uv
         run: curl -LsSf https://astral.sh/uv/install.sh | sh
-      - name: Lint with ruff
+      - name: Run checks
         run: |
           cd pytest
-          uv run ruff check src
-      - name: Check with mypy
-        run: |
-          cd pytest
-          uv run mypy src/testsolar_pytestx --strict
-          uv run mypy src/load.py src/run.py --strict
-      - name: Test with pytest
-        run: |
-          cd pytest
-          uv run pytest tests --durations=5 --cov=. --cov-fail-under=90 --cov-report term -v
+          bash check.sh
