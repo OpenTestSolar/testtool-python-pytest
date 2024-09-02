@@ -11,12 +11,12 @@ parent = str(Path(__file__).parent.resolve())
 if parent not in sys.path:
     sys.path.append(parent)
 
-from testsolar_pytestx.executor import run_testcases  # noqa: E402
-from testsolar_pytestx.ini_fixer import fix_pytest_ini  # noqa: E402
+from testsolar_pytestx.executor import run_testcases  # type: ignore[import] # noqa: E402
+from testsolar_pytestx.ini_fixer import fix_pytest_ini  # type: ignore[import] # noqa: E402
 
 
 def run_testcases_from_args(
-    args: List[str], workspace: Optional[str] = None, pipe_io: Optional[BinaryIO] = None
+        args: List[str], workspace: Optional[str] = None, pipe_io: Optional[BinaryIO] = None
 ) -> None:
     if len(args) != 2:
         raise SystemExit("Usage: python run.py <entry_file>")

@@ -15,28 +15,25 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python-version: [ "3.7", "3.8", "3.9", "3.10", "3.11", "3.12" ]
+        python-version: [ "3.7", "3.8", "3.9", "3.10", "3.11", "3.12", "3.13" ]
 
     steps:
       - uses: actions/checkout@v4
-      - name: Set up PDM
-        uses: pdm-project/setup-pdm@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
-        run: |
-          cd pytest
-          pdm sync -d -G dev
+      - name: Set up uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
       - name: Lint with ruff
         run: |
           cd pytest
-          pdm run ruff check src
+          uv run ruff check src
       - name: Check with mypy
         run: |
           cd pytest
-          pdm run mypy src/testsolar_pytestx --strict
-          pdm run mypy src/load.py src/run.py --strict
+          uv run mypy src/testsolar_pytestx --strict
+          uv run mypy src/load.py src/run.py --strict
       - name: Test with pytest
         run: |
           cd pytest
-          pdm run pytest tests --durations=5 --cov=. --cov-fail-under=90 --cov-report term -vv
+          uv run pytest tests --durations=5 --cov=. --cov-fail-under=90 --cov-report term -v

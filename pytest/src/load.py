@@ -11,11 +11,11 @@ parent = str(Path(__file__).parent.resolve())
 if parent not in sys.path:
     sys.path.append(parent)
 
-from testsolar_pytestx.collector import collect_testcases  # noqa: E402
+from testsolar_pytestx.collector import collect_testcases  # type: ignore[import] # noqa: E402
 
 
 def collect_testcases_from_args(
-    args: List[str], workspace: Optional[str] = None, pipe_io: Optional[BinaryIO] = None
+        args: List[str], workspace: Optional[str] = None, pipe_io: Optional[BinaryIO] = None
 ) -> None:
     if len(args) != 2:
         raise SystemExit("Usage: python load.py <entry_file>")
