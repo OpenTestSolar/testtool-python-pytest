@@ -1,0 +1,57 @@
+{
+    "name": "test_case_1",
+    "status": "passed",
+    "start": 1622547800000,
+    "stop": 1622547900000,
+    "uuid": "12345",
+    "historyId": "67890",
+    "testCaseId": "abcde",
+    "fullName": "test_module.test_case_1",
+    "steps": [
+      {
+        "name": "step1",
+        "status": "passed",
+        "start": 1622547800000,
+        "stop": 1622547810000,
+        "parameters": [],
+        "steps": [],
+        "statusDetails": null,
+        "attachments": [
+          {
+            "name": "创建仓库",
+            "source": "create_attachment.txt",
+            "type": "text/plain"
+          }
+        ]
+      },
+      {
+        "name": "step2",
+        "status": "skipped",
+        "start": 1622547800000,
+        "stop": 1622547810000,
+        "parameters": [],
+        "steps": [],
+        "statusDetails": null
+      },
+      {
+        "name": "step3",
+        "status": "failed",
+        "start": 1622547800000,
+        "stop": 1622547810000,
+        "parameters": [],
+        "steps": [],
+        "statusDetails": {
+          "message": "step3 failed",
+          "trace": "trace info"
+        }
+      }
+    ],
+    "attachments": [
+      {
+        "name": "log",
+        "source": "stdout-attachment.txt",
+        "type": "text/plain"
+      }
+    ],
+    "labels": []
+  }
