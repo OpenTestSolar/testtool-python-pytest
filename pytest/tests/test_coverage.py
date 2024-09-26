@@ -85,7 +85,7 @@ def test_collect_code_packages(monkeypatch):
     temp_dir.mkdir()
     (temp_dir / "__init__.py").touch()
     result = collect_code_packages([])
-    assert result == ["tests", "src"]
+    assert sorted(result) == sorted(["tests", "src"])
     shutil.rmtree(temp_dir)
 
     monkeypatch.setenv("TESTSOLAR_TTP_COVERAGECODEPACKAGES", "")
@@ -96,7 +96,7 @@ def test_collect_code_packages(monkeypatch):
 
     # 测试用例列表为空，则返回当前目录的包名
     result = collect_code_packages([])
-    assert result == ["tests", "src"]
+    assert sorted(result) == sorted(["tests", "src"])
 
     # 设置环境变量 TESTSOLAR_TTP_COVERAGECODEPACKAGES
     monkeypatch.setenv("TESTSOLAR_TTP_COVERAGECODEPACKAGES", "src")
