@@ -1,6 +1,8 @@
+import io
 import os
 import sys
 import traceback
+import contextlib
 from collections import defaultdict
 from pathlib import Path
 from typing import BinaryIO, Sequence, Optional, List, Dict, Union, Callable
@@ -22,6 +24,7 @@ from .converter import selector_to_pytest, pytest_to_selector, CASE_DRIVE_SEPARA
 from .filter import filter_invalid_selector_path
 from .parser import parse_case_attributes
 from .util import append_extra_args
+from .stream import TeeStream
 
 
 def collect_testcases(
@@ -74,8 +77,16 @@ def collect_testcases(
     args.extend(testcase_list)
 
     print(f"[Load] try to collect testcases: {args}")
-    exit_code = pytest.main(args, plugins=[my_plugin])
-
+    stdout_capture = io.StringIO()
+    stderr_capture = io.StringIO()
+    tee_stdout = TeeStream(sys.stdout, stdout_capture)
+    tee_stderr = TeeStream(sys.stderr, stderr_capture)
+    with contextlib.redirect_stdout(tee_stdout), contextlib.redirect_stderr(tee_stderr):
+        exit_code = pytest.main(args, plugins=[my_plugin])
+    captured_stdout = stdout_capture.getvalue()
+    captured_stderr = stderr_capture.getvalue()
+    print(f"[Load] captured stdout: {captured_stdout}")
+    print(f"[Load] captured stderr: {captured_stderr}")
     if exit_code != 0:
         print(f"[Warn][Load] collect testcases exit_code: {exit_code}")
 

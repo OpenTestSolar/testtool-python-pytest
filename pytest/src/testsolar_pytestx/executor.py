@@ -1,5 +1,7 @@
+import io
 import os
 import sys
+import contextlib
 from datetime import datetime, timedelta
 from typing import BinaryIO, Optional, Dict, Any, List, Callable
 
@@ -32,6 +34,7 @@ from .extend.coverage_extend import (
 from .util import append_extra_args, append_coverage_args
 from .filter import filter_invalid_selector_path
 from .parser import parse_case_attributes
+from .stream import TeeStream
 
 
 class RunMode(Enum):
@@ -76,7 +79,10 @@ def run_testcases(
     append_extra_args(args)
 
     reporter: Reporter = Reporter(pipe_io=pipe_io)
-
+    stdout_capture = io.StringIO()
+    stderr_capture = io.StringIO()
+    tee_stdout = TeeStream(sys.stdout, stdout_capture)
+    tee_stderr = TeeStream(sys.stderr, stderr_capture)
     if run_mode == RunMode.SINGLE:
         for it in valid_selectors:
             serial_args = args.copy()
@@ -93,7 +99,8 @@ def run_testcases(
                 comment_fields=case_comment_fields,
                 data_drive_key=data_drive_key,
             )
-            pytest.main(serial_args, plugins=[my_plugin])
+            with contextlib.redirect_stdout(tee_stdout), contextlib.redirect_stderr(tee_stderr):
+                pytest.main(serial_args, plugins=[my_plugin])
     else:
         # 注意：传递给pytest中的用例必须在执行时能找到，否则pytest会报错
         # TODO: pytest执行出错时，将用例都设置为IGNORED，并设置错误原因
@@ -102,8 +109,12 @@ def run_testcases(
         )
         logger.info(f"Pytest run args: {args}")
         my_plugin = PytestExecutor(reporter=reporter, comment_fields=case_comment_fields)
-        pytest.main(args, plugins=[my_plugin])
-
+        with contextlib.redirect_stdout(tee_stdout), contextlib.redirect_stderr(tee_stderr):
+            pytest.main(args, plugins=[my_plugin])
+    captured_stdout = stdout_capture.getvalue()
+    captured_stderr = stderr_capture.getvalue()
+    print(f"[Run] captured stdout: {captured_stdout}")
+    print(f"[Run] captured stderr: {captured_stderr}")
     if len(code_packages) > 0:
         # 如果存在需要采集覆盖率的代码包，则生成覆盖率报告
         collect_coverage_report(entry.ProjectPath, entry.FileReportPath, code_packages)
