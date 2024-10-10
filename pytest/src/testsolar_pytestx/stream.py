@@ -1,5 +1,6 @@
 from typing import TextIO
 
+
 class TeeStream:
     def __init__(self, *streams: TextIO) -> None:
         self.streams = streams
@@ -11,3 +12,6 @@ class TeeStream:
     def flush(self) -> None:
         for stream in self.streams:
             stream.flush()
+
+    def isatty(self) -> bool:
+        return any(stream.isatty() for stream in self.streams)

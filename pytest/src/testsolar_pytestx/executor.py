@@ -3,7 +3,7 @@ import os
 import sys
 import contextlib
 from datetime import datetime, timedelta
-from typing import BinaryIO, Optional, Dict, Any, List, Callable
+from typing import BinaryIO, Optional, Dict, Any, List, Callable, Tuple
 
 import pytest
 from loguru import logger
@@ -40,85 +40,6 @@ from .stream import TeeStream
 class RunMode(Enum):
     SINGLE = "single"
     BATCH = "batch"
-
-
-def run_testcases(
-    entry: EntryParam,
-    pipe_io: Optional[BinaryIO] = None,
-    case_comment_fields: Optional[List[str]] = None,
-    run_mode: Optional[RunMode] = RunMode.BATCH,
-    extra_run_function: Optional[Callable[[str, str, List[str]], str]] = None,
-) -> None:
-    if entry.ProjectPath not in sys.path:
-        sys.path.insert(0, entry.ProjectPath)
-
-    valid_selectors, _ = filter_invalid_selector_path(
-        workspace=entry.ProjectPath,
-        selectors=entry.TestSelectors,
-    )
-
-    if not valid_selectors:
-        raise ValueError("No valid selectors found")
-
-    args = [
-        f"--rootdir={entry.ProjectPath}",
-        "--continue-on-collection-errors",
-        "-v",
-    ]
-
-    # check allure
-    enable_allure = check_allure_enable()
-    if enable_allure:
-        print("Start allure test")
-        allure_dir = os.path.join(entry.ProjectPath, "allure_results")
-        args.append("--alluredir={}".format(allure_dir))
-        initialization_allure_dir(allure_dir)
-
-    code_packages: List[str] = append_coverage_args(args, valid_selectors, entry.FileReportPath)
-
-    append_extra_args(args)
-
-    reporter: Reporter = Reporter(pipe_io=pipe_io)
-    stdout_capture = io.StringIO()
-    stderr_capture = io.StringIO()
-    tee_stdout = TeeStream(sys.stdout, stdout_capture)
-    tee_stderr = TeeStream(sys.stderr, stderr_capture)
-    if run_mode == RunMode.SINGLE:
-        for it in valid_selectors:
-            serial_args = args.copy()
-
-            if extra_run_function is None:
-                logger.error(
-                    "[Error] Extra run function is not set, Please check extra_run_function"
-                )
-                return
-            data_drive_key = extra_run_function(it, entry.ProjectPath, serial_args)
-            logger.info(f"Pytest single run args: {serial_args}")
-            my_plugin = PytestExecutor(
-                reporter=reporter,
-                comment_fields=case_comment_fields,
-                data_drive_key=data_drive_key,
-            )
-            with contextlib.redirect_stdout(tee_stdout), contextlib.redirect_stderr(tee_stderr):
-                pytest.main(serial_args, plugins=[my_plugin])
-    else:
-        # 注意：传递给pytest中的用例必须在执行时能找到，否则pytest会报错
-        # TODO: pytest执行出错时，将用例都设置为IGNORED，并设置错误原因
-        args.extend(
-            [os.path.join(entry.ProjectPath, selector_to_pytest(it)) for it in valid_selectors]
-        )
-        logger.info(f"Pytest run args: {args}")
-        my_plugin = PytestExecutor(reporter=reporter, comment_fields=case_comment_fields)
-        with contextlib.redirect_stdout(tee_stdout), contextlib.redirect_stderr(tee_stderr):
-            pytest.main(args, plugins=[my_plugin])
-    captured_stdout = stdout_capture.getvalue()
-    captured_stderr = stderr_capture.getvalue()
-    print(f"[Run] captured stdout: {captured_stdout}")
-    print(f"[Run] captured stderr: {captured_stderr}")
-    if len(code_packages) > 0:
-        # 如果存在需要采集覆盖率的代码包，则生成覆盖率报告
-        collect_coverage_report(entry.ProjectPath, entry.FileReportPath, code_packages)
-    logger.info("pytest process exit")
 
 
 class PytestExecutor:
@@ -276,3 +197,103 @@ class PytestExecutor:
         for _, test_result in self.testdata.items():
             self.reporter.report_case_result(test_result)
         logger.info(f"E {session.nodeid} session finish")
+
+
+def pytest_main_with_output(args: List[str], plugin: PytestExecutor) -> Tuple[str, str, int]:
+    exit_code = 0
+    stdout_capture = io.StringIO()
+    stderr_capture = io.StringIO()
+    stdout_stream = TeeStream(sys.stdout, stdout_capture)
+    stderr_stream = TeeStream(sys.stderr, stderr_capture)
+    with contextlib.redirect_stdout(stdout_stream), contextlib.redirect_stderr(stderr_stream):  # type: ignore
+        exit_code = pytest.main(args, plugins=[plugin])
+    captured_stdout = stdout_capture.getvalue()
+    captured_stderr = stderr_capture.getvalue()
+    return captured_stdout, captured_stderr, int(exit_code)
+
+
+def run_testcases(
+    entry: EntryParam,
+    pipe_io: Optional[BinaryIO] = None,
+    case_comment_fields: Optional[List[str]] = None,
+    run_mode: Optional[RunMode] = RunMode.BATCH,
+    extra_run_function: Optional[Callable[[str, str, List[str]], str]] = None,
+) -> None:
+    if entry.ProjectPath not in sys.path:
+        sys.path.insert(0, entry.ProjectPath)
+
+    valid_selectors, _ = filter_invalid_selector_path(
+        workspace=entry.ProjectPath,
+        selectors=entry.TestSelectors,
+    )
+
+    if not valid_selectors:
+        raise ValueError("No valid selectors found")
+
+    args = [
+        f"--rootdir={entry.ProjectPath}",
+        "--continue-on-collection-errors",
+        "-v",
+    ]
+
+    # check allure
+    enable_allure = check_allure_enable()
+    if enable_allure:
+        print("Start allure test")
+        allure_dir = os.path.join(entry.ProjectPath, "allure_results")
+        args.append("--alluredir={}".format(allure_dir))
+        initialization_allure_dir(allure_dir)
+
+    code_packages: List[str] = append_coverage_args(args, valid_selectors, entry.FileReportPath)
+
+    append_extra_args(args)
+
+    reporter: Reporter = Reporter(pipe_io=pipe_io)
+    exit_code = 0
+    captured_stderr = ""
+    if run_mode == RunMode.SINGLE:
+        for it in valid_selectors:
+            serial_args = args.copy()
+
+            if extra_run_function is None:
+                logger.error(
+                    "[Error] Extra run function is not set, Please check extra_run_function"
+                )
+                return
+            data_drive_key = extra_run_function(it, entry.ProjectPath, serial_args)
+            logger.info(f"Pytest single run args: {serial_args}")
+            my_plugin = PytestExecutor(
+                reporter=reporter,
+                comment_fields=case_comment_fields,
+                data_drive_key=data_drive_key,
+            )
+            _, captured_stderr, exit_code = pytest_main_with_output(
+                args=serial_args, plugin=my_plugin
+            )
+    else:
+        # 注意：传递给pytest中的用例必须在执行时能找到，否则pytest会报错
+        # TODO: pytest执行出错时，将用例都设置为IGNORED，并设置错误原因
+        args.extend(
+            [os.path.join(entry.ProjectPath, selector_to_pytest(it)) for it in valid_selectors]
+        )
+        logger.info(f"Pytest run args: {args}")
+        my_plugin = PytestExecutor(reporter=reporter, comment_fields=case_comment_fields)
+        _, captured_stderr, exit_code = pytest_main_with_output(args=args, plugin=my_plugin)
+    if exit_code != 0:
+        # 若pytest没有成功执行，则将本批次的用例结果统一设置为FAILED，并将标准错误流作为用例错误日志上报
+        msg = f"Pytest run exit with code {exit_code}"
+        logger.error(msg)
+        if my_plugin.testcase_count == 0:
+            for selector in valid_selectors:
+                test_result = TestResult(
+                    Test=TestCase(Name=selector),
+                    ResultType=ResultType.FAILED,
+                    StartTime=datetime.utcnow(),
+                    Message=captured_stderr or msg,
+                )
+                reporter.report_case_result(test_result)
+            return
+    if len(code_packages) > 0:
+        # 如果存在需要采集覆盖率的代码包，则生成覆盖率报告
+        collect_coverage_report(entry.ProjectPath, entry.FileReportPath, code_packages)
+    logger.info("pytest process exit")

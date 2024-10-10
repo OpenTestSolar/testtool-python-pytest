@@ -5,7 +5,7 @@ import traceback
 import contextlib
 from collections import defaultdict
 from pathlib import Path
-from typing import BinaryIO, Sequence, Optional, List, Dict, Union, Callable
+from typing import BinaryIO, Sequence, Optional, List, Dict, Tuple, Union, Callable
 
 import pytest
 from pytest import Item, Collector
@@ -25,6 +25,43 @@ from .filter import filter_invalid_selector_path
 from .parser import parse_case_attributes
 from .util import append_extra_args
 from .stream import TeeStream
+
+
+class PytestCollector:
+    def __init__(self, pipe_io: Optional[BinaryIO] = None):
+        self.collected: List[Item] = []
+        self.errors: Dict[str, str] = {}
+        self.reporter: Reporter = Reporter(pipe_io=pipe_io)
+
+    def pytest_collection_modifyitems(self, items: Sequence[Union[Item, Collector]]) -> None:
+        for item in items:
+            if isinstance(item, Item):
+                self.collected.append(item)
+
+    def pytest_collectreport(self, report: CollectReport) -> None:
+        if report.failed:
+            path = report.fspath
+            if path in self.errors:
+                return
+            path = os.path.splitext(path)[0].replace(os.path.sep, ".")
+            try:
+                __import__(path)
+            except Exception as e:
+                print(e)
+                self.errors[report.fspath] = traceback.format_exc()
+
+
+def pytest_main_with_output(args: List[str], plugin: PytestCollector) -> Tuple[str, str, int]:
+    exit_code = 0
+    stdout_capture = io.StringIO()
+    stderr_capture = io.StringIO()
+    stdout_stream = TeeStream(sys.stdout, stdout_capture)
+    stderr_stream = TeeStream(sys.stderr, stderr_capture)
+    with contextlib.redirect_stdout(stdout_stream), contextlib.redirect_stderr(stderr_stream):  # type: ignore
+        exit_code = pytest.main(args, plugins=[plugin])
+    captured_stdout = stdout_capture.getvalue()
+    captured_stderr = stderr_capture.getvalue()
+    return captured_stdout, captured_stderr, int(exit_code)
 
 
 def collect_testcases(
@@ -77,18 +114,18 @@ def collect_testcases(
     args.extend(testcase_list)
 
     print(f"[Load] try to collect testcases: {args}")
-    stdout_capture = io.StringIO()
-    stderr_capture = io.StringIO()
-    tee_stdout = TeeStream(sys.stdout, stdout_capture)
-    tee_stderr = TeeStream(sys.stderr, stderr_capture)
-    with contextlib.redirect_stdout(tee_stdout), contextlib.redirect_stderr(tee_stderr):
-        exit_code = pytest.main(args, plugins=[my_plugin])
-    captured_stdout = stdout_capture.getvalue()
-    captured_stderr = stderr_capture.getvalue()
-    print(f"[Load] captured stdout: {captured_stdout}")
-    print(f"[Load] captured stderr: {captured_stderr}")
+    _, captured_stderr, exit_code = pytest_main_with_output(args=args, plugin=my_plugin)
     if exit_code != 0:
+        # 若加载用例失败，则将本批次的用例结果统一作为loaderror上报，并将标准错误流作为用例错误日志上报
         print(f"[Warn][Load] collect testcases exit_code: {exit_code}")
+        if len(my_plugin.collected) == 0 and len(my_plugin.errors.items()) == 0:
+            for selector in valid_selectors:
+                load_result.LoadErrors.append(
+                    LoadError(
+                        name=selector,
+                        message=captured_stderr,
+                    )
+                )
 
     for item in my_plugin.collected:
         full_name = pytest_to_selector(item, entry_param.ProjectPath)
@@ -125,27 +162,3 @@ def show_workspace_files(workdir: str) -> None:
             print(f" - {item}")
 
     print()
-
-
-class PytestCollector:
-    def __init__(self, pipe_io: Optional[BinaryIO] = None):
-        self.collected: List[Item] = []
-        self.errors: Dict[str, str] = {}
-        self.reporter: Reporter = Reporter(pipe_io=pipe_io)
-
-    def pytest_collection_modifyitems(self, items: Sequence[Union[Item, Collector]]) -> None:
-        for item in items:
-            if isinstance(item, Item):
-                self.collected.append(item)
-
-    def pytest_collectreport(self, report: CollectReport) -> None:
-        if report.failed:
-            path = report.fspath
-            if path in self.errors:
-                return
-            path = os.path.splitext(path)[0].replace(os.path.sep, ".")
-            try:
-                __import__(path)
-            except Exception as e:
-                print(e)
-                self.errors[report.fspath] = traceback.format_exc()

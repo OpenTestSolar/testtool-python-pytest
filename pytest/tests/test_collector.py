@@ -147,3 +147,26 @@ class CollectorTest(unittest.TestCase):
         self.assertEqual(records[0], "压缩机测试")
         self.assertEqual(records[1], "解压机测试")
         self.assertEqual(records[2], "循环机测试")
+
+    def test_collect_testcases_when_testcase_not_exist(self):
+        entry = EntryParam(
+            TaskId="aa",
+            ProjectPath=self.testdata_dir,
+            TestSelectors=[
+                "test_normal_case.py?name=not_exist",
+            ],
+            FileReportPath="",
+        )
+
+        pipe_io = io.BytesIO()
+        collect_testcases(entry, pipe_io)
+        pipe_io.seek(0)
+
+        re = read_load_result(pipe_io)
+
+        self.assertEqual(len(re.LoadErrors), 1)
+
+        self.assertEqual(
+            re.LoadErrors[0].name,
+            "test_normal_case.py?name=not_exist",
+        )
