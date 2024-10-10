@@ -260,3 +260,21 @@ this is teardown
             self.assertEqual(args[3], "timeout")
             self.assertEqual(args[4], "-l")
             self.assertEqual(args[5], "fast iu897 nuh")
+
+    def test_run_not_exist_selector(self):
+        entry = EntryParam(
+            TaskId="aa",
+            ProjectPath=str(self.testdata_dir),
+            TestSelectors=[
+                "test_normal_case.py?name=not_exist",
+            ],
+            FileReportPath="",
+        )
+
+        pipe_io = io.BytesIO()
+        run_testcases(entry, pipe_io)
+        pipe_io.seek(0)
+
+        result = read_test_result(pipe_io)
+        self.assertEqual(result.ResultType, ResultType.FAILED)
+        self.assertEqual(result.Test.Name, "test_normal_case.py?name=not_exist")
