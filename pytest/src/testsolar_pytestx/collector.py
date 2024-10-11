@@ -1,13 +1,10 @@
-import io
 import os
 import sys
 import traceback
-import contextlib
 from collections import defaultdict
 from pathlib import Path
-from typing import BinaryIO, Sequence, Optional, List, Dict, Tuple, Union, Callable
+from typing import BinaryIO, Sequence, Optional, List, Dict, Union, Callable
 
-import pytest
 from pytest import Item, Collector
 
 try:
@@ -24,7 +21,7 @@ from .converter import selector_to_pytest, pytest_to_selector, CASE_DRIVE_SEPARA
 from .filter import filter_invalid_selector_path
 from .parser import parse_case_attributes
 from .util import append_extra_args
-from .stream import TeeStream
+from .stream import pytest_main_with_output
 
 
 class PytestCollector:
@@ -49,19 +46,6 @@ class PytestCollector:
             except Exception as e:
                 print(e)
                 self.errors[report.fspath] = traceback.format_exc()
-
-
-def pytest_main_with_output(args: List[str], plugin: PytestCollector) -> Tuple[str, str, int]:
-    exit_code = 0
-    stdout_capture = io.StringIO()
-    stderr_capture = io.StringIO()
-    stdout_stream = TeeStream(sys.stdout, stdout_capture)
-    stderr_stream = TeeStream(sys.stderr, stderr_capture)
-    with contextlib.redirect_stdout(stdout_stream), contextlib.redirect_stderr(stderr_stream):  # type: ignore
-        exit_code = pytest.main(args, plugins=[plugin])
-    captured_stdout = stdout_capture.getvalue()
-    captured_stderr = stderr_capture.getvalue()
-    return captured_stdout, captured_stderr, int(exit_code)
 
 
 def collect_testcases(

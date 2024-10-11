@@ -1,11 +1,8 @@
-import io
 import os
 import sys
-import contextlib
 from datetime import datetime, timedelta
-from typing import BinaryIO, Optional, Dict, Any, List, Callable, Tuple
+from typing import BinaryIO, Optional, Dict, Any, List, Callable
 
-import pytest
 from loguru import logger
 from pytest import Item, Session
 
@@ -34,7 +31,7 @@ from .extend.coverage_extend import (
 from .util import append_extra_args, append_coverage_args
 from .filter import filter_invalid_selector_path
 from .parser import parse_case_attributes
-from .stream import TeeStream
+from .stream import pytest_main_with_output
 
 
 class RunMode(Enum):
@@ -197,19 +194,6 @@ class PytestExecutor:
         for _, test_result in self.testdata.items():
             self.reporter.report_case_result(test_result)
         logger.info(f"E {session.nodeid} session finish")
-
-
-def pytest_main_with_output(args: List[str], plugin: PytestExecutor) -> Tuple[str, str, int]:
-    exit_code = 0
-    stdout_capture = io.StringIO()
-    stderr_capture = io.StringIO()
-    stdout_stream = TeeStream(sys.stdout, stdout_capture)
-    stderr_stream = TeeStream(sys.stderr, stderr_capture)
-    with contextlib.redirect_stdout(stdout_stream), contextlib.redirect_stderr(stderr_stream):  # type: ignore
-        exit_code = pytest.main(args, plugins=[plugin])
-    captured_stdout = stdout_capture.getvalue()
-    captured_stderr = stderr_capture.getvalue()
-    return captured_stdout, captured_stderr, int(exit_code)
 
 
 def run_testcases(
