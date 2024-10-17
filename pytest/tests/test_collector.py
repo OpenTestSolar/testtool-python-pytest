@@ -170,3 +170,23 @@ class CollectorTest(unittest.TestCase):
             re.LoadErrors[0].name,
             "test_normal_case.py?name=not_exist",
         )
+
+    def test_collect_testcases_with_skipp_error(self):
+        entry = EntryParam(
+            TaskId="aa",
+            ProjectPath=self.testdata_dir,
+            TestSelectors=[
+                "test_normal_case.py",
+                "test_skipped_error.py",
+            ],
+            FileReportPath="",
+        )
+
+        pipe_io = io.BytesIO()
+        collect_testcases(entry, pipe_io)
+        pipe_io.seek(0)
+
+        re = read_load_result(pipe_io)
+
+        self.assertEqual(len(re.Tests), 3)
+        self.assertEqual(len(re.LoadErrors), 1)

@@ -8,7 +8,8 @@ from typing import BinaryIO, Sequence, Optional, List, Dict, Union, Callable
 from pytest import Item, Collector
 
 try:
-    from pytest import CollectReport
+    from pytest import CollectReport, Session
+    from _pytest._code.code import ReprExceptionInfo
 except ImportError:
     from _pytest.reports import CollectReport  # 兼容pytest低版本
 
@@ -46,6 +47,26 @@ class PytestCollector:
             except Exception as e:
                 print(e)
                 self.errors[report.fspath] = traceback.format_exc()
+
+    def pytest_collection_finish(self, session: Session) -> None:
+        """
+        在pytest_collection_modifyitems没有被调用的情况下兜底执行.
+        """
+        if not self.collected:
+            for item in session.items:
+                if isinstance(item, Item):
+                    self.collected.append(item)
+
+    def pytest_internalerror(self, excrepr: ReprExceptionInfo) -> None:
+        if (
+            excrepr.reprcrash
+            and excrepr.reprcrash.path
+            and excrepr.reprtraceback
+            and excrepr.reprtraceback.reprentries
+        ):
+            self.errors[excrepr.reprcrash.path] = "\n".join(
+                excrepr.reprtraceback.reprentries[0].lines
+            )
 
 
 def collect_testcases(
