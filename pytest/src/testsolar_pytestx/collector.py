@@ -116,7 +116,6 @@ def collect_testcases(
     append_extra_args(args)
 
     args.extend(testcase_list)
-    "/data/workspace/package/scene_test/test_text2text.py::test_assistant_first_openapi[\\u4eca\\u5929\\u5929\\u6c14\\u5f88\\u597d-prompts0]"
     print(f"[Load] try to collect testcases: {args}")
     _, captured_stderr, exit_code = pytest_main_with_output(args=args, plugin=my_plugin)
     if exit_code != 0:
