@@ -190,3 +190,25 @@ class CollectorTest(unittest.TestCase):
 
         self.assertEqual(len(re.Tests), 3)
         self.assertEqual(len(re.LoadErrors), 1)
+
+    def test_collect_testcases_with_emoji(self):
+        entry = EntryParam(
+            TaskId="aa",
+            ProjectPath=self.testdata_dir,
+            TestSelectors=[
+                "test_emoji_data_drive.py",
+            ],
+            FileReportPath="",
+        )
+
+        pipe_io = io.BytesIO()
+        collect_testcases(entry, pipe_io)
+        pipe_io.seek(0)
+
+        re = read_load_result(pipe_io)
+
+        self.assertEqual(len(re.Tests), 1)
+        self.assertEqual(len(re.LoadErrors), 0)
+        self.assertEqual(
+            re.Tests[0].Name, "test_emoji_data_drive.py?test_emoji_data_drive_name/[\U0001f604]"
+        )
