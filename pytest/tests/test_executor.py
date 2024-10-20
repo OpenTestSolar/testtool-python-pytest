@@ -278,3 +278,23 @@ this is teardown
         result = read_test_result(pipe_io)
         self.assertEqual(result.ResultType, ResultType.FAILED)
         self.assertEqual(result.Test.Name, "test_normal_case.py?name=not_exist")
+
+    def test_run_testcase_with_emoji_data_drive(self):
+        entry = EntryParam(
+            TaskId="aa",
+            ProjectPath=str(self.testdata_dir),
+            TestSelectors=[
+                "test_emoji_data_drive.py?test_emoji_data_drive_name/[\U0001f604]",
+            ],
+            FileReportPath="",
+        )
+
+        pipe_io = io.BytesIO()
+        run_testcases(entry, pipe_io)
+        pipe_io.seek(0)
+
+        start = read_test_result(pipe_io)
+        self.assertEqual(
+            start.Test.Name, "test_emoji_data_drive.py?test_emoji_data_drive_name/[\U0001f604]"
+        )
+        self.assertEqual(start.ResultType, ResultType.RUNNING)

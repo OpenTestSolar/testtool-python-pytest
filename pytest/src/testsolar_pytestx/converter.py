@@ -118,6 +118,9 @@ def decode_datadrive(name: str) -> str:
         if re.search(r"\\u\w{4}", name):
             name = name.encode().decode("unicode_escape")
 
+        if re.search(r"\\U\w{8}", name):
+            name = name.encode().decode("unicode_escape")
+
     return name
 
 
