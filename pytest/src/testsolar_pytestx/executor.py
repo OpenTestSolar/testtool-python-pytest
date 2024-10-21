@@ -264,19 +264,22 @@ def run_testcases(
         my_plugin = PytestExecutor(reporter=reporter, comment_fields=case_comment_fields)
         _, captured_stderr, exit_code = pytest_main_with_output(args=args, plugin=my_plugin)
     if exit_code != 0:
-        # 若pytest没有成功执行，则将本批次的用例结果统一设置为FAILED，并将标准错误流作为用例错误日志上报
-        msg = f"Pytest run exit with code {exit_code}"
-        logger.error(msg)
-        if my_plugin.testcase_count == 0:
-            for selector in valid_selectors:
-                test_result = TestResult(
-                    Test=TestCase(Name=selector),
-                    ResultType=ResultType.FAILED,
-                    StartTime=datetime.utcnow(),
-                    Message=captured_stderr or msg,
-                )
-                reporter.report_case_result(test_result)
-            return
+        if exit_code == 5:
+            logger.warning("all testcases has been filtered")
+        else:
+            # 若pytest没有成功执行，则将本批次的用例结果统一设置为FAILED，并将标准错误流作为用例错误日志上报
+            msg = f"Pytest run exit with code {exit_code}"
+            logger.error(msg)
+            if my_plugin.testcase_count == 0:
+                for selector in valid_selectors:
+                    test_result = TestResult(
+                        Test=TestCase(Name=selector),
+                        ResultType=ResultType.FAILED,
+                        StartTime=datetime.utcnow(),
+                        Message=captured_stderr or msg,
+                    )
+                    reporter.report_case_result(test_result)
+                return
     if len(code_packages) > 0:
         # 如果存在需要采集覆盖率的代码包，则生成覆盖率报告
         collect_coverage_report(entry.ProjectPath, entry.FileReportPath, code_packages)

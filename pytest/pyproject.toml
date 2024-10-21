@@ -1,6 +1,6 @@
 [project]
 name = "testsolar-pytestx"
-version = "0.1.36"
+version = "0.1.37"
 description = "Pytest tool for TestSolar"
 authors = [
     {name = "asiazhang2002", email = "asiazhang2002@gmail.com"},
