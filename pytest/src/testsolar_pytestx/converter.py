@@ -1,7 +1,7 @@
 import re
 import os
 from typing import Tuple, Optional
-
+from urllib.parse import quote
 from pytest import Item
 from loguru import logger
 
@@ -79,14 +79,18 @@ def pytest_to_selector(item: Item, project_path: str) -> str:
         if item.cls:
             name = item.cls.__name__ + "/" + name
         name = decode_datadrive(name)
-        full_name = f"{rel_path}?{name}"
+        full_name = f"{rel_path}?{quote(name)}"
     elif hasattr(item, "nodeid") and item.nodeid:
         full_name = normalize_testcase_name(item.nodeid)
+        if "?" in full_name:
+            path = full_name.split("?", 1)[0]
+            case_name = full_name.split("?", 1)[-1]
+            full_name = "?".join([path, quote(case_name)])
     else:
         rel_path, _, name = item.location
         name = name.replace(".", "/")
         name = decode_datadrive(name)
-        full_name = f"{rel_path}?{name}"
+        full_name = f"{rel_path}?{quote(name)}"
 
     return full_name
 
@@ -107,6 +111,7 @@ def decode_datadrive(name: str) -> str:
     https://docs.pytest.org/en/7.0.x/how-to/parametrize.html
 
     test_include[\u4e2d\u6587-\u4e2d\u6587\u6c49\u5b57] -> test_include[中文-中文汉字]
+    test_include[\U0001f604] -> test_include[😊]
 
     用例名称中不允许出现[，因此如果有，一定是数据驱动的开头
     """
