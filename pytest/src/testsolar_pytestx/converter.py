@@ -82,10 +82,6 @@ def pytest_to_selector(item: Item, project_path: str) -> str:
         full_name = f"{rel_path}?{quote(name)}"
     elif hasattr(item, "nodeid") and item.nodeid:
         full_name = normalize_testcase_name(item.nodeid)
-        if "?" in full_name:
-            path = full_name.split("?", 1)[0]
-            case_name = full_name.split("?", 1)[-1]
-            full_name = "?".join([path, quote(case_name)])
     else:
         rel_path, _, name = item.location
         name = name.replace(".", "/")
@@ -140,4 +136,8 @@ def normalize_testcase_name(name: str, sub_case_key: Optional[str] = None) -> st
     name = decode_datadrive(name)
     if sub_case_key:
         name += CASE_DRIVE_SEPARATOR + sub_case_key
+    if "?" in name:
+        path = name.split("?", 1)[0]
+        case_name = name.split("?", 1)[-1]
+        return "?".join([path, quote(case_name)])
     return name

@@ -295,6 +295,7 @@ this is teardown
 
         start = read_test_result(pipe_io)
         self.assertEqual(
-            start.Test.Name, "test_emoji_data_drive.py?test_emoji_data_drive_name/[\U0001f604]"
+            start.Test.Name,
+            "test_emoji_data_drive.py?test_emoji_data_drive_name/%5B%F0%9F%98%84%5D",
         )
         self.assertEqual(start.ResultType, ResultType.RUNNING)
