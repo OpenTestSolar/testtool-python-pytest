@@ -37,12 +37,12 @@ class CollectorTest(unittest.TestCase):
         self.assertEqual(len(re.LoadErrors), 2)
 
         self.assertEqual(re.Tests[0].Name, "aa/bb/cc/test_in_sub_class.py?TestCompute/test_add")
-        self.assertEqual(re.Tests[1].Name, "test_data_drive.py?test_eval/[2+4-6]")
-        self.assertEqual(re.Tests[2].Name, "test_data_drive.py?test_eval/[3+5-8]")
-        self.assertEqual(re.Tests[3].Name, "test_data_drive.py?test_eval/[6*9-42]")
+        self.assertEqual(re.Tests[1].Name, "test_data_drive.py?test_eval/%5B2%2B4-6%5D")
+        self.assertEqual(re.Tests[2].Name, "test_data_drive.py?test_eval/%5B3%2B5-8%5D")
+        self.assertEqual(re.Tests[3].Name, "test_data_drive.py?test_eval/%5B6%2A9-42%5D")
         self.assertEqual(
             re.Tests[4].Name,
-            "test_data_drive.py?test_special_data_drive_name/[中文-分号+[id:32]]",
+            "test_data_drive.py?test_special_data_drive_name/%5B%E4%B8%AD%E6%96%87-%E5%88%86%E5%8F%B7%2B%5Bid%3A32%5D%5D",
         )
 
         self.assertEqual(re.Tests[5].Name, "test_normal_case.py?test_success")
@@ -104,11 +104,17 @@ class CollectorTest(unittest.TestCase):
         self.assertEqual(len(re.Tests), 3)
         self.assertEqual(len(re.LoadErrors), 0)
 
-        self.assertEqual(re.Tests[0].Name, "test_data_drive_zh_cn.py?test_include/[#?-#?^$%!/]")
-        self.assertEqual(re.Tests[1].Name, "test_data_drive_zh_cn.py?test_include/[中文-中文汉字]")
+        self.assertEqual(
+            re.Tests[0].Name,
+            "test_data_drive_zh_cn.py?test_include/%5B%23%3F-%23%3F%5E%24%25%21/%5D",
+        )
+        self.assertEqual(
+            re.Tests[1].Name,
+            "test_data_drive_zh_cn.py?test_include/%5B%E4%B8%AD%E6%96%87-%E4%B8%AD%E6%96%87%E6%B1%89%E5%AD%97%5D",
+        )
         self.assertEqual(
             re.Tests[2].Name,
-            "test_data_drive_zh_cn.py?test_include/[파일을 찾을 수 없습니다-ファイルが見つかりません]",
+            "test_data_drive_zh_cn.py?test_include/%5B%ED%8C%8C%EC%9D%BC%EC%9D%84%20%EC%B0%BE%EC%9D%84%20%EC%88%98%20%EC%97%86%EC%8A%B5%EB%8B%88%EB%8B%A4-%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E3%81%8C%E8%A6%8B%E3%81%A4%E3%81%8B%E3%82%8A%E3%81%BE%E3%81%9B%E3%82%93%5D",
         )
 
     def test_collect_testcases_with_case_drive_separator(self):
@@ -210,5 +216,6 @@ class CollectorTest(unittest.TestCase):
         self.assertEqual(len(re.Tests), 1)
         self.assertEqual(len(re.LoadErrors), 0)
         self.assertEqual(
-            re.Tests[0].Name, "test_emoji_data_drive.py?test_emoji_data_drive_name/[\U0001f604]"
+            re.Tests[0].Name,
+            "test_emoji_data_drive.py?test_emoji_data_drive_name/%5B%F0%9F%98%84%5D",
         )
