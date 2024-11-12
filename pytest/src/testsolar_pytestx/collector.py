@@ -138,7 +138,6 @@ def collect_testcases(
     # 增加额外功能，方便外部接入
     if extra_load_function:
         extra_load_function(entry_param.ProjectPath, load_result, case_drive_records)
-    load_result.Tests.sort(key=lambda x: x.Name)
 
     for k, v in my_plugin.errors.items():
         load_result.LoadErrors.append(
@@ -147,8 +146,6 @@ def collect_testcases(
                 message=v,
             )
         )
-
-    load_result.LoadErrors.sort(key=lambda x: x.name)
 
     print(f"[Load] collect testcase count: {len(load_result.Tests)}")
     print(f"[Load] collect load error count: {len(load_result.LoadErrors)}")
