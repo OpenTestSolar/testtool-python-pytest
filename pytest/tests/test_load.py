@@ -20,7 +20,8 @@ class TestCollectorEntry(TestCase):
 
         pipe_io.seek(0)
         re = read_load_result(pipe_io)
-
+        re.Tests.sort(key=lambda x: x.Name)
+        re.LoadErrors.sort(key=lambda x: x.name)
         self.assertEqual(len(re.Tests), 7)
         self.assertEqual(
             re.Tests[4].Name,

@@ -35,7 +35,8 @@ class CollectorTest(unittest.TestCase):
 
         self.assertEqual(len(re.Tests), 6)
         self.assertEqual(len(re.LoadErrors), 2)
-
+        re.Tests.sort(key=lambda x: x.Name)
+        re.LoadErrors.sort(key=lambda x: x.name)
         self.assertEqual(re.Tests[0].Name, "aa/bb/cc/test_in_sub_class.py?TestCompute/test_add")
         self.assertEqual(re.Tests[1].Name, "test_data_drive.py?test_eval/%5B2%2B4-6%5D")
         self.assertEqual(re.Tests[2].Name, "test_data_drive.py?test_eval/%5B3%2B5-8%5D")
@@ -80,7 +81,8 @@ class CollectorTest(unittest.TestCase):
         pipe_io.seek(0)
 
         re = read_load_result(pipe_io)
-
+        re.Tests.sort(key=lambda x: x.Name)
+        re.LoadErrors.sort(key=lambda x: x.name)
         self.assertEqual(len(re.Tests), 4)
         self.assertEqual(len(re.LoadErrors), 1)
         self.assertIn("test_not_exist.py does not exist, SKIP it", re.LoadErrors[0].message)
@@ -100,7 +102,8 @@ class CollectorTest(unittest.TestCase):
         pipe_io.seek(0)
 
         re = read_load_result(pipe_io)
-
+        re.Tests.sort(key=lambda x: x.Name)
+        re.LoadErrors.sort(key=lambda x: x.name)
         self.assertEqual(len(re.Tests), 3)
         self.assertEqual(len(re.LoadErrors), 0)
 
@@ -139,7 +142,8 @@ class CollectorTest(unittest.TestCase):
         pipe_io.seek(0)
 
         re = read_load_result(pipe_io)
-
+        re.Tests.sort(key=lambda x: x.Name)
+        re.LoadErrors.sort(key=lambda x: x.name)
         self.assertEqual(len(re.Tests), 1)
         self.assertEqual(len(re.LoadErrors), 0)
 
@@ -169,7 +173,8 @@ class CollectorTest(unittest.TestCase):
         pipe_io.seek(0)
 
         re = read_load_result(pipe_io)
-
+        re.Tests.sort(key=lambda x: x.Name)
+        re.LoadErrors.sort(key=lambda x: x.name)
         self.assertEqual(len(re.LoadErrors), 1)
 
         self.assertEqual(
@@ -193,7 +198,8 @@ class CollectorTest(unittest.TestCase):
         pipe_io.seek(0)
 
         re = read_load_result(pipe_io)
-
+        re.Tests.sort(key=lambda x: x.Name)
+        re.LoadErrors.sort(key=lambda x: x.name)
         self.assertEqual(len(re.Tests), 3)
         self.assertEqual(len(re.LoadErrors), 1)
 
@@ -212,7 +218,8 @@ class CollectorTest(unittest.TestCase):
         pipe_io.seek(0)
 
         re = read_load_result(pipe_io)
-
+        re.Tests.sort(key=lambda x: x.Name)
+        re.LoadErrors.sort(key=lambda x: x.name)
         self.assertEqual(len(re.Tests), 1)
         self.assertEqual(len(re.LoadErrors), 0)
         self.assertEqual(
