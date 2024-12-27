@@ -105,14 +105,17 @@ def generate_allure_results(
         for testcase_name in test_data.keys():
             logger.info(f"Processing test case: {testcase_name}")
             step_info: List[TestCaseStep] = []
-            testcase_format_name = ".".join(testcase_name.replace(".py?", os.sep).split(os.sep))
+            testcase_format_name = ".".join(testcase_name.replace(".py?", os.sep).replace("/[", "[").split(os.sep))
             logger.debug(f"Formatted test case name: {testcase_format_name}")
 
             if full_name != testcase_format_name:
-                logger.info(
-                    f"Test case name {full_name} does not match {testcase_format_name}. Skipping."
-                )
-                continue
+                if full_name in testcase_format_name and testcase_format_name.endswith(allure_data.name):
+                    logger.info(f"Test case {testcase_format_name} was datadrive case , continue to get result!!")
+                else:
+                    logger.info(
+                        f"Test case name {full_name} does not match {testcase_format_name}. Skipping."
+                    )
+                    continue
 
             if allure_data.steps:
                 logger.info(f"Generating step info for test case {full_name}")

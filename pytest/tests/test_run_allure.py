@@ -112,12 +112,12 @@ class TestExecuteEntry(TestCase):
         pipe_io.seek(0)
         start = read_test_result(pipe_io)
         self.assertEqual(start.ResultType, ResultType.RUNNING)
-        self.assertEqual(start.Test.Name, "allure/allure_step_test.py?test_step")
+        self.assertEqual(start.Test.Name, "allure/allure_step_test.py?test_step/%5Bdata0%5D")
 
         # testcase finish
         stop = read_test_result(pipe_io)
         self.assertEqual(stop.ResultType, ResultType.SUCCEED)
-        self.assertEqual(stop.Test.Name, "allure/allure_step_test.py?test_step")
+        self.assertEqual(stop.Test.Name, "allure/allure_step_test.py?test_step/%5Bdata0%5D")
         self.assertEqual(stop.Message, "")
         self.assertEqual(type(stop.Steps), list)
-        self.assertEqual(len(stop.Steps), 5)
+        self.assertEqual(len(stop.Steps), 3)
