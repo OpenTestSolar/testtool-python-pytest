@@ -31,6 +31,7 @@ def selector_to_pytest(test_selector: str) -> str:
     case, datadrive = extract_case_and_datadrive(testcase)
 
     if datadrive:
+        # 考虑到在encode之后单个反斜杠会被转义为双反斜杠，这种场景下会导致pytest无法找到对应的用例，因此将encode之后的双反斜杠转换回单反斜杠
         datadrive = encode_datadrive(datadrive).replace("\\\\", "\\")
 
     case = case.replace("/", "::")
