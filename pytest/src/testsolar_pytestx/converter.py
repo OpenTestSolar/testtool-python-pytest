@@ -31,7 +31,7 @@ def selector_to_pytest(test_selector: str) -> str:
     case, datadrive = extract_case_and_datadrive(testcase)
 
     if datadrive:
-        datadrive = encode_datadrive(datadrive)
+        datadrive = encode_datadrive(datadrive).replace("\\\\", "\\")
 
     case = case.replace("/", "::")
     # 数据驱动里面的/不用替换为::

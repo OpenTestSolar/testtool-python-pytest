@@ -26,6 +26,14 @@ class Test(TestCase):
             "/data/tests/tests/test_data_drive_zh_cn.py::aa::bb::test_include[#?/-#?^$%!]",
         )
 
+        re = selector_to_pytest(
+            "/data/tests/tests/test_data_drive_with_backslash.py?test_backslash/[\\n]"
+        )
+        self.assertEqual(
+            re,
+            "/data/tests/tests/test_data_drive_with_backslash.py::test_backslash[\\n]",
+        )
+
     def test_selector_to_pytest_with_utf8_string(self):
         re = selector_to_pytest(
             "/data/tests/tests/test_data_drive_zh_cn.py?aa/bb/test_include/[中文-中文汉字]"
