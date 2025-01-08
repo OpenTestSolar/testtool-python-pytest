@@ -91,10 +91,17 @@ def pytest_to_selector(item: Item, project_path: str) -> str:
     return full_name
 
 
+def disable_encode_backslash() -> bool:
+    # 考虑到在encode之后单个反斜杠会被转义为双反斜杠，这种场景下会导致pytest无法找到对应的用例，因此考虑将encode之后的双反斜杠转换回单反斜杠
+    return os.getenv("TESTSOLAR_TTP_IGNOREENCODEBACKSLASH", "").lower() == "true"
+
+
 def encode_datadrive(name: str) -> str:
     if name.endswith("]") and "[" in name:
         name = name.encode("unicode_escape").decode()
         name = name.replace("/[", "[")
+        if disable_encode_backslash():
+            name = name.replace("\\\\", "\\")
     return name
 
 

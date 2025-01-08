@@ -2,7 +2,7 @@ schemaVersion: 1.0
 name: pytest
 nameZh: pytest自动化测试
 lang: python
-version: '0.1.42'
+version: '0.1.43'
 langType: INTERPRETED
 description: |-
   pytest是一个成熟的全功能Python测试工具，可以帮助您编写更好的程序。此测试工具允许您在TestSolar上运行pytest。
@@ -60,6 +60,14 @@ parameterDefs: # 用户 use 这个测试工具时可以配置的 with 参数
       环境变量值: my_package;another_package
       ```
     inputWidget: text
+  - name: ignoreEncodeBackSlash
+    value: 是否避免编码数据驱动中的反斜杠字符
+    desc: |-
+      默认情况下插件会基于`datadrive.encode("unicode_escape").decode()`来对用例的数据驱动进行编码
+      某些情况下用例数据驱动中可能会包含反斜杠，在编码后可能会导致pytest无法找到对应用例
+      通过开启该选项可以避免对反斜杠进行编码
+    default: 'false'
+    inputWidget: switch
 entry:
   load: "python3 /testtools/pytest/src/load.py $1"
   run: "python3 /testtools/pytest/src/run.py $1"

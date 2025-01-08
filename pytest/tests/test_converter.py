@@ -1,3 +1,4 @@
+import os
 from unittest import TestCase
 from unittest.mock import MagicMock
 
@@ -24,6 +25,23 @@ class Test(TestCase):
         self.assertEqual(
             re,
             "/data/tests/tests/test_data_drive_zh_cn.py::aa::bb::test_include[#?/-#?^$%!]",
+        )
+
+        re = selector_to_pytest(
+            "/data/tests/tests/test_data_drive_with_backslash.py?test_backslash/[\\n]"
+        )
+        self.assertEqual(
+            re,
+            "/data/tests/tests/test_data_drive_with_backslash.py::test_backslash[\\\\n]",
+        )
+
+        os.environ["TESTSOLAR_TTP_IGNOREENCODEBACKSLASH"] = "true"
+        re = selector_to_pytest(
+            "/data/tests/tests/test_data_drive_with_backslash.py?test_backslash/[\\n]"
+        )
+        self.assertEqual(
+            re,
+            "/data/tests/tests/test_data_drive_with_backslash.py::test_backslash[\\n]",
         )
 
     def test_selector_to_pytest_with_utf8_string(self):
