@@ -30,6 +30,7 @@ class PytestCollector:
         self.errors: Dict[str, str] = {}
         self.reporter: Reporter = Reporter(pipe_io=pipe_io)
 
+    
     def pytest_collection_modifyitems(self, items: Sequence[Union[Item, Collector]]) -> None:
         for item in items:
             if isinstance(item, Item):
