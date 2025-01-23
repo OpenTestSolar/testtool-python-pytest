@@ -8,6 +8,10 @@ except ImportError:
 from testsolar_testtool_sdk.model.testresult import TestCaseLog, LogLevel
 
 
+def _report_failed(report: TestReport) -> bool:
+    return report.failed or report.outcome == "rerun"  # type: ignore
+
+
 def gen_logs(report: TestReport) -> TestCaseLog:
     logs: List[str] = []
     if report.capstdout:
@@ -19,7 +23,7 @@ def gen_logs(report: TestReport) -> TestCaseLog:
 
     log = "\n".join(logs)
 
-    if report.failed:
+    if _report_failed(report=report):
         error_log = report.longreprtext
         if error_log:
             log += "\n\n"
@@ -27,6 +31,6 @@ def gen_logs(report: TestReport) -> TestCaseLog:
 
     return TestCaseLog(
         Time=datetime.utcnow() - timedelta(seconds=report.duration),
-        Level=LogLevel.ERROR if report.failed else LogLevel.INFO,
+        Level=LogLevel.ERROR if _report_failed(report=report) else LogLevel.INFO,
         Content=log,
     )

@@ -84,6 +84,20 @@ class PytestExecutor:
         if test_result:
             test_result.Test.Attributes = parse_case_attributes(item, self.comment_fields)
 
+    def _get_result_type_by_report(self, report: TestReport) -> ResultType:
+        result_type: ResultType
+        if report.failed:
+            result_type = ResultType.FAILED
+        elif report.skipped:
+            result_type = ResultType.IGNORED
+        else:
+            result_type = ResultType.SUCCEED
+        # 针对pytest-rerunfailures进行兼容
+        # 如果report.outcome == "rerun"，则表示当前用例执行失败需要被重试
+        if report.outcome == "rerun":  # type: ignore
+            result_type = ResultType.FAILED
+        return result_type
+
     def pytest_runtest_logreport(self, report: TestReport) -> None:
         """
         Process the TestReport produced for each of the setup, call and teardown runtest phases of an item.
@@ -95,13 +109,7 @@ class PytestExecutor:
 
         step_end_time = datetime.utcnow()
 
-        result_type: ResultType
-        if report.failed:
-            result_type = ResultType.FAILED
-        elif report.skipped:
-            result_type = ResultType.IGNORED
-        else:
-            result_type = ResultType.SUCCEED
+        result_type: ResultType = self._get_result_type_by_report(report=report)
 
         if report.when == "setup":
             test_result.Steps.append(
@@ -122,8 +130,6 @@ class PytestExecutor:
                 test_result.Message = reason[:1000]
 
         elif report.when == "call":
-            self.testcase_count += 1
-
             test_result.Steps.append(
                 TestCaseStep(
                     Title="Run TestCase",
@@ -132,10 +138,6 @@ class PytestExecutor:
                     EndTime=step_end_time,
                     ResultType=result_type,
                 )
-            )
-
-            logger.info(
-                f"Testcase {report.nodeid} run {report.outcome}, total {self.testcase_count} testcases complete"
             )
 
             if not test_result.Message and report.failed:
@@ -168,7 +170,10 @@ class PytestExecutor:
 
         test_result = self.testdata[testcase_name]
         test_result.EndTime = datetime.utcnow()
-
+        self.testcase_count += 1
+        logger.info(
+            f"Testcase {nodeid} finished with result type {test_result.ResultType}, total {self.testcase_count} testcases complete"
+        )
         # 检查是否allure报告，如果是在统一生成json文件后再上报
         enable_allure = check_allure_enable()
         if not enable_allure:
