@@ -36,7 +36,7 @@ from .stream import pytest_main_with_output
 from .raw_cmd_executor import RawCmdExecutor, JUNIT_XML_PATH
 
 
-RAW_CMD_KEY = "testsolar_raw_cmdline"
+RAW_CMD_KEY = "raw_cmdline"
 
 
 class RunMode(Enum):
