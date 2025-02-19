@@ -11,7 +11,7 @@ from testsolar_testtool_sdk.model.test import TestCase
 from testsolar_testtool_sdk.file_reader import read_file_test_result
 
 from src.testsolar_pytestx.executor import run_testcases, append_extra_args, RAW_CMD_KEY
-from src.testsolar_pytestx.raw_cmd_executor import JUNIT_XML_PATH
+from src.testsolar_pytestx.raw_cmd_executor import JUNIT_XML_PATH, get_result_save_path
 
 
 def convert_to_datetime(raw: str) -> datetime:
@@ -320,8 +320,9 @@ class ExecutorTest(unittest.TestCase):
             )
             run_testcases(entry)
             assert len(os.listdir(tmpdir)) > 0
-            assert os.path.exists(JUNIT_XML_PATH)
-            os.remove(JUNIT_XML_PATH)
+            result_path = os.path.join(get_result_save_path(), JUNIT_XML_PATH)
+            assert os.path.exists(result_path)
+            os.remove(result_path)
 
 
 if __name__ == "__main__":

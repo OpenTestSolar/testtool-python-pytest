@@ -6,30 +6,34 @@ JUNIT_XML_PATH = "testsolar_junit.xml"
 COVERAGE_REPORT_PATH = "testsolar_pytest.lcov"
 
 
-class RawCmdExecutor:
-    def __init__(self, cmdline: str) -> None:
-        self._cmdline = cmdline
-        self._exec_cmdline = cmdline
-
-    def _append_junit_xml(self) -> None:
-        self._exec_cmdline += f" --junitxml={JUNIT_XML_PATH} "
-
-    def _append_coverage_args(self) -> None:
-        try:
-            cache_dir = os.path.expanduser("~/.cache")
-        except Exception as e:
-            logger.error(f"[PLUGIN] Failed to get user cache dir: {e}")
-            return
-
-        coverage_dir = os.path.join(cache_dir, ".testsolar", "coverage")
-
+def get_result_save_path() -> str:
+    try:
+        cache_dir = os.path.expanduser("~/.cache")
+    except Exception as e:
+        logger.error(f"[PLUGIN] Failed to get user cache dir: {e}")
+        return ""
+    coverage_dir = os.path.join(cache_dir, ".testsolar", "coverage")
+    if not os.path.exists(coverage_dir):
         try:
             os.makedirs(coverage_dir, mode=0o755, exist_ok=True)
         except OSError as e:
             logger.error(f"[PLUGIN] Failed to create coverage dir: {e}")
-            return
+            return ""
+    return coverage_dir
 
-        coverage_file = os.path.join(coverage_dir, COVERAGE_REPORT_PATH)
+
+class RawCmdExecutor:
+    def __init__(self, cmdline: str) -> None:
+        self._cmdline = cmdline
+        self._exec_cmdline = cmdline
+        self._save_path = get_result_save_path()
+
+    def _append_junit_xml(self) -> None:
+        xml_file = os.path.join(self._save_path, JUNIT_XML_PATH)
+        self._exec_cmdline += f" --junitxml={xml_file} "
+
+    def _append_coverage_args(self) -> None:
+        coverage_file = os.path.join(self._save_path, COVERAGE_REPORT_PATH)
         self._exec_cmdline += f" --cov=. --cov-report=lcov:{coverage_file} "
 
     def _append_extra_args(self) -> None:

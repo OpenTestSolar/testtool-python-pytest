@@ -33,7 +33,7 @@ from .util import append_extra_args, append_coverage_args
 from .filter import filter_invalid_selector_path
 from .parser import parse_case_attributes
 from .stream import pytest_main_with_output
-from .raw_cmd_executor import RawCmdExecutor, JUNIT_XML_PATH
+from .raw_cmd_executor import RawCmdExecutor, JUNIT_XML_PATH, get_result_save_path
 
 
 RAW_CMD_KEY = "raw_cmdline"
@@ -219,10 +219,11 @@ def _raw_cmd_run_mode(cmdline: str, file_report_path: str) -> None:
     logger.info(
         f"execute cmdline: {raw_cmd_exector.get_exec_cmdline()} with return code: {return_code}"
     )
-    if os.path.exists(JUNIT_XML_PATH):
-        reporter.report_junit_xml(file_path=JUNIT_XML_PATH)
+    result_path = os.path.join(get_result_save_path(), JUNIT_XML_PATH)
+    if os.path.exists(result_path):
+        reporter.report_junit_xml(file_path=result_path)
     else:
-        logger.error(f"{JUNIT_XML_PATH} not exists after execution")
+        logger.error(f"{result_path} not exists after execution")
 
 
 def run_testcases(
