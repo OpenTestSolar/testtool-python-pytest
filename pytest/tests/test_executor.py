@@ -1,4 +1,6 @@
 import io
+import os
+import tempfile
 import unittest
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -8,7 +10,8 @@ from testsolar_testtool_sdk.model.param import EntryParam
 from testsolar_testtool_sdk.model.testresult import ResultType, LogLevel
 from testsolar_testtool_sdk.pipe_reader import read_test_result
 
-from src.testsolar_pytestx.executor import run_testcases, append_extra_args
+from src.testsolar_pytestx.executor import run_testcases, append_extra_args, RAW_CMD_KEY
+from src.testsolar_pytestx.raw_cmd_executor import JUNIT_XML_PATH
 
 
 def convert_to_datetime(raw: str) -> datetime:
@@ -299,3 +302,26 @@ this is teardown
             "test_emoji_data_drive.py?test_emoji_data_drive_name/%5B%F0%9F%98%84%5D",
         )
         self.assertEqual(start.ResultType, ResultType.RUNNING)
+
+    def test_run_testcase_by_raw_cmd(self):
+        # 创建一个临时目录
+        with tempfile.TemporaryDirectory() as tmpdir:
+            entry = EntryParam(
+                TaskId="aa",
+                ProjectPath=str(self.testdata_dir),
+                TestSelectors=[
+                    ".",
+                ],
+                FileReportPath=tmpdir,
+                Context={
+                    RAW_CMD_KEY: "pytest ./testdata/test_normal_case.py",
+                },
+            )
+            run_testcases(entry)
+            assert len(os.listdir(tmpdir)) > 0
+            assert os.path.exists(JUNIT_XML_PATH)
+            os.remove(JUNIT_XML_PATH)
+
+
+if __name__ == "__main__":
+    ExecutorTest().test_run_testcase_by_raw_cmd()

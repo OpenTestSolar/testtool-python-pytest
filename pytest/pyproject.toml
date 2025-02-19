@@ -20,7 +20,7 @@ classifiers = [
 ]
 dependencies = [
     "pytest>=7",
-    "testsolar-testtool-sdk==0.4.4",
+    "testsolar-testtool-sdk==0.4.5",
     "loguru>=0.7.2",
     "coverage>=7.2.7",
     "pytest-cov>=4.1.0",

@@ -489,7 +489,7 @@ requires-dist = [
     { name = "loguru", specifier = ">=0.7.2" },
     { name = "pytest", specifier = ">=7" },
     { name = "pytest-cov", specifier = ">=4.1.0" },
-    { name = "testsolar-testtool-sdk", specifier = "==0.4.4" },
+    { name = "testsolar-testtool-sdk", specifier = "==0.4.5" },
 ]
 
 [package.metadata.requires-dev]
@@ -503,15 +503,15 @@ dev = [
 
 [[package]]
 name = "testsolar-testtool-sdk"
-version = "0.4.4"
+version = "0.4.5"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "dacite" },
     { name = "portalocker" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/0e/41/ce83275ad3778053964f3922218fe9011621f3339c308351b25157ad8d61/testsolar_testtool_sdk-0.4.4.tar.gz", hash = "sha256:a565f3efc0728264cd28b328a518be78d051280c4a7f4cac340ade70fe9ca34d", size = 31822 }
+sdist = { url = "https://files.pythonhosted.org/packages/20/00/95deec091ee4cc8ab1b2baaca34bd98ea0ec36eb6868ddaa20779f05265a/testsolar_testtool_sdk-0.4.5.tar.gz", hash = "sha256:3976507260d0f8032dca84a3bf05f75c07952aad5ae2be1800c96dfa41e15c57", size = 32405 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d2/fd/92c869474a5c9cab7d5833a22d0a3967d27f244902785216deca70444c12/testsolar_testtool_sdk-0.4.4-py3-none-any.whl", hash = "sha256:376e4635150d88a77bf02c93be414212e176d13d99ec931eb278bb0f45183737", size = 11702 },
+    { url = "https://files.pythonhosted.org/packages/13/ef/15f79befe1d48222d69366862e5c64125c70d0ef887a5c8f4f35258c6c62/testsolar_testtool_sdk-0.4.5-py3-none-any.whl", hash = "sha256:8afe776fe6201db4cfc7cb33cbd16a7b1246edc32585306fb169651086f69388", size = 11876 },
 ]
 
 [[package]]

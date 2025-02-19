@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import sys
 from datetime import datetime, timedelta
 from typing import BinaryIO, Optional, Dict, Any, List, Callable
@@ -14,7 +15,7 @@ except ImportError:
 from testsolar_testtool_sdk.model.param import EntryParam
 from testsolar_testtool_sdk.model.test import TestCase
 from testsolar_testtool_sdk.model.testresult import TestResult, ResultType, TestCaseStep
-from testsolar_testtool_sdk.reporter import Reporter
+from testsolar_testtool_sdk.reporter import Reporter, FileReporter
 from enum import Enum
 
 from .case_log import gen_logs
@@ -32,6 +33,10 @@ from .util import append_extra_args, append_coverage_args
 from .filter import filter_invalid_selector_path
 from .parser import parse_case_attributes
 from .stream import pytest_main_with_output
+from .raw_cmd_executor import RawCmdExecutor, JUNIT_XML_PATH
+
+
+RAW_CMD_KEY = "testsolar_raw_cmdline"
 
 
 class RunMode(Enum):
@@ -201,6 +206,25 @@ class PytestExecutor:
         logger.info(f"E {session.nodeid} session finish")
 
 
+def _retrieve_raw_cmd_mode(entry: EntryParam) -> str:
+    if RAW_CMD_KEY in entry.Context:
+        return entry.Context.get(RAW_CMD_KEY, "")
+    return ""
+
+
+def _raw_cmd_run_mode(cmdline: str, file_report_path: str) -> None:
+    reporter: FileReporter = FileReporter(report_path=Path(file_report_path))
+    raw_cmd_exector = RawCmdExecutor(cmdline=cmdline)
+    return_code = raw_cmd_exector.exec()
+    logger.info(
+        f"execute cmdline: {raw_cmd_exector.get_exec_cmdline()} with return code: {return_code}"
+    )
+    if os.path.exists(JUNIT_XML_PATH):
+        reporter.report_junit_xml(file_path=JUNIT_XML_PATH)
+    else:
+        logger.error(f"{JUNIT_XML_PATH} not exists after execution")
+
+
 def run_testcases(
     entry: EntryParam,
     pipe_io: Optional[BinaryIO] = None,
@@ -210,6 +234,9 @@ def run_testcases(
 ) -> None:
     if entry.ProjectPath not in sys.path:
         sys.path.insert(0, entry.ProjectPath)
+
+    if cmdline := _retrieve_raw_cmd_mode(entry):
+        return _raw_cmd_run_mode(cmdline=cmdline, file_report_path=entry.FileReportPath)
 
     valid_selectors, _ = filter_invalid_selector_path(
         workspace=entry.ProjectPath,
