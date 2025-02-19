@@ -1,4 +1,3 @@
-import io
 import os
 from datetime import datetime
 from pathlib import Path
@@ -9,7 +8,7 @@ from testsolar_testtool_sdk.model.test import TestCase as TestSolar_TestCase
 from testsolar_testtool_sdk.model.testresult import (
     TestResult,
 )
-from testsolar_testtool_sdk.pipe_reader import read_test_result
+from testsolar_testtool_sdk.file_reader import read_file_test_result
 
 from run import run_testcases_from_args
 from testsolar_pytestx.extend.allure_extend import (
@@ -98,24 +97,19 @@ class TestExecuteEntry(TestCase):
 
     def test_run_testcases_from_args(self):
         os.environ["TESTSOLAR_TTP_ENABLEALLURE"] = "1"
-        pipe_io = io.BytesIO()
         run_testcases_from_args(
             args=[
                 "run.py",
                 Path.joinpath(Path(self.testdata_dir), "allure_entry.json"),
             ],
             workspace=self.testdata_dir,
-            pipe_io=pipe_io,
         )
 
-        # testcase running
-        pipe_io.seek(0)
-        start = read_test_result(pipe_io)
-        self.assertEqual(start.ResultType, ResultType.RUNNING)
-        self.assertEqual(start.Test.Name, "allure/allure_step_test.py?test_step/%5Bdata0%5D")
-
         # testcase finish
-        stop = read_test_result(pipe_io)
+        stop = read_file_test_result(
+            report_path=Path("./"),
+            case=TestSolar_TestCase(Name="allure/allure_step_test.py?test_step/%5Bdata0%5D"),
+        )
         self.assertEqual(stop.ResultType, ResultType.SUCCEED)
         self.assertEqual(stop.Test.Name, "allure/allure_step_test.py?test_step/%5Bdata0%5D")
         self.assertEqual(stop.Message, "")

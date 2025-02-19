@@ -1,7 +1,7 @@
 {
   "TaskId": "error_pytest_ini",
   "ProjectPath": "bb",
-  "FileReportPath": "",
+  "FileReportPath": "./",
   "Collectors": [],
   "Context": {},
   "TestSelectors": [

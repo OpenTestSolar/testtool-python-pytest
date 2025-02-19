@@ -1,7 +1,7 @@
 {
   "TaskId": "aa",
   "ProjectPath": "bb",
-  "FileReportPath": "",
+  "FileReportPath": "./load.json",
   "Collectors": [],
   "Context": {},
   "TestSelectors": [

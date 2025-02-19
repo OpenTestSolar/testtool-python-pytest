@@ -15,7 +15,7 @@ except ImportError:
 from testsolar_testtool_sdk.model.param import EntryParam
 from testsolar_testtool_sdk.model.test import TestCase
 from testsolar_testtool_sdk.model.testresult import TestResult, ResultType, TestCaseStep
-from testsolar_testtool_sdk.reporter import Reporter, FileReporter
+from testsolar_testtool_sdk.reporter import FileReporter
 from enum import Enum
 
 from .case_log import gen_logs
@@ -47,11 +47,11 @@ class RunMode(Enum):
 class PytestExecutor:
     def __init__(
         self,
-        reporter: Reporter,
+        reporter: FileReporter,
         comment_fields: Optional[List[str]] = None,
         data_drive_key: Optional[str] = None,
     ) -> None:
-        self.reporter: Reporter = reporter
+        self.reporter: FileReporter = reporter
         self.testcase_count = 0
         self.testdata: Dict[str, TestResult] = {}
         self.skipped_testcase: Dict[str, str] = {}
@@ -264,7 +264,7 @@ def run_testcases(
 
     append_extra_args(args)
 
-    reporter: Reporter = Reporter(pipe_io=pipe_io)
+    reporter: FileReporter = FileReporter(report_path=Path(entry.FileReportPath))
     exit_code = 0
     captured_stderr = ""
     if run_mode == RunMode.SINGLE:

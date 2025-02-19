@@ -1,4 +1,3 @@
-import io
 import os
 import tempfile
 import unittest
@@ -8,7 +7,8 @@ from unittest import mock
 
 from testsolar_testtool_sdk.model.param import EntryParam
 from testsolar_testtool_sdk.model.testresult import ResultType, LogLevel
-from testsolar_testtool_sdk.pipe_reader import read_test_result
+from testsolar_testtool_sdk.model.test import TestCase
+from testsolar_testtool_sdk.file_reader import read_file_test_result
 
 from src.testsolar_pytestx.executor import run_testcases, append_extra_args, RAW_CMD_KEY
 from src.testsolar_pytestx.raw_cmd_executor import JUNIT_XML_PATH
@@ -23,228 +23,225 @@ class ExecutorTest(unittest.TestCase):
     testdata_dir = Path(__file__).parent.parent.absolute().joinpath("testdata")
 
     def test_run_success_testcase_with_logs(self):
-        entry = EntryParam(
-            TaskId="aa",
-            ProjectPath=str(self.testdata_dir),
-            TestSelectors=[
-                "test_normal_case.py?name=test_success&tag=A&priority=High",
-            ],
-            FileReportPath="",
-        )
+        with tempfile.TemporaryDirectory() as tmpdir:
+            entry = EntryParam(
+                TaskId="aa",
+                ProjectPath=str(self.testdata_dir),
+                TestSelectors=[
+                    "test_normal_case.py?name=test_success&tag=A&priority=High",
+                ],
+                FileReportPath=tmpdir,
+            )
 
-        current_time = datetime.utcnow()
+            current_time = datetime.utcnow()
 
-        pipe_io = io.BytesIO()
-        run_testcases(entry, pipe_io)
-        pipe_io.seek(0)
+            run_testcases(entry, None)
 
-        start = read_test_result(pipe_io)
-        self.assertEqual(start.ResultType, ResultType.RUNNING)
+            # start = read_file_test_result(report_path=Path(entry.FileReportPath), case=TestCase())
+            # self.assertEqual(start.ResultType, ResultType.RUNNING)
 
-        end = read_test_result(pipe_io)
-        self.assertEqual(end.Test.Name, "test_normal_case.py?test_success")
-        self.assertEqual(end.Test.Attributes["tag"], "high")
-        self.assertEqual(end.Test.Attributes["owner"], "foo")
-        elapse: timedelta = convert_to_datetime(str(end.StartTime)) - current_time
-        self.assertLess(elapse.total_seconds(), 0.2)
-        elapse_end: timedelta = convert_to_datetime(str(end.EndTime)) - current_time
-        self.assertLess(elapse_end.total_seconds(), 0.2)
-        self.assertGreater(elapse_end.total_seconds(), 0)
-        self.assertEqual(end.ResultType, ResultType.SUCCEED)
+            end = read_file_test_result(
+                report_path=Path(entry.FileReportPath),
+                case=TestCase(Name="test_normal_case.py?test_success"),
+            )
+            self.assertEqual(end.Test.Name, "test_normal_case.py?test_success")
+            self.assertEqual(end.Test.Attributes["tag"], "high")
+            self.assertEqual(end.Test.Attributes["owner"], "foo")
+            elapse: timedelta = convert_to_datetime(str(end.StartTime)) - current_time
+            self.assertLess(elapse.total_seconds(), 0.2)
+            elapse_end: timedelta = convert_to_datetime(str(end.EndTime)) - current_time
+            self.assertLess(elapse_end.total_seconds(), 0.2)
+            self.assertGreater(elapse_end.total_seconds(), 0)
+            self.assertEqual(end.ResultType, ResultType.SUCCEED)
 
-        self.assertEqual(len(end.Steps), 3)
+            self.assertEqual(len(end.Steps), 3)
 
-        # 检查Setup的时间是否符合要求
-        step1 = end.Steps[0]
-        self.assertEqual(step1.Title, "Setup")
-        elapse = convert_to_datetime(str(step1.StartTime)) - current_time
-        self.assertLess(elapse.total_seconds(), 0.2)
-        self.assertGreater(elapse.total_seconds(), 0)
-        elapse = convert_to_datetime(str(step1.EndTime)) - current_time
-        self.assertLess(elapse.total_seconds(), 0.2)
-        self.assertGreater(elapse.total_seconds(), 0)
+            # 检查Setup的时间是否符合要求
+            step1 = end.Steps[0]
+            self.assertEqual(step1.Title, "Setup")
+            elapse = convert_to_datetime(str(step1.StartTime)) - current_time
+            self.assertLess(elapse.total_seconds(), 0.2)
+            self.assertGreater(elapse.total_seconds(), 0)
+            elapse = convert_to_datetime(str(step1.EndTime)) - current_time
+            self.assertLess(elapse.total_seconds(), 0.2)
+            self.assertGreater(elapse.total_seconds(), 0)
 
-        # 检查Log的时间是否符合要求
-        self.assertEqual(len(step1.Logs), 1)
-        self.assertEqual(step1.ResultType, ResultType.SUCCEED)
-        log = step1.Logs[0]
-        self.assertEqual(log.Level, LogLevel.INFO)
-        self.assertIn("this is setup", log.Content)
-        elapse = convert_to_datetime(str(log.Time)) - current_time
-        self.assertGreater(elapse.total_seconds(), 0)
-        self.assertLess(elapse.total_seconds(), 0.2)
+            # 检查Log的时间是否符合要求
+            self.assertEqual(len(step1.Logs), 1)
+            self.assertEqual(step1.ResultType, ResultType.SUCCEED)
+            log = step1.Logs[0]
+            self.assertEqual(log.Level, LogLevel.INFO)
+            self.assertIn("this is setup", log.Content)
+            elapse = convert_to_datetime(str(log.Time)) - current_time
+            self.assertGreater(elapse.total_seconds(), 0)
+            self.assertLess(elapse.total_seconds(), 0.2)
 
-        # 检查 Run TestCase 时间是否符合要求
-        step2 = end.Steps[1]
-        self.assertEqual(step2.Title, "Run TestCase")
-        elapse = convert_to_datetime(str(step2.StartTime)) - current_time
-        self.assertLess(elapse.total_seconds(), 0.2)
-        self.assertGreater(elapse.total_seconds(), 0)
-        elapse = convert_to_datetime(str(step2.EndTime)) - current_time
-        self.assertLess(elapse.total_seconds(), 0.2)
-        self.assertGreater(elapse.total_seconds(), 0)
+            # 检查 Run TestCase 时间是否符合要求
+            step2 = end.Steps[1]
+            self.assertEqual(step2.Title, "Run TestCase")
+            elapse = convert_to_datetime(str(step2.StartTime)) - current_time
+            self.assertLess(elapse.total_seconds(), 0.2)
+            self.assertGreater(elapse.total_seconds(), 0)
+            elapse = convert_to_datetime(str(step2.EndTime)) - current_time
+            self.assertLess(elapse.total_seconds(), 0.2)
+            self.assertGreater(elapse.total_seconds(), 0)
 
-        self.assertEqual(len(step2.Logs), 1)
-        self.assertEqual(step2.Logs[0].Level, LogLevel.INFO)
-        self.assertEqual(step2.ResultType, ResultType.SUCCEED)
-        self.assertIn("this is print sample output", step2.Logs[0].Content)
+            self.assertEqual(len(step2.Logs), 1)
+            self.assertEqual(step2.Logs[0].Level, LogLevel.INFO)
+            self.assertEqual(step2.ResultType, ResultType.SUCCEED)
+            self.assertIn("this is print sample output", step2.Logs[0].Content)
 
-        # 检查 Teardown 是否是否符合要求
-        step3 = end.Steps[2]
-        self.assertEqual(step3.Title, "Teardown")
-        self.assertEqual(len(step3.Logs), 1)
-        self.assertEqual(step3.Logs[0].Level, LogLevel.INFO)
-        self.assertEqual(step3.ResultType, ResultType.SUCCEED)
-        self.assertEqual(
-            step3.Logs[0].Content,
-            """this is setup
-this is print sample output
-this is teardown
-""",
-        )
-        elapse = convert_to_datetime(str(step3.StartTime)) - current_time
-        self.assertLess(elapse.total_seconds(), 0.2)
-        self.assertGreater(elapse.total_seconds(), 0)
-        elapse = convert_to_datetime(str(step3.EndTime)) - current_time
-        self.assertLess(elapse.total_seconds(), 0.2)
-        self.assertGreater(elapse.total_seconds(), 0)
+            # 检查 Teardown 是否是否符合要求
+            step3 = end.Steps[2]
+            self.assertEqual(step3.Title, "Teardown")
+            self.assertEqual(len(step3.Logs), 1)
+            self.assertEqual(step3.Logs[0].Level, LogLevel.INFO)
+            self.assertEqual(step3.ResultType, ResultType.SUCCEED)
+            self.assertEqual(
+                step3.Logs[0].Content,
+                "this is setup\nthis is print sample output\nthis is teardown\n",
+            )
+            elapse = convert_to_datetime(str(step3.StartTime)) - current_time
+            self.assertLess(elapse.total_seconds(), 0.2)
+            self.assertGreater(elapse.total_seconds(), 0)
+            elapse = convert_to_datetime(str(step3.EndTime)) - current_time
+            self.assertLess(elapse.total_seconds(), 0.2)
+            self.assertGreater(elapse.total_seconds(), 0)
 
     def test_run_success_testcase_with_one_invalid_selector(self):
-        entry = EntryParam(
-            TaskId="aa",
-            ProjectPath=str(self.testdata_dir),
-            TestSelectors=[
-                "test_normal_case.py?name=test_success",
-                "test_invalid_case.py?test_success",
-            ],
-            FileReportPath="",
-        )
+        with tempfile.TemporaryDirectory() as tmpdir:
+            entry = EntryParam(
+                TaskId="aa",
+                ProjectPath=str(self.testdata_dir),
+                TestSelectors=[
+                    "test_normal_case.py?name=test_success",
+                    "test_invalid_case.py?test_success",
+                ],
+                FileReportPath=tmpdir,
+            )
 
-        pipe_io = io.BytesIO()
-        run_testcases(entry, pipe_io)
-        pipe_io.seek(0)
-
-        start = read_test_result(pipe_io)
-        self.assertEqual(start.ResultType, ResultType.RUNNING)
+            run_testcases(entry, None)
+            start = read_file_test_result(
+                report_path=Path(entry.FileReportPath),
+                case=TestCase(Name="test_normal_case.py?test_success"),
+            )
+            self.assertEqual(start.ResultType, ResultType.SUCCEED)
 
     def test_run_failed_testcase_with_log(self):
-        entry = EntryParam(
-            TaskId="aa",
-            ProjectPath=str(self.testdata_dir),
-            TestSelectors=[
-                "test_normal_case.py?test_failed&priority=High",
-            ],
-            FileReportPath="",
-        )
+        with tempfile.TemporaryDirectory() as tmpdir:
+            entry = EntryParam(
+                TaskId="aa",
+                ProjectPath=str(self.testdata_dir),
+                TestSelectors=[
+                    "test_normal_case.py?test_failed&priority=High",
+                ],
+                FileReportPath=tmpdir,
+            )
 
-        pipe_io = io.BytesIO()
-        run_testcases(entry, pipe_io)
-        pipe_io.seek(0)
+            run_testcases(entry, None)
+            end = read_file_test_result(
+                report_path=Path(entry.FileReportPath),
+                case=TestCase(Name="test_normal_case.py?test_failed"),
+            )
 
-        start = read_test_result(pipe_io)
-        self.assertEqual(start.ResultType, ResultType.RUNNING)
+            self.assertEqual(end.ResultType, ResultType.FAILED)
+            self.assertEqual(len(end.Steps), 3)
+            self.assertIn("testdata/test_normal_case.py", end.Message)
 
-        end = read_test_result(pipe_io)
-        self.assertEqual(end.ResultType, ResultType.FAILED)
-        self.assertEqual(len(end.Steps), 3)
-        self.assertIn("testdata/test_normal_case.py", end.Message)
-
-        step2 = end.Steps[1]
-        self.assertEqual(len(step2.Logs), 1)
-        self.assertEqual(step2.Logs[0].Level, LogLevel.ERROR)
-        self.assertEqual(step2.ResultType, ResultType.FAILED)
-        self.assertIn("E       assert 4 == 6", step2.Logs[0].Content)
+            step2 = end.Steps[1]
+            self.assertEqual(len(step2.Logs), 1)
+            self.assertEqual(step2.Logs[0].Level, LogLevel.ERROR)
+            self.assertEqual(step2.ResultType, ResultType.FAILED)
+            self.assertIn("E       assert 4 == 6", step2.Logs[0].Content)
 
     def test_run_failed_testcase_with_raise_error(self):
-        entry = EntryParam(
-            TaskId="aa",
-            ProjectPath=str(self.testdata_dir),
-            TestSelectors=[
-                "test_normal_case.py?test_raise_error",
-            ],
-            FileReportPath="",
-        )
+        with tempfile.TemporaryDirectory() as tmpdir:
+            entry = EntryParam(
+                TaskId="aa",
+                ProjectPath=str(self.testdata_dir),
+                TestSelectors=[
+                    "test_normal_case.py?test_raise_error",
+                ],
+                FileReportPath=tmpdir,
+            )
 
-        pipe_io = io.BytesIO()
-        run_testcases(entry, pipe_io)
-        pipe_io.seek(0)
+            run_testcases(entry, None)
 
-        start = read_test_result(pipe_io)
-        self.assertEqual(start.ResultType, ResultType.RUNNING)
+            end = read_file_test_result(
+                report_path=Path(entry.FileReportPath),
+                case=TestCase(Name="test_normal_case.py?test_raise_error"),
+            )
+            self.assertEqual(end.ResultType, ResultType.FAILED)
+            self.assertEqual(len(end.Steps), 3)
 
-        end = read_test_result(pipe_io)
-        self.assertEqual(end.ResultType, ResultType.FAILED)
-        self.assertEqual(len(end.Steps), 3)
-
-        step2 = end.Steps[1]
-        self.assertEqual(len(step2.Logs), 1)
-        self.assertEqual(step2.Logs[0].Level, LogLevel.ERROR)
-        self.assertEqual(step2.ResultType, ResultType.FAILED)
-        self.assertIn("E       RuntimeError: this is raise runtime error", step2.Logs[0].Content)
+            step2 = end.Steps[1]
+            self.assertEqual(len(step2.Logs), 1)
+            self.assertEqual(step2.Logs[0].Level, LogLevel.ERROR)
+            self.assertEqual(step2.ResultType, ResultType.FAILED)
+            self.assertIn(
+                "E       RuntimeError: this is raise runtime error", step2.Logs[0].Content
+            )
 
     def test_run_skipped_testcase(self):
-        entry = EntryParam(
-            TaskId="aa",
-            ProjectPath=str(self.testdata_dir),
-            TestSelectors=[
-                "test_skipped.py?test_filtered",
-            ],
-            FileReportPath="",
-        )
+        with tempfile.TemporaryDirectory() as tmpdir:
+            entry = EntryParam(
+                TaskId="aa",
+                ProjectPath=str(self.testdata_dir),
+                TestSelectors=[
+                    "test_skipped.py?test_filtered",
+                ],
+                FileReportPath=tmpdir,
+            )
 
-        pipe_io = io.BytesIO()
-        run_testcases(entry, pipe_io)
-        pipe_io.seek(0)
+            run_testcases(entry)
+            end = read_file_test_result(
+                report_path=Path(entry.FileReportPath),
+                case=TestCase(Name="test_skipped.py?test_filtered"),
+            )
 
-        start = read_test_result(pipe_io)
-        self.assertEqual(start.ResultType, ResultType.RUNNING)
-
-        end = read_test_result(pipe_io)
-        self.assertEqual(end.ResultType, ResultType.IGNORED)
-        self.assertEqual(len(end.Steps), 2)
-        self.assertEqual(end.Message, "Skipped: no way of currently testing this")
+            self.assertEqual(end.ResultType, ResultType.IGNORED)
+            self.assertEqual(len(end.Steps), 2)
+            self.assertEqual(end.Message, "Skipped: no way of currently testing this")
 
     def test_run_datadrive_with_single_value(self):
-        entry = EntryParam(
-            TaskId="aa",
-            ProjectPath=str(self.testdata_dir),
-            TestSelectors=[
-                "test_data_drive.py?test_eval/[2+4-6]",
-            ],
-            FileReportPath="",
-        )
+        with tempfile.TemporaryDirectory() as tmpdir:
+            entry = EntryParam(
+                TaskId="aa",
+                ProjectPath=str(self.testdata_dir),
+                TestSelectors=[
+                    "test_data_drive.py?test_eval/[2+4-6]",
+                ],
+                FileReportPath=tmpdir,
+            )
 
-        pipe_io = io.BytesIO()
-        run_testcases(entry, pipe_io)
-        pipe_io.seek(0)
-
-        start = read_test_result(pipe_io)
-        self.assertEqual(start.ResultType, ResultType.RUNNING)
-
-        end = read_test_result(pipe_io)
-        self.assertEqual(end.ResultType, ResultType.SUCCEED)
-        self.assertEqual(len(end.Steps), 3)
+            run_testcases(entry)
+            end = read_file_test_result(
+                report_path=Path(entry.FileReportPath),
+                case=TestCase(Name="test_data_drive.py?test_eval/%5B2%2B4-6%5D"),
+            )
+            self.assertEqual(end.ResultType, ResultType.SUCCEED)
+            self.assertEqual(len(end.Steps), 3)
 
     def test_run_datadrive_with_utf8_str(self):
-        entry = EntryParam(
-            TaskId="aa",
-            ProjectPath=str(self.testdata_dir),
-            TestSelectors=[
-                "test_data_drive_zh_cn.py?test_include/[中文-中文汉字]",
-            ],
-            FileReportPath="",
-        )
+        with tempfile.TemporaryDirectory() as tmpdir:
+            entry = EntryParam(
+                TaskId="aa",
+                ProjectPath=str(self.testdata_dir),
+                TestSelectors=[
+                    "test_data_drive_zh_cn.py?test_include/[中文-中文汉字]",
+                ],
+                FileReportPath=tmpdir,
+            )
 
-        pipe_io = io.BytesIO()
-        run_testcases(entry, pipe_io)
-        pipe_io.seek(0)
-
-        start = read_test_result(pipe_io)
-        self.assertEqual(start.ResultType, ResultType.RUNNING)
-
-        end = read_test_result(pipe_io)
-        self.assertEqual(end.ResultType, ResultType.SUCCEED)
-        self.assertEqual(len(end.Steps), 3)
+            run_testcases(entry)
+            end = read_file_test_result(
+                report_path=Path(entry.FileReportPath),
+                case=TestCase(
+                    Name="test_data_drive_zh_cn.py?test_include/%5B%E4%B8%AD%E6%96%87-%E4%B8%AD%E6%96%87%E6%B1%89%E5%AD%97%5D"
+                ),
+            )
+            self.assertEqual(end.ResultType, ResultType.SUCCEED)
+            self.assertEqual(len(end.Steps), 3)
 
     def test_split_args_with_space(self):
         args = []
@@ -265,43 +262,47 @@ this is teardown
             self.assertEqual(args[5], "fast iu897 nuh")
 
     def test_run_not_exist_selector(self):
-        entry = EntryParam(
-            TaskId="aa",
-            ProjectPath=str(self.testdata_dir),
-            TestSelectors=[
-                "test_normal_case.py?name=not_exist",
-            ],
-            FileReportPath="",
-        )
+        with tempfile.TemporaryDirectory() as tmpdir:
+            entry = EntryParam(
+                TaskId="aa",
+                ProjectPath=str(self.testdata_dir),
+                TestSelectors=[
+                    "test_normal_case.py?name=not_exist",
+                ],
+                FileReportPath=tmpdir,
+            )
 
-        pipe_io = io.BytesIO()
-        run_testcases(entry, pipe_io)
-        pipe_io.seek(0)
-
-        result = read_test_result(pipe_io)
-        self.assertEqual(result.ResultType, ResultType.FAILED)
-        self.assertEqual(result.Test.Name, "test_normal_case.py?name=not_exist")
+            run_testcases(entry)
+            result = read_file_test_result(
+                report_path=Path(entry.FileReportPath),
+                case=TestCase(Name="test_normal_case.py?name=not_exist"),
+            )
+            self.assertEqual(result.ResultType, ResultType.FAILED)
+            self.assertEqual(result.Test.Name, "test_normal_case.py?name=not_exist")
 
     def test_run_testcase_with_emoji_data_drive(self):
-        entry = EntryParam(
-            TaskId="aa",
-            ProjectPath=str(self.testdata_dir),
-            TestSelectors=[
-                "test_emoji_data_drive.py?test_emoji_data_drive_name/[\U0001f604]",
-            ],
-            FileReportPath="",
-        )
+        with tempfile.TemporaryDirectory() as tmpdir:
+            entry = EntryParam(
+                TaskId="aa",
+                ProjectPath=str(self.testdata_dir),
+                TestSelectors=[
+                    "test_emoji_data_drive.py?test_emoji_data_drive_name/[\U0001f604]",
+                ],
+                FileReportPath=tmpdir,
+            )
 
-        pipe_io = io.BytesIO()
-        run_testcases(entry, pipe_io)
-        pipe_io.seek(0)
-
-        start = read_test_result(pipe_io)
-        self.assertEqual(
-            start.Test.Name,
-            "test_emoji_data_drive.py?test_emoji_data_drive_name/%5B%F0%9F%98%84%5D",
-        )
-        self.assertEqual(start.ResultType, ResultType.RUNNING)
+            run_testcases(entry)
+            start = read_file_test_result(
+                report_path=Path(entry.FileReportPath),
+                case=TestCase(
+                    Name="test_emoji_data_drive.py?test_emoji_data_drive_name/%5B%F0%9F%98%84%5D"
+                ),
+            )
+            self.assertEqual(
+                start.Test.Name,
+                "test_emoji_data_drive.py?test_emoji_data_drive_name/%5B%F0%9F%98%84%5D",
+            )
+            self.assertEqual(start.ResultType, ResultType.SUCCEED)
 
     def test_run_testcase_by_raw_cmd(self):
         # 创建一个临时目录
