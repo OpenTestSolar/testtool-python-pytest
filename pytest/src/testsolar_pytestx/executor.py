@@ -236,7 +236,8 @@ def run_testcases(
     if entry.ProjectPath not in sys.path:
         sys.path.insert(0, entry.ProjectPath)
 
-    if cmdline := _retrieve_raw_cmd_mode(entry):
+    cmdline = _retrieve_raw_cmd_mode(entry)
+    if cmdline:
         return _raw_cmd_run_mode(cmdline=cmdline, file_report_path=entry.FileReportPath)
 
     valid_selectors, _ = filter_invalid_selector_path(
