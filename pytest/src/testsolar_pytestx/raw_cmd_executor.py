@@ -1,24 +1,17 @@
 import os
 import subprocess
-from loguru import logger
+from .util import get_cache_directory
+
 
 JUNIT_XML_PATH = "testsolar_junit.xml"
 COVERAGE_REPORT_PATH = "testsolar_pytest.lcov"
 
 
 def get_result_save_path() -> str:
-    try:
-        cache_dir = os.path.expanduser("~/.cache")
-    except Exception as e:
-        logger.error(f"[PLUGIN] Failed to get user cache dir: {e}")
-        return ""
+    cache_dir = get_cache_directory()
     coverage_dir = os.path.join(cache_dir, ".testsolar", "coverage")
     if not os.path.exists(coverage_dir):
-        try:
-            os.makedirs(coverage_dir, mode=0o755, exist_ok=True)
-        except OSError as e:
-            logger.error(f"[PLUGIN] Failed to create coverage dir: {e}")
-            return ""
+        os.makedirs(coverage_dir, mode=0o755, exist_ok=True)
     return coverage_dir
 
 
