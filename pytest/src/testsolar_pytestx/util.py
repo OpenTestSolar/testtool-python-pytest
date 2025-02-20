@@ -1,4 +1,5 @@
 import os
+import platform
 import shlex
 from typing import List
 from loguru import logger
@@ -53,3 +54,14 @@ def append_extra_args(args: List[str]) -> None:
     extra_args = os.environ.get("TESTSOLAR_TTP_EXTRAARGS", "")
     if extra_args:
         args.extend(shlex.split(extra_args))
+
+
+def get_cache_directory() -> str:
+    system = platform.system()
+    if system == "Windows":
+        cache_dir = Path(os.getenv("LOCALAPPDATA", ""))
+    elif system == "Darwin":
+        cache_dir = Path.home() / "Library" / "Caches"
+    else:
+        cache_dir = Path.home() / ".cache"
+    return str(cache_dir)

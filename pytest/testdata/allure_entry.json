@@ -1,7 +1,7 @@
 {
   "TaskId": "aa",
   "ProjectPath": "bb",
-  "FileReportPath": "",
+  "FileReportPath": "./",
   "Collectors": [],
   "Context": {},
   "TestSelectors": [

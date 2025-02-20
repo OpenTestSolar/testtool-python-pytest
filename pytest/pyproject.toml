@@ -1,6 +1,6 @@
 [project]
 name = "testsolar-pytestx"
-version = "0.1.45"
+version = "0.1.50"
 description = "Pytest tool for TestSolar"
 authors = [
     {name = "asiazhang2002", email = "asiazhang2002@gmail.com"},
@@ -20,7 +20,7 @@ classifiers = [
 ]
 dependencies = [
     "pytest>=7",
-    "testsolar-testtool-sdk==0.4.4",
+    "testsolar-testtool-sdk==0.4.5",
     "loguru>=0.7.2",
     "coverage>=7.2.7",
     "pytest-cov>=4.1.0",
