@@ -142,7 +142,7 @@ def collect_testcases(
     for k, v in my_plugin.errors.items():
         load_result.LoadErrors.append(
             LoadError(
-                name=f"load error of selector: [{k}]",
+                name=k,
                 message=v,
             )
         )

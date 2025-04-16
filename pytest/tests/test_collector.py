@@ -54,15 +54,13 @@ class CollectorTest(unittest.TestCase):
 
         self.assertEqual(
             re.LoadErrors[0].name,
-            "load error of selector: [errors/test_import_error.py]",
+            "errors/test_import_error.py",
         )
         self.assertIn(
             "ModuleNotFoundError: No module named 'bad_import'",
             re.LoadErrors[0].message,
         )
-        self.assertEqual(
-            re.LoadErrors[1].name, "load error of selector: [errors/test_load_error.py]"
-        )
+        self.assertEqual(re.LoadErrors[1].name, "errors/test_load_error.py")
         self.assertIn("SyntaxError: ", re.LoadErrors[1].message)
 
     def test_collect_testcases_when_select_not_valid(self):
