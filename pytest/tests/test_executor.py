@@ -143,14 +143,14 @@ this is teardown
 
         end = read_test_result(pipe_io)
         self.assertEqual(end.ResultType, ResultType.FAILED)
-        self.assertEqual(len(end.Steps), 3)
+        self.assertEqual(len(end.Steps), 4)
         self.assertIn("testdata/test_normal_case.py", end.Message)
 
-        step2 = end.Steps[1]
-        self.assertEqual(len(step2.Logs), 1)
-        self.assertEqual(step2.Logs[0].Level, LogLevel.ERROR)
-        self.assertEqual(step2.ResultType, ResultType.FAILED)
-        self.assertIn("E       assert 4 == 6", step2.Logs[0].Content)
+        step3 = end.Steps[2]
+        self.assertEqual(len(step3.Logs), 1)
+        self.assertEqual(step3.Logs[0].Level, LogLevel.ERROR)
+        self.assertEqual(step3.ResultType, ResultType.FAILED)
+        self.assertIn("E       assert 4 == 6", step3.Logs[0].Content)
 
     def test_run_failed_testcase_with_raise_error(self):
         entry = EntryParam(
@@ -171,13 +171,13 @@ this is teardown
 
         end = read_test_result(pipe_io)
         self.assertEqual(end.ResultType, ResultType.FAILED)
-        self.assertEqual(len(end.Steps), 3)
+        self.assertEqual(len(end.Steps), 4)
 
-        step2 = end.Steps[1]
-        self.assertEqual(len(step2.Logs), 1)
-        self.assertEqual(step2.Logs[0].Level, LogLevel.ERROR)
-        self.assertEqual(step2.ResultType, ResultType.FAILED)
-        self.assertIn("E       RuntimeError: this is raise runtime error", step2.Logs[0].Content)
+        step3 = end.Steps[2]
+        self.assertEqual(len(step3.Logs), 1)
+        self.assertEqual(step3.Logs[0].Level, LogLevel.ERROR)
+        self.assertEqual(step3.ResultType, ResultType.FAILED)
+        self.assertIn("E       RuntimeError: this is raise runtime error", step3.Logs[0].Content)
 
     def test_run_skipped_testcase(self):
         entry = EntryParam(
@@ -198,7 +198,7 @@ this is teardown
 
         end = read_test_result(pipe_io)
         self.assertEqual(end.ResultType, ResultType.IGNORED)
-        self.assertEqual(len(end.Steps), 2)
+        self.assertEqual(len(end.Steps), 3)
         self.assertEqual(end.Message, "Skipped: no way of currently testing this")
 
     def test_run_datadrive_with_single_value(self):
