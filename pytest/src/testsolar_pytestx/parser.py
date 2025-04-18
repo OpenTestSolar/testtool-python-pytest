@@ -26,9 +26,10 @@ def parse_case_attributes(item: Item, comment_fields: Optional[List[str]] = None
 
     if not item.own_markers:
         return attributes
+    tags = []
     for mark in item.own_markers:
         if not mark.args and mark.name != "attributes":
-            attributes["tag"] = mark.name
+            tags.append(mark.name)
         elif mark.args and mark.name == "owner":
             attributes["owner"] = str(mark.args[0])
         elif mark.name == "extra_attributes":
@@ -40,6 +41,7 @@ def parse_case_attributes(item: Item, comment_fields: Optional[List[str]] = None
                 extra_attr[key] = mark.args[0][key]
                 attr_list.append(extra_attr)
             attributes["extra_attributes"] = json.dumps(attr_list)
+    attributes["tags"] = json.dumps(tags)    
     return attributes
 
 

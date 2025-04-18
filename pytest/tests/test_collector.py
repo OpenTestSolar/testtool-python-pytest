@@ -49,7 +49,7 @@ class CollectorTest(unittest.TestCase):
         self.assertEqual(re.Tests[5].Name, "test_normal_case.py?test_success")
         self.assertEqual(re.Tests[5].Attributes["owner"], "foo")
         self.assertEqual(re.Tests[5].Attributes["description"], "测试获取答案")
-        self.assertEqual(re.Tests[5].Attributes["tag"], "high")
+        self.assertEqual(re.Tests[5].Attributes["tags"], '["high"]')
         self.assertEqual(re.Tests[5].Attributes["extra_attributes"], '[{"env": ["AA", "BB"]}]')
 
         self.assertEqual(

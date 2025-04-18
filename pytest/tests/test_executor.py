@@ -40,7 +40,7 @@ class ExecutorTest(unittest.TestCase):
 
         end = read_test_result(pipe_io)
         self.assertEqual(end.Test.Name, "test_normal_case.py?test_success")
-        self.assertEqual(end.Test.Attributes["tag"], "high")
+        self.assertEqual(end.Test.Attributes["tags"], '["high"]')
         self.assertEqual(end.Test.Attributes["owner"], "foo")
         elapse: timedelta = convert_to_datetime(str(end.StartTime)) - current_time
         self.assertLess(elapse.total_seconds(), 0.2)
