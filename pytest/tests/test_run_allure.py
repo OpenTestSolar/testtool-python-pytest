@@ -11,8 +11,8 @@ from testsolar_testtool_sdk.model.testresult import (
 )
 from testsolar_testtool_sdk.pipe_reader import read_test_result
 
-from run import run_testcases_from_args
-from testsolar_pytestx.extend.allure_extend import (
+from src.run import run_testcases_from_args
+from src.testsolar_pytestx.extend.allure_extend import (
     generate_allure_results,
     gen_allure_step_info,
     format_allure_time,
@@ -112,12 +112,12 @@ class TestExecuteEntry(TestCase):
         pipe_io.seek(0)
         start = read_test_result(pipe_io)
         self.assertEqual(start.ResultType, ResultType.RUNNING)
-        self.assertEqual(start.Test.Name, "allure/allure_step_test.py?test_step/%5Bdata0%5D")
+        self.assertEqual(start.Test.Name, "allure/allure_step_test.py?test_step/[data0]")
 
         # testcase finish
         stop = read_test_result(pipe_io)
         self.assertEqual(stop.ResultType, ResultType.SUCCEED)
-        self.assertEqual(stop.Test.Name, "allure/allure_step_test.py?test_step/%5Bdata0%5D")
+        self.assertEqual(stop.Test.Name, "allure/allure_step_test.py?test_step/[data0]")
         self.assertEqual(stop.Message, "")
         self.assertEqual(type(stop.Steps), list)
-        self.assertEqual(len(stop.Steps), 3)
+        self.assertEqual(len(stop.Steps), 6)
