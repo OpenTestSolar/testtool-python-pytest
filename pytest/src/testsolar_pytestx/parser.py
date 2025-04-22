@@ -41,7 +41,7 @@ def parse_case_attributes(item: Item, comment_fields: Optional[List[str]] = None
                 extra_attr[key] = mark.args[0][key]
                 attr_list.append(extra_attr)
             attributes["extra_attributes"] = json.dumps(attr_list)
-    attributes["tags"] = json.dumps(tags)    
+    attributes["tags"] = json.dumps(tags)
     return attributes
 
 

@@ -70,7 +70,7 @@ class Test(TestCase):
 
         re = pytest_to_selector(mock, "/data/tests/")
 
-        self.assertEqual(re, "tests/test_data_drive_zh_cn.py?InnerClass/test_include/%5B2-8%5D")
+        self.assertEqual(re, "tests/test_data_drive_zh_cn.py?InnerClass/test_include/[2-8]")
 
     def test_pytest_node_id_to_selector_without_datadrive(self):
         mock = MagicMock()
@@ -92,7 +92,7 @@ class Test(TestCase):
 
         self.assertEqual(
             re,
-            "/data/tests/tests/test_data_drive_zh_cn.py?test_include/%5B%23%3F-/%5B%E4%B8%AD%E6%96%87%3A203%5D%5D",
+            "/data/tests/tests/test_data_drive_zh_cn.py?test_include/[#?-/[中文:203]]",
         )
 
     def test_pytest_location_to_selector(self):
@@ -104,7 +104,7 @@ class Test(TestCase):
 
         re = pytest_to_selector(mock, "/data/tests/")
 
-        self.assertEqual(re, "tests/test_data_drive_zh_cn.py?test_include/%5BAA-BB%5D")
+        self.assertEqual(re, "tests/test_data_drive_zh_cn.py?test_include/[AA-BB]")
 
 
 class TestExtractCaseAndDataDrive:

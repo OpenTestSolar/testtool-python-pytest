@@ -25,7 +25,7 @@ class TestCollectorEntry(TestCase):
         self.assertEqual(len(re.Tests), 7)
         self.assertEqual(
             re.Tests[4].Name,
-            "test_data_drive.py?test_special_data_drive_name/%5B%E4%B8%AD%E6%96%87-%E5%88%86%E5%8F%B7%2B%5Bid%3A32%5D%5D",
+            "test_data_drive.py?test_special_data_drive_name/[中文-分号+[id:32]]",
         )
         self.assertEqual(
             re.Tests[6].Name,

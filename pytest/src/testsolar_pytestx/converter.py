@@ -1,7 +1,6 @@
 import re
 import os
 from typing import Tuple, Optional
-from urllib.parse import quote
 from pytest import Item
 from loguru import logger
 
@@ -79,14 +78,14 @@ def pytest_to_selector(item: Item, project_path: str) -> str:
         if item.cls:
             name = item.cls.__name__ + "/" + name
         name = decode_datadrive(name)
-        full_name = f"{rel_path}?{quote(name)}"
+        full_name = f"{rel_path}?{name}"
     elif hasattr(item, "nodeid") and item.nodeid:
         full_name = normalize_testcase_name(item.nodeid)
     else:
         rel_path, _, name = item.location
         name = name.replace(".", "/")
         name = decode_datadrive(name)
-        full_name = f"{rel_path}?{quote(name)}"
+        full_name = f"{rel_path}?{name}"
 
     return full_name
 
@@ -146,5 +145,5 @@ def normalize_testcase_name(name: str, sub_case_key: Optional[str] = None) -> st
     if "?" in name:
         path = name.split("?", 1)[0]
         case_name = name.split("?", 1)[-1]
-        return "?".join([path, quote(case_name)])
+        return "?".join([path, case_name])
     return name

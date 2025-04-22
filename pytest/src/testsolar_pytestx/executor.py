@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from typing import BinaryIO, Optional, Dict, Any, List, Callable
 
 from loguru import logger
-from pytest import CallInfo, Item, Session
+from pytest import Item, Session
 
 try:
     from pytest import TestReport
@@ -17,8 +17,6 @@ from testsolar_testtool_sdk.model.testresult import (
     TestResult,
     ResultType,
     TestCaseStep,
-    TestCaseLog,
-    LogLevel,
 )
 from testsolar_testtool_sdk.reporter import Reporter
 from enum import Enum
@@ -103,29 +101,6 @@ class PytestExecutor:
         if report.outcome == "rerun":  # type: ignore
             result_type = ResultType.FAILED
         return result_type
-
-    def pytest_runtest_makereport(self, item: Item, call: CallInfo[Any]) -> None:
-        if call.excinfo is not None:
-            logger.info(f"S {item.nodeid} log exec info")
-            testcase_name = normalize_testcase_name(item.nodeid, self.data_drive_key)
-            test_result = self.testdata[testcase_name]
-            test_result.Steps.append(
-                TestCaseStep(
-                    Title="exec failed",
-                    Logs=[
-                        TestCaseLog(
-                            Time=datetime.utcnow(),
-                            Level=LogLevel.ERROR,
-                            Content=f"{call.excinfo.typename}: {call.excinfo.value}",
-                        )
-                    ],
-                    StartTime=datetime.utcnow(),
-                    EndTime=datetime.utcnow(),
-                    ResultType=ResultType.FAILED,
-                )
-            )
-            test_result.ResultType = ResultType.FAILED
-            logger.info(f"E {item.nodeid} log exec info")
 
     def pytest_runtest_logreport(self, report: TestReport) -> None:
         """
