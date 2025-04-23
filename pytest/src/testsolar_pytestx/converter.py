@@ -11,21 +11,25 @@ def selector_to_pytest(test_selector: str) -> str:
     """translate from test selector format to pytest format"""
     path, _, testcase = test_selector.partition("?")
 
-    if not testcase:
+    if not testcase:  # tests/hello_test.py
         return path
 
     if "&" in testcase:
         testcase_attrs = testcase.split("&")
         for attr in testcase_attrs:
-            if "name=" in attr:
+            if "name=" in attr:  # tests/hello_test.py?name=xxxTest&tag=prod
                 testcase = attr[5:]
                 break
-            elif "=" not in attr:
+            elif "=" not in attr:  # tests/hello_test.py?xxxTest&
                 testcase = attr
                 break
+        else:  # tests/hello_test.py?test_hello_world&tag=prod
+            return path
     else:
-        if testcase.startswith("name="):
+        if testcase.startswith("name="):  # tests/hello_test.py?name=xxxTest
             testcase = testcase[5:]
+        elif "=" in testcase:  # tests/hello_test.py?tag=prod
+            return path
 
     case, datadrive = extract_case_and_datadrive(testcase)
 
