@@ -18,6 +18,16 @@ class Test(TestCase):
         re = selector_to_pytest("/data/tests/tests/test_data_drive_zh_cn.py?aa/bb/test_include")
         self.assertEqual(re, "/data/tests/tests/test_data_drive_zh_cn.py::aa::bb::test_include")
 
+    def test_selector_to_pytest_with_tag(self):
+        re = selector_to_pytest("hello_test?tag=ready&tag=-skip")
+        self.assertEqual(re, "hello_test")
+        re = selector_to_pytest("hello_test?tag=ready")
+        self.assertEqual(re, "hello_test")
+        re = selector_to_pytest("hello_test?name=HelloTest&tag=ready")
+        self.assertEqual(re, "hello_test::HelloTest")
+        re = selector_to_pytest("hello_test?HelloTest&tag=ready")
+        self.assertEqual(re, "hello_test::HelloTest")
+
     def test_selector_to_pytest_with_datadrive(self):
         re = selector_to_pytest(
             "/data/tests/tests/test_data_drive_zh_cn.py?aa/bb/test_include/[#?/-#?^$%!]"
