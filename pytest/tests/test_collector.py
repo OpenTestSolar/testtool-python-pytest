@@ -224,3 +224,28 @@ class CollectorTest(unittest.TestCase):
             re.Tests[0].Name,
             "test_emoji_data_drive.py?test_emoji_data_drive_name/[😄]",
         )
+        
+    def test_collect_testcases_with_coding_testcase_id(self):
+        entry = EntryParam(
+            TaskId="aa",
+            ProjectPath=self.testdata_dir,
+            TestSelectors=[
+                "test_coding_id.py",
+            ],
+            FileReportPath="",
+        )
+
+        pipe_io = io.BytesIO()
+        collect_testcases(entry, pipe_io)
+        pipe_io.seek(0)
+
+        re = read_load_result(pipe_io)
+        re.Tests.sort(key=lambda x: x.Name)
+        re.LoadErrors.sort(key=lambda x: x.name)
+        self.assertEqual(len(re.Tests), 3)
+        self.assertEqual(len(re.LoadErrors), 0)
+        self.assertEqual(
+            re.Tests[0].Name,
+            'test_coding_id.py?test_eval/[2+4-6]',
+        )
+        self.assertEqual(re.Tests[1].Attributes['coding_testcase_id'], '789')
