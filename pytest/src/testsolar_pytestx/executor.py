@@ -133,6 +133,8 @@ class PytestExecutor:
                 logger.info(f"Skipped {file}:{line}: {reason}")
                 test_result.Message = reason[:1000]
 
+            logger.info(f"{report.nodeid} setup result type: {result_type}")
+
         elif report.when == "call":
             test_result.Steps.append(
                 TestCaseStep(
@@ -150,6 +152,8 @@ class PytestExecutor:
 
             test_result.ResultType = result_type
 
+            logger.info(f"{report.nodeid} call result type: {result_type}")
+
         elif report.when == "teardown":
             test_result.Steps.append(
                 TestCaseStep(
@@ -163,7 +167,23 @@ class PytestExecutor:
             if not test_result.is_final():
                 test_result.ResultType = result_type
 
+            logger.info(f"{report.nodeid} teardown result type: {result_type}")
+
         logger.info(f"E {report.nodeid} log report")
+
+    def _correct_result_type(
+        self, steps: List[TestCaseStep], original_result_type: ResultType, testcase_name: str
+    ) -> ResultType:
+        """校正测试结果类型"""
+        result_type = original_result_type
+        for step in steps:
+            if step.ResultType == ResultType.FAILED and result_type == ResultType.SUCCEED:
+                logger.info(
+                    f"{testcase_name} result type corrected to FAILED due to failed step: {step.Title}"
+                )
+                result_type = ResultType.FAILED
+                break
+        return result_type
 
     def pytest_runtest_logfinish(self, nodeid: str, location: Any) -> None:
         """
@@ -174,6 +194,10 @@ class PytestExecutor:
 
         test_result = self.testdata[testcase_name]
         test_result.EndTime = datetime.utcnow()
+        # 上报前预先校正一遍测试结果
+        test_result.ResultType = self._correct_result_type(
+            test_result.Steps, test_result.ResultType, testcase_name
+        )
         self.testcase_count += 1
         logger.info(
             f"Testcase {nodeid} finished with result type {test_result.ResultType}, total {self.testcase_count} testcases complete"
