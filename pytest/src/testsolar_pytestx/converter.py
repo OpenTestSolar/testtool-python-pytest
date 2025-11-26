@@ -78,6 +78,8 @@ def pytest_to_selector(item: Item, project_path: str) -> str:
 
     if hasattr(item, "path") and hasattr(item, "cls") and item.path:
         rel_path = os.path.relpath(item.path, project_path)
+        # 统一使用正斜杠，确保跨平台一致性
+        rel_path = rel_path.replace(os.sep, "/")
         name = item.name
         if item.cls:
             name = item.cls.__name__ + "/" + name
@@ -87,6 +89,8 @@ def pytest_to_selector(item: Item, project_path: str) -> str:
         full_name = normalize_testcase_name(item.nodeid)
     else:
         rel_path, _, name = item.location
+        # 统一使用正斜杠，确保跨平台一致性
+        rel_path = rel_path.replace(os.sep, "/")
         name = name.replace(".", "/")
         name = decode_datadrive(name)
         full_name = f"{rel_path}?{name}"
@@ -140,6 +144,8 @@ def normalize_testcase_name(name: str, sub_case_key: Optional[str] = None) -> st
     -> test_directory/test_module.py?TestExampleClass/test_example_function/[datedrive]
     """
     assert "::" in name
+    # 统一使用正斜杠，确保跨平台一致性
+    name = name.replace(os.sep, "/")
     name = name.replace("::", "?", 1).replace(  # 第一个分割符是文件，因此替换为?
         "::", "/"
     )  # 后续的分割符是测试用例名称，替换为/
