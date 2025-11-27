@@ -15,7 +15,7 @@ except ImportError:
 from testsolar_testtool_sdk.model.load import LoadResult, LoadError
 from testsolar_testtool_sdk.model.param import EntryParam
 from testsolar_testtool_sdk.model.test import TestCase
-from testsolar_testtool_sdk.reporter import Reporter
+from testsolar_testtool_sdk.reporter import BaseReporter, FileReporter
 
 from .converter import selector_to_pytest, pytest_to_selector, CASE_DRIVE_SEPARATOR
 from .filter import filter_invalid_selector_path
@@ -25,10 +25,10 @@ from .stream import pytest_main_with_output
 
 
 class PytestCollector:
-    def __init__(self, pipe_io: Optional[BinaryIO] = None):
+    def __init__(self, report_file_path: Path):
         self.collected: List[Item] = []
         self.errors: Dict[str, str] = {}
-        self.reporter: Reporter = Reporter(pipe_io=pipe_io)
+        self.reporter: BaseReporter = FileReporter(report_file_path)
 
     def pytest_collection_modifyitems(self, items: Sequence[Union[Item, Collector]]) -> None:
         for item in items:
@@ -105,7 +105,7 @@ def collect_testcases(
 
     testcase_list = [os.path.join(entry_param.ProjectPath, it) for it in pytest_paths if it]
 
-    my_plugin = PytestCollector(pipe_io)
+    my_plugin = PytestCollector(Path(entry_param.FileReportPath))
     args = [
         f"--rootdir={entry_param.ProjectPath}",
         "--collect-only",
@@ -150,7 +150,7 @@ def collect_testcases(
     print(f"[Load] collect testcase count: {len(load_result.Tests)}")
     print(f"[Load] collect load error count: {len(load_result.LoadErrors)}")
 
-    reporter = Reporter(pipe_io=pipe_io)
+    reporter = FileReporter(Path(entry_param.FileReportPath))
     reporter.report_load_result(load_result)
 
 

@@ -46,7 +46,7 @@ def parse_case_attributes(item: Item, comment_fields: Optional[List[str]] = None
             for data_name in mark.args[0]:
                 if data_name == case_data_name:
                     attributes["coding_testcase_id"] = mark.args[0][data_name]
-                
+
     attributes["tags"] = json.dumps(tags)
     return attributes
 
