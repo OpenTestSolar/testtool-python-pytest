@@ -75,12 +75,13 @@ class PytestExecutor:
         """
         logger.info(f"{nodeid} start")
 
-        # 设置当前测试用例的nodeid到上下文
-        if self._should_enable_header_injection():
-            set_current_test_nodeid(nodeid)
-
         # 通知ResultHouse用例开始运行
         testcase_name = normalize_testcase_name(nodeid, self.data_drive_key)
+
+        # 设置当前测试用例的nodeid到上下文
+        if self._should_enable_header_injection():
+            testcase_class_name = testcase_name.split("?", 1)[-1]
+            set_current_test_nodeid(testcase_class_name)
 
         test_result = TestResult(
             Test=TestCase(Name=testcase_name),
