@@ -37,6 +37,10 @@ from .util import append_extra_args, append_coverage_args
 from .filter import filter_invalid_selector_path
 from .parser import parse_case_attributes
 from .stream import pytest_main_with_output
+from .header_injection import (
+    initialize_header_injection,
+    set_current_test_nodeid,
+)
 
 
 class RunMode(Enum):
@@ -58,11 +62,22 @@ class PytestExecutor:
         self.comment_fields = comment_fields
         self.data_drive_key = data_drive_key
 
+        # 初始化API请求头注入功能，传入判定方法
+        initialize_header_injection(self._should_enable_header_injection)
+
+    def _should_enable_header_injection(self) -> bool:
+        """判断是否需要启用请求头注入功能"""
+        return os.environ.get("ENABLE_API_COLLECTING", "") == "1"
+
     def pytest_runtest_logstart(self, nodeid: str, location: Any) -> None:
         """
         Called at the start of running the runtest protocol for a single item.
         """
         logger.info(f"{nodeid} start")
+
+        # 设置当前测试用例的nodeid到上下文
+        if self._should_enable_header_injection():
+            set_current_test_nodeid(nodeid)
 
         # 通知ResultHouse用例开始运行
         testcase_name = normalize_testcase_name(nodeid, self.data_drive_key)
@@ -210,6 +225,11 @@ class PytestExecutor:
 
             # 上报完成后测试记录就没有用了，删除以节省内存
             self.testdata.pop(testcase_name, None)
+
+        # 清除当前测试用例的nodeid
+        if self._should_enable_header_injection():
+            set_current_test_nodeid(None)
+
         logger.info(f"E {nodeid} runtest_logfinish")
 
     def pytest_sessionfinish(self, session: Session, exitstatus: int) -> None:
