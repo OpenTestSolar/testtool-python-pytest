@@ -72,14 +72,14 @@ class PytestExecutor:
         self.comment_fields = comment_fields
         self.data_drive_key = data_drive_key
 
-    def pytest_configure(self, config: Any) -> None:
-        """
-        在每个pytest进程（包括xdist的worker进程）启动时调用
-        确保header injection在所有进程中都被初始化
-        """
-        if should_enable_header_injection():
-            logger.info("Initializing header injection in pytest process")
-            initialize_header_injection()
+    # def pytest_configure(self, config: Any) -> None:
+    #     """
+    #     在每个pytest进程（包括xdist的worker进程）启动时调用
+    #     确保header injection在所有进程中都被初始化
+    #     """
+    #     if should_enable_header_injection():
+    #         logger.info("Initializing header injection in pytest process")
+    #         initialize_header_injection()
 
     def pytest_runtest_logstart(self, nodeid: str, location: Any) -> None:
         """
