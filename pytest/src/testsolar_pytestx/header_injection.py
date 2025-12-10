@@ -153,7 +153,7 @@ def _patch_httpx() -> None:
                 nodeid = get_current_test_nodeid()
                 logger.info("starting patch httpx request...")
                 if nodeid:
-                    logger.info(f"try to inject nodeid {nodeid} to headers")
+                    logger.debug(f"Injecting nodeid {nodeid} to httpx request headers")
                     headers = kwargs.get("headers")
                     kwargs["headers"] = _inject_header_to_dict(headers, nodeid)
 
@@ -176,7 +176,7 @@ def _patch_httpx() -> None:
                 logger.info("starting patch httpx async request...")
                 nodeid = get_current_test_nodeid()
                 if nodeid:
-                    logger.info(f"try to inject nodeid {nodeid} to headers")
+                    logger.debug(f"Injecting nodeid {nodeid} to httpx async request headers")
                     headers = kwargs.get("headers")
                     kwargs["headers"] = _inject_header_to_dict(headers, nodeid)
 

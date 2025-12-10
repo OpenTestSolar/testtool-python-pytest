@@ -37,10 +37,8 @@ from .util import append_extra_args, append_coverage_args
 from .filter import filter_invalid_selector_path
 from .parser import parse_case_attributes
 from .stream import pytest_main_with_output
-from .header_injection import (
-    initialize_header_injection,
-    set_current_test_nodeid,
-)
+from .header_injection import set_current_test_nodeid
+from .conftest_generator import generate_conftest_for_header_injection
 
 
 class RunMode(Enum):
@@ -51,11 +49,6 @@ class RunMode(Enum):
 def should_enable_header_injection() -> bool:
     """判断是否需要启用请求头注入功能"""
     return os.environ.get("ENABLE_API_COLLECTING", "") == "1"
-
-
-# 主进程初始化（兼容非xdist场景）
-# if should_enable_header_injection():
-#     initialize_header_injection()
 
 
 class PytestExecutor:
@@ -72,15 +65,6 @@ class PytestExecutor:
         self.comment_fields = comment_fields
         self.data_drive_key = data_drive_key
 
-    # def pytest_configure(self, config: Any) -> None:
-    #     """
-    #     在每个pytest进程（包括xdist的worker进程）启动时调用
-    #     确保header injection在所有进程中都被初始化
-    #     """
-    #     if should_enable_header_injection():
-    #         logger.info("Initializing header injection in pytest process")
-    #         initialize_header_injection()
-
     def pytest_runtest_logstart(self, nodeid: str, location: Any) -> None:
         """
         Called at the start of running the runtest protocol for a single item.
@@ -91,9 +75,9 @@ class PytestExecutor:
         testcase_name = normalize_testcase_name(nodeid, self.data_drive_key)
 
         # 设置当前测试用例的nodeid到上下文
+        # 注意：这里使用处理后的 testcase_class_name，与 conftest.py 中的格式可能不同
+        # conftest.py 中使用原始 nodeid，这里使用处理后的名称
         if should_enable_header_injection():
-            logger.info("Initializing header injection in pytest process")
-            initialize_header_injection()
             testcase_class_name = testcase_name.split("?", 1)[-1]
             set_current_test_nodeid(testcase_class_name)
 
@@ -274,6 +258,13 @@ def run_testcases(
 ) -> None:
     if entry.ProjectPath not in sys.path:
         sys.path.insert(0, entry.ProjectPath)
+
+    # 如果启用了 header injection，生成 conftest.py 以支持 xdist
+    # 这确保了 xdist worker 进程也能正确初始化 header injection
+    if should_enable_header_injection():
+        conftest_path = generate_conftest_for_header_injection(entry.ProjectPath)
+        if conftest_path:
+            logger.info(f"Generated conftest.py for header injection at {conftest_path}")
 
     valid_selectors, _ = filter_invalid_selector_path(
         workspace=entry.ProjectPath,
