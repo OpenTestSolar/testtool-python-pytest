@@ -258,7 +258,9 @@ def run_testcases(
     enable_allure = check_allure_enable()
     if enable_allure:
         print("Start allure test")
-        allure_dir = os.path.join(entry.ProjectPath, "allure_results")
+        # 通过给allure_results增加当前进程pid来生成唯一的路径，避免并发冲突
+        process_id = os.getpid()
+        allure_dir = os.path.join(entry.ProjectPath, f"allure_results_{process_id}")
         args.append("--alluredir={}".format(allure_dir))
         initialization_allure_dir(allure_dir)
 

@@ -80,9 +80,16 @@ def initialization_allure_dir(allure_dir: str) -> None:
     logger.info(f"Initializing Allure directory: {allure_dir}")
     if Path(allure_dir).exists():
         logger.info(f"Directory {allure_dir} exists. Removing it.")
-        shutil.rmtree(allure_dir)
-    os.makedirs(allure_dir, exist_ok=True)
-    logger.info(f"Directory {allure_dir} created.")
+        try:
+            shutil.rmtree(allure_dir)
+        except (OSError, FileNotFoundError) as e:
+            logger.warning(f"Failed to remove existing directory {allure_dir}: {e}")
+    
+    try:
+        os.makedirs(allure_dir, exist_ok=True)
+        logger.info(f"Directory {allure_dir} created.")
+    except OSError as e:
+        logger.error(f"Failed to create directory {allure_dir}: {e}")
 
 
 def generate_allure_results(
@@ -110,8 +117,15 @@ def generate_allure_results(
             )
             logger.debug(f"Formatted test case name: {testcase_format_name}")
 
+            # 处理参数化测试用例：提取基础名称进行匹配
+            testcase_base_name = testcase_format_name.split('[')[0] if '[' in testcase_format_name else testcase_format_name
+            
             if full_name != testcase_format_name:
-                if full_name in testcase_format_name and testcase_format_name.endswith(
+                if full_name == testcase_base_name:
+                    logger.info(
+                        f"Test case {testcase_format_name} is a parameterized case, matched base name: {full_name}"
+                    )
+                elif full_name in testcase_format_name and testcase_format_name.endswith(
                     allure_data.name
                 ):
                     logger.info(
