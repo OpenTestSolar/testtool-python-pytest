@@ -54,8 +54,8 @@ def should_enable_header_injection() -> bool:
 
 
 # 主进程初始化（兼容非xdist场景）
-if should_enable_header_injection():
-    initialize_header_injection()
+# if should_enable_header_injection():
+#     initialize_header_injection()
 
 
 class PytestExecutor:
@@ -92,6 +92,8 @@ class PytestExecutor:
 
         # 设置当前测试用例的nodeid到上下文
         if should_enable_header_injection():
+            logger.info("Initializing header injection in pytest process")
+            initialize_header_injection()
             testcase_class_name = testcase_name.split("?", 1)[-1]
             set_current_test_nodeid(testcase_class_name)
 
