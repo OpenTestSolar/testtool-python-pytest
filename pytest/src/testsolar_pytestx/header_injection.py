@@ -199,6 +199,9 @@ def _patch_httpx() -> None:
 def initialize_header_injection() -> None:
     """
     初始化HTTP请求头注入功能
+
+    注意：此函数可以被多次调用（在主进程和xdist子进程中），
+    内部会检查是否已经patch过，避免重复patch
     """
 
     logger.info("Initializing API header injection...")
