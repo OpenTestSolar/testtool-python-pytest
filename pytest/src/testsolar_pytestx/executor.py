@@ -63,7 +63,7 @@ class PytestExecutor:
         self.data_drive_key = data_drive_key
 
         # 初始化API请求头注入功能，传入判定方法
-        initialize_header_injection(self._should_enable_header_injection)
+        initialize_header_injection()
 
     def _should_enable_header_injection(self) -> bool:
         """判断是否需要启用请求头注入功能"""

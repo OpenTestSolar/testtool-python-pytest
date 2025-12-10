@@ -18,9 +18,8 @@ _test_context = threading.local()
 # 原始请求方法引用
 _original_requests_request: Optional[Callable[..., Any]] = None
 _original_httplib_request: Optional[Callable[..., Any]] = None
-
-# 用于存储判定函数的引用
-_should_enable_injection_func: Optional[Callable[[], bool]] = None
+_original_httpx_client_request: Optional[Callable[..., Any]] = None
+_original_httpx_async_client_request: Optional[Callable[..., Any]] = None
 
 
 def get_current_test_nodeid() -> Optional[str]:
@@ -73,12 +72,10 @@ def _patch_requests() -> None:
         _original_requests_request = requests.Session.request
 
         def _patched_request(self: Any, method: str, url: str, **kwargs: Any) -> Any:
-            # 通过判定函数检查是否需要注入
-            if _should_enable_injection_func and _should_enable_injection_func():
-                nodeid = get_current_test_nodeid()
-                if nodeid:
-                    headers = kwargs.get("headers")
-                    kwargs["headers"] = _inject_header_to_dict(headers, nodeid)
+            nodeid = get_current_test_nodeid()
+            if nodeid:
+                headers = kwargs.get("headers")
+                kwargs["headers"] = _inject_header_to_dict(headers, nodeid)
 
             return _original_requests_request(self, method, url, **kwargs)
 
@@ -118,17 +115,16 @@ def _patch_httplib() -> None:
         ) -> Any:
             # 通过判定函数检查是否需要注入
             final_headers: Any = headers
-            if _should_enable_injection_func and _should_enable_injection_func():
-                nodeid = get_current_test_nodeid()
-                if nodeid:
-                    # httplib的headers参数默认是{}而不是None
-                    if final_headers is None:
-                        final_headers = {"X-Testsolar-Testcase": nodeid}
-                    else:
-                        # 创建副本避免修改原始headers
-                        new_headers = dict(final_headers)
-                        new_headers["X-Testsolar-Testcase"] = nodeid
-                        final_headers = new_headers
+            nodeid = get_current_test_nodeid()
+            if nodeid:
+                # httplib的headers参数默认是{}而不是None
+                if final_headers is None:
+                    final_headers = {"X-Testsolar-Testcase": nodeid}
+                else:
+                    # 创建副本避免修改原始headers
+                    new_headers = dict(final_headers)
+                    new_headers["X-Testsolar-Testcase"] = nodeid
+                    final_headers = new_headers
 
             return _original_httplib_request(self, method, url, body, final_headers, **kwargs)
 
@@ -141,17 +137,63 @@ def _patch_httplib() -> None:
         logger.error(f"Failed to patch httplib: {e}")
 
 
+def _patch_httpx() -> None:
+    """Patch httpx库的Client.request和AsyncClient.request方法"""
+    try:
+        import httpx  # type: ignore[import]
+
+        global _original_httpx_client_request
+        global _original_httpx_async_client_request
+
+        # Patch Sync Client
+        if _original_httpx_client_request is None:
+            _original_httpx_client_request = httpx.Client.request
+
+            def _patched_httpx_request(self: Any, method: str, url: str, **kwargs: Any) -> Any:
+                nodeid = get_current_test_nodeid()
+                if nodeid:
+                    headers = kwargs.get("headers")
+                    kwargs["headers"] = _inject_header_to_dict(headers, nodeid)
+
+                if _original_httpx_client_request:
+                    return _original_httpx_client_request(self, method, url, **kwargs)
+                return None
+
+            httpx.Client.request = _patched_httpx_request
+            logger.info("Successfully patched httpx.Client.request")
+
+        # Patch Async Client
+        if _original_httpx_async_client_request is None:
+            _original_httpx_async_client_request = httpx.AsyncClient.request
+
+            async def _patched_httpx_async_request(
+                self: Any, method: str, url: str, **kwargs: Any
+            ) -> Any:
+                nodeid = get_current_test_nodeid()
+                if nodeid:
+                    headers = kwargs.get("headers")
+                    kwargs["headers"] = _inject_header_to_dict(headers, nodeid)
+
+                if _original_httpx_async_client_request:
+                    return await _original_httpx_async_client_request(self, method, url, **kwargs)
+                return None
+
+            httpx.AsyncClient.request = _patched_httpx_async_request
+            logger.info("Successfully patched httpx.AsyncClient.request")
+
+    except ImportError:
+        logger.debug("httpx library not installed, skip patching")
+    except Exception as e:
+        logger.error(f"Failed to patch httpx: {e}")
+
+
 # ============ 公共接口 ============
-def initialize_header_injection(should_enable_func: Callable[[], bool]) -> None:
+def initialize_header_injection() -> None:
     """
     初始化HTTP请求头注入功能
-
-    Args:
-        should_enable_func: 判定函数，返回bool表示是否启用注入
     """
-    global _should_enable_injection_func
-    _should_enable_injection_func = should_enable_func
 
     logger.info("Initializing API header injection...")
     _patch_requests()
     _patch_httplib()
+    _patch_httpx()
