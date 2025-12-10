@@ -48,6 +48,15 @@ class RunMode(Enum):
     BATCH = "batch"
 
 
+def should_enable_header_injection() -> bool:
+    """判断是否需要启用请求头注入功能"""
+    return os.environ.get("ENABLE_API_COLLECTING", "") == "1"
+
+
+if should_enable_header_injection():
+    initialize_header_injection()
+
+
 class PytestExecutor:
     def __init__(
         self,
@@ -62,13 +71,6 @@ class PytestExecutor:
         self.comment_fields = comment_fields
         self.data_drive_key = data_drive_key
 
-        # 初始化API请求头注入功能，传入判定方法
-        initialize_header_injection()
-
-    def _should_enable_header_injection(self) -> bool:
-        """判断是否需要启用请求头注入功能"""
-        return os.environ.get("ENABLE_API_COLLECTING", "") == "1"
-
     def pytest_runtest_logstart(self, nodeid: str, location: Any) -> None:
         """
         Called at the start of running the runtest protocol for a single item.
@@ -79,7 +81,7 @@ class PytestExecutor:
         testcase_name = normalize_testcase_name(nodeid, self.data_drive_key)
 
         # 设置当前测试用例的nodeid到上下文
-        if self._should_enable_header_injection():
+        if should_enable_header_injection():
             testcase_class_name = testcase_name.split("?", 1)[-1]
             set_current_test_nodeid(testcase_class_name)
 
@@ -228,7 +230,7 @@ class PytestExecutor:
             self.testdata.pop(testcase_name, None)
 
         # 清除当前测试用例的nodeid
-        if self._should_enable_header_injection():
+        if should_enable_header_injection():
             set_current_test_nodeid(None)
 
         logger.info(f"E {nodeid} runtest_logfinish")
