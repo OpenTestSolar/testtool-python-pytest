@@ -37,7 +37,8 @@ from .util import append_extra_args, append_coverage_args
 from .filter import filter_invalid_selector_path
 from .parser import parse_case_attributes
 from .stream import pytest_main_with_output
-from .header_injection import set_current_test_nodeid
+
+# from .header_injection import set_current_test_nodeid
 from .conftest_generator import generate_conftest_for_header_injection
 
 
@@ -77,9 +78,9 @@ class PytestExecutor:
         # 设置当前测试用例的nodeid到上下文
         # 注意：这里使用处理后的 testcase_class_name，与 conftest.py 中的格式可能不同
         # conftest.py 中使用原始 nodeid，这里使用处理后的名称
-        if should_enable_header_injection():
-            testcase_class_name = testcase_name.split("?", 1)[-1]
-            set_current_test_nodeid(testcase_class_name)
+        # if should_enable_header_injection():
+        #     testcase_class_name = testcase_name.split("?", 1)[-1]
+        #     set_current_test_nodeid(testcase_class_name)
 
         test_result = TestResult(
             Test=TestCase(Name=testcase_name),
@@ -226,8 +227,8 @@ class PytestExecutor:
             self.testdata.pop(testcase_name, None)
 
         # 清除当前测试用例的nodeid
-        if should_enable_header_injection():
-            set_current_test_nodeid(None)
+        # if should_enable_header_injection():
+        #     set_current_test_nodeid(None)
 
         logger.info(f"E {nodeid} runtest_logfinish")
 

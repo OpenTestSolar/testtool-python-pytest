@@ -31,9 +31,20 @@ if os.environ.get("ENABLE_API_COLLECTING") == "1":
             initialize_header_injection,
             set_current_test_nodeid,
         )
+        from testsolar_pytestx.converter import normalize_testcase_name
 
         # 在模块导入时就初始化，确保在 httpx 被导入之前完成 patch
         initialize_header_injection()
+
+        def pytest_runtest_setup(item):
+            """在每个测试开始前设置 nodeid"""
+            testcase_name = normalize_testcase_name(item.nodeid)
+            testcase_class_name = testcase_name.split("?", 1)[-1]
+            set_current_test_nodeid(testcase_class_name)
+
+        def pytest_runtest_teardown(item):
+            """在每个测试结束后清除 nodeid"""
+            set_current_test_nodeid(None)
 
     except ImportError:
         # testsolar_pytestx 未安装，跳过
