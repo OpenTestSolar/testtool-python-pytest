@@ -151,16 +151,12 @@ def _patch_httpx() -> None:
 
             def _patched_httpx_request(self: Any, method: str, url: str, **kwargs: Any) -> Any:
                 nodeid = get_current_test_nodeid()
-                logger.info("starting patch httpx request...")
                 if nodeid:
-                    logger.debug(f"Injecting nodeid {nodeid} to httpx request headers")
                     headers = kwargs.get("headers")
                     kwargs["headers"] = _inject_header_to_dict(headers, nodeid)
 
                 if _original_httpx_client_request:
-                    logger.info("return patched httpx request")
                     return _original_httpx_client_request(self, method, url, **kwargs)
-                logger.info("return None")
                 return None
 
             httpx.Client.request = _patched_httpx_request
@@ -173,17 +169,13 @@ def _patch_httpx() -> None:
             async def _patched_httpx_async_request(
                 self: Any, method: str, url: str, **kwargs: Any
             ) -> Any:
-                logger.info("starting patch httpx async request...")
                 nodeid = get_current_test_nodeid()
                 if nodeid:
-                    logger.debug(f"Injecting nodeid {nodeid} to httpx async request headers")
                     headers = kwargs.get("headers")
                     kwargs["headers"] = _inject_header_to_dict(headers, nodeid)
 
                 if _original_httpx_async_client_request:
-                    logger.info("return patched httpx request")
                     return await _original_httpx_async_client_request(self, method, url, **kwargs)
-                logger.info("return None")
                 return None
 
             httpx.AsyncClient.request = _patched_httpx_async_request
