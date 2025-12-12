@@ -13,3 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Improve test case collection and execution with better file handling
+
+### Added
+- Support for HTTP request header injection during test execution
+- Add test case identification to API requests via X-Testsolar-Testcase header

@@ -1,4 +1,5 @@
 import json
+import os
 import tempfile
 from pathlib import Path
 from unittest import TestCase
@@ -14,6 +15,10 @@ from src.run import run_testcases_from_args
 
 class TestExecuteEntry(TestCase):
     testdata_dir = Path(__file__).parent.parent.absolute().joinpath("testdata")
+
+    def test_header_injection(self):
+        os.environ["ENABLE_API_COLLECTING"] = "1"
+        self.test_run_testcases_from_args()
 
     def test_run_testcases_from_args(self):
         with tempfile.TemporaryDirectory() as tmpdir:
