@@ -22,7 +22,7 @@ dependencies = [
     "pytest>=7",
     "testsolar-testtool-sdk==0.4.4",
     "loguru>=0.7.2",
-    "coverage>=7.0.0",
+    "coverage>=7.2.7",
     "pytest-cov>=4.1.0",
     "importlib-metadata>=6.7.0",
 ]
