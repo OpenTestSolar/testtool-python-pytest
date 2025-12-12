@@ -321,7 +321,10 @@ def run_testcases(
         # 注意：传递给pytest中的用例必须在执行时能找到，否则pytest会报错
         # TODO: pytest执行出错时，将用例都设置为IGNORED，并设置错误原因
         args.extend(
-            [os.path.join(entry.ProjectPath, selector_to_pytest(it)) for it in valid_selectors]
+            [
+                os.path.join(entry.ProjectPath, selector_to_pytest(it)) if it != "." else "."
+                for it in valid_selectors
+            ]
         )
         logger.info(f"Pytest run args: {args}")
         my_plugin = PytestExecutor(reporter=reporter, comment_fields=case_comment_fields)

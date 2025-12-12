@@ -84,7 +84,7 @@ def initialization_allure_dir(allure_dir: str) -> None:
             shutil.rmtree(allure_dir)
         except (OSError, FileNotFoundError) as e:
             logger.warning(f"Failed to remove existing directory {allure_dir}: {e}")
-    
+
     try:
         os.makedirs(allure_dir, exist_ok=True)
         logger.info(f"Directory {allure_dir} created.")
@@ -118,8 +118,12 @@ def generate_allure_results(
             logger.debug(f"Formatted test case name: {testcase_format_name}")
 
             # 处理参数化测试用例：提取基础名称进行匹配
-            testcase_base_name = testcase_format_name.split('[')[0] if '[' in testcase_format_name else testcase_format_name
-            
+            testcase_base_name = (
+                testcase_format_name.split("[")[0]
+                if "[" in testcase_format_name
+                else testcase_format_name
+            )
+
             if full_name != testcase_format_name:
                 if full_name == testcase_base_name:
                     logger.info(
