@@ -3,7 +3,7 @@ import sys
 import traceback
 from collections import defaultdict
 from pathlib import Path
-from typing import BinaryIO, Sequence, Optional, List, Dict, Union, Callable
+from typing import BinaryIO, Sequence, Optional, List, Dict, Union, Callable, Set
 from loguru import logger
 from pytest import Item, Collector
 
@@ -269,7 +269,7 @@ def _is_pytest_test_file(file_path: str) -> bool:
     return False
 
 
-def _scan_pytest_files(scan_path: str, project_path: str) -> set[str]:
+def _scan_pytest_files(scan_path: str, project_path: str) -> Set[str]:
     """
     扫描指定路径下的所有pytest测试文件
     排除隐藏目录、文件和缓存文件
