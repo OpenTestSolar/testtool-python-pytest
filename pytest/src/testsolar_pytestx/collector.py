@@ -85,16 +85,16 @@ def collect_testcases(
     )
 
     # 检查是否启用 RUN_ALL_CASES 模式
-    run_all_cases = os.getenv("TESTSOLAR_TTP_RUN_ALL_CASES", "").lower() in ["1", "true"]
+    run_all_cases = os.getenv("TESTSOLAR_TTP_RUNALLCASES", "").lower() in ["1", "true"]
     if run_all_cases:
         logger.info("[Load] 执行一条命令运行当前项目的所有用例")
-        load_result.Tests.append(TestCase(Name=".", Attributes={}))
+        load_result.Tests.append(TestCase(Name=selector, Attributes={}) for selector in entry_param.TestSelectors)
         reporter = FileReporter(Path(entry_param.FileReportPath))
         reporter.report_load_result(load_result)
         return
 
     # 检查是否启用 FILEMODE 模式
-    file_mode = os.getenv("TESTSOLAR_TTP_FILEMODE", "").lower() in ["1", "true"]
+    file_mode = os.getenv("TESTSOLAR_TTP_FILEEXECUTEMODE", "").lower() in ["1", "true"]
     if file_mode:
         logger.info("[Load] 以文件模式运行当前用例")
         collect_testcases_file_mode(entry_param, load_result)
