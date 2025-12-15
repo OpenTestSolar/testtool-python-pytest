@@ -7,7 +7,12 @@ from testsolar_testtool_sdk.model.param import EntryParam
 from testsolar_testtool_sdk.model.load import LoadResult
 from testsolar_testtool_sdk.file_reader import read_file_load_result
 
-from src.testsolar_pytestx.collector import collect_testcases
+from src.testsolar_pytestx.collector import (
+    collect_testcases,
+    collect_testcases_file_mode,
+    _is_pytest_test_file,
+    _scan_pytest_files,
+)
 
 
 class CollectorTest(unittest.TestCase):
@@ -251,3 +256,165 @@ class CollectorTest(unittest.TestCase):
                 "test_coding_id.py?test_eval/[2+4-6]",
             )
             self.assertEqual(re.Tests[1].Attributes["coding_testcase_id"], "789")
+
+    def test_collect_testcases_file_mode_with_directory(self):
+        """测试文件模式：扫描目录"""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            report_file = Path(tmpdir) / "result.json"
+            entry = EntryParam(
+                TaskId="aa",
+                ProjectPath=self.testdata_dir,
+                TestSelectors=["aa/bb"],  # 扫描子目录
+                FileReportPath=str(report_file),
+            )
+
+            load_result = LoadResult(Tests=[], LoadErrors=[])
+            collect_testcases_file_mode(entry, load_result)
+
+            # 验证结果
+            self.assertEqual(len(load_result.Tests), 1)
+            self.assertEqual(len(load_result.LoadErrors), 0)
+            self.assertEqual(load_result.Tests[0].Name, "aa/bb/cc/test_in_sub_class.py")
+
+    def test_collect_testcases_file_mode_with_root_directory(self):
+        """测试文件模式：扫描根目录"""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            report_file = Path(tmpdir) / "result.json"
+            entry = EntryParam(
+                TaskId="aa",
+                ProjectPath=self.testdata_dir,
+                TestSelectors=["."],  # 扫描整个项目
+                FileReportPath=str(report_file),
+            )
+
+            load_result = LoadResult(Tests=[], LoadErrors=[])
+            collect_testcases_file_mode(entry, load_result)
+
+            # 验证结果 - 应该找到多个测试文件
+            self.assertGreater(len(load_result.Tests), 5)
+
+            # 验证包含预期的测试文件
+            test_names = [test.Name for test in load_result.Tests]
+            self.assertIn("test_normal_case.py", test_names)
+            self.assertIn("test_data_drive.py", test_names)
+
+    def test_collect_testcases_file_mode_with_specific_file(self):
+        """测试文件模式：指定具体文件"""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            report_file = Path(tmpdir) / "result.json"
+            entry = EntryParam(
+                TaskId="aa",
+                ProjectPath=self.testdata_dir,
+                TestSelectors=["test_normal_case.py"],  # 指定具体文件
+                FileReportPath=str(report_file),
+            )
+
+            load_result = LoadResult(Tests=[], LoadErrors=[])
+            collect_testcases_file_mode(entry, load_result)
+
+            # 验证结果
+            self.assertEqual(len(load_result.Tests), 1)
+            self.assertEqual(len(load_result.LoadErrors), 0)
+            self.assertEqual(load_result.Tests[0].Name, "test_normal_case.py")
+
+    def test_collect_testcases_file_mode_with_nonexistent_file(self):
+        """测试文件模式：不存在的文件"""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            report_file = Path(tmpdir) / "result.json"
+            entry = EntryParam(
+                TaskId="aa",
+                ProjectPath=self.testdata_dir,
+                TestSelectors=["nonexistent_test.py"],
+                FileReportPath=str(report_file),
+            )
+
+            load_result = LoadResult(Tests=[], LoadErrors=[])
+            collect_testcases_file_mode(entry, load_result)
+
+            # 验证结果 - 应该有加载错误
+            self.assertEqual(len(load_result.Tests), 0)
+            self.assertEqual(len(load_result.LoadErrors), 1)
+
+    def test_is_pytest_test_file(self):
+        """测试pytest测试文件识别函数"""
+        # 应该识别为测试文件的情况
+        test_files = [
+            "test_example.py",
+            "test_normal_case.py",
+            "utils_test.py",
+            "my_module_test.py",
+            "aa/bb/test_in_sub_class.py",
+        ]
+
+        for file_path in test_files:
+            with self.subTest(file_path=file_path):
+                self.assertTrue(_is_pytest_test_file(file_path))
+
+        # 不应该识别为测试文件的情况
+        non_test_files = [
+            "example.py",
+            "utils.py",
+            "config.json",
+            "README.md",
+            "_test.py",  # 只有下划线开头不算
+            "test.txt",  # 不是.py文件
+            "testfile.py",  # 不符合test_*.py格式
+            "filetest.py",  # 不符合*_test.py格式
+        ]
+
+        for file_path in non_test_files:
+            with self.subTest(file_path=file_path):
+                self.assertFalse(_is_pytest_test_file(file_path))
+
+    def test_scan_pytest_files(self):
+        """测试扫描pytest文件函数"""
+        # 扫描测试数据目录
+        test_files = _scan_pytest_files(self.testdata_dir, self.testdata_dir)
+
+        # 验证结果
+        self.assertIsInstance(test_files, set)
+        self.assertGreater(len(test_files), 0)
+
+        # 验证包含预期的测试文件
+        expected_files = {
+            "test_normal_case.py",
+            "test_data_drive.py",
+            "test_coding_id.py",
+            "aa/bb/cc/test_in_sub_class.py",
+        }
+
+        for expected_file in expected_files:
+            self.assertIn(expected_file, test_files)
+
+        # 验证不包含非测试文件
+        for file_path in test_files:
+            self.assertTrue(_is_pytest_test_file(file_path))
+
+    def test_scan_pytest_files_excludes_hidden_and_cache_dirs(self):
+        """测试扫描pytest文件时排除隐藏目录和缓存目录"""
+        # 创建临时目录结构进行测试
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmpdir_path = Path(tmpdir)
+
+            # 创建测试文件结构
+            (tmpdir_path / "test_valid.py").write_text("# valid test file")
+
+            # 创建隐藏目录和缓存目录
+            hidden_dir = tmpdir_path / ".hidden"
+            hidden_dir.mkdir(parents=True)
+            (hidden_dir / "test_hidden.py").write_text("# hidden test file")
+
+            cache_dir = tmpdir_path / "__pycache__"
+            cache_dir.mkdir(parents=True)
+            (cache_dir / "test_cache.py").write_text("# cache test file")
+
+            pytest_cache_dir = tmpdir_path / ".pytest_cache"
+            pytest_cache_dir.mkdir(parents=True)
+            (pytest_cache_dir / "test_pytest_cache.py").write_text("# pytest cache test file")
+
+            # 扫描文件
+            test_files = _scan_pytest_files(str(tmpdir_path), str(tmpdir_path))
+
+            # 验证只包含有效的测试文件
+            self.assertEqual(len(test_files), 1)
+            self.assertIn("test_valid.py", test_files)
