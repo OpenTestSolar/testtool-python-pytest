@@ -1,3 +1,4 @@
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -257,8 +258,7 @@ class CollectorTest(unittest.TestCase):
             )
             self.assertEqual(re.Tests[1].Attributes["coding_testcase_id"], "789")
 
-    def test_collect_testcases_file_mode_with_directory(self):
-        """测试文件模式：扫描目录"""
+    def test_collect_testcases_with_mark_layers(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             report_file = Path(tmpdir) / "result.json"
             entry = EntryParam(
@@ -418,3 +418,42 @@ class CollectorTest(unittest.TestCase):
             # 验证只包含有效的测试文件
             self.assertEqual(len(test_files), 1)
             self.assertIn("test_valid.py", test_files)
+
+    def test_collect_testcases_file_mode_with_directory(self):
+        """测试文件模式：扫描目录"""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            report_file = Path(tmpdir) / "result.json"
+            entry = EntryParam(
+                TaskId="aa",
+                ProjectPath=self.testdata_dir,
+                TestSelectors=[
+                    "test_mark_layers_case.py",
+                ],
+                FileReportPath=str(report_file),
+            )
+
+            collect_testcases(entry)
+
+            re = read_file_load_result(report_file)
+            self.assertEqual(len(re.LoadErrors), 0)
+            self.assertEqual(len(re.Tests), 2)
+
+            tests_by_name = {it.Name: it for it in re.Tests}
+
+            class_case_name = "test_mark_layers_case.py?TestMarkLayers/test_layers"
+            self.assertIn(class_case_name, tests_by_name)
+            class_attrs = tests_by_name[class_case_name].Attributes
+            self.assertEqual(class_attrs["owner"], "func_owner")
+            self.assertEqual(class_attrs["extra_attributes"], '[{"layer": "module"}]')
+            self.assertEqual(
+                set(json.loads(class_attrs["tags"])),
+                {"mod_tag", "class_tag", "func_tag"},
+            )
+
+            coding_case_name = "test_mark_layers_case.py?test_coding_id_layers/[case1]"
+            self.assertIn(coding_case_name, tests_by_name)
+            coding_attrs = tests_by_name[coding_case_name].Attributes
+            self.assertEqual(coding_attrs["owner"], "module_owner")
+            self.assertEqual(coding_attrs["extra_attributes"], '[{"layer": "module"}]')
+            self.assertEqual(coding_attrs["coding_testcase_id"], "CID-001")
+            self.assertEqual(set(json.loads(coding_attrs["tags"])), {"mod_tag"})
