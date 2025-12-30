@@ -88,7 +88,9 @@ def collect_testcases(
     run_all_cases = os.getenv("TESTSOLAR_TTP_RUNALLCASES", "").lower() in ["1", "true"]
     if run_all_cases:
         logger.info("[Load] 执行一条命令运行当前项目的所有用例")
-        load_result.Tests.extend([TestCase(Name=selector, Attributes={}) for selector in entry_param.TestSelectors])
+        load_result.Tests.extend(
+            [TestCase(Name=selector, Attributes={}) for selector in entry_param.TestSelectors]
+        )
         reporter = FileReporter(Path(entry_param.FileReportPath))
         reporter.report_load_result(load_result)
         return

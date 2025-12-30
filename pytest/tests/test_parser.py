@@ -18,8 +18,7 @@ def test_handle_str_param():
         "owner": "test_owner",
         "tag": "test_tag",
     }
-    result = handle_str_param(desc)
-    assert result == expected
+    assert handle_str_param(desc) == expected
 
 
 def test_scan_comment_fields():
@@ -54,6 +53,7 @@ def test_parse_case_attributes():
         "description": "This is a test function",
         "owner": "test_owner",
         "coding_testcase_id": '["123", "456"]',
+        "tags": "[]",
     }
     assert parse_case_attributes(item, comment_fields) == expected
 

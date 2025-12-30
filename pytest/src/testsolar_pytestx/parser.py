@@ -1,6 +1,8 @@
 import json
 import re
-from typing import Dict, List, Optional
+from typing import Dict, Iterable, List, Optional, Set
+
+from _pytest.mark.structures import Mark
 from pytest import Item
 
 
@@ -17,37 +19,135 @@ from pytest import Item
 # - tag
 # - owner
 # - extra_attributes
+
+
+def _get_desc(item: Item) -> str:
+    try:
+        doc = item.function.__doc__  # type: ignore
+    except AttributeError:
+        return ""
+    return str(doc).strip() if doc else ""
+
+
+def _iter_markers(item: Item) -> List[Mark]:
+    try:
+        return list(item.iter_markers())
+    except AttributeError:
+        return list(item.own_markers or [])
+
+
+def _is_tag_mark(mark: Mark) -> bool:
+    if mark.name in {"attributes"}:
+        return False
+    if mark.args or mark.kwargs:
+        return False
+    return True
+
+
+def _collect_tags(markers: Iterable[Mark]) -> List[str]:
+    """从 markers 中提取 tags（去重），只收集“无 args 且无 kwargs”的 mark.name。
+
+    示例：
+        pytestmark = [pytest.mark.mod_tag]
+
+        @pytest.mark.class_tag
+        class TestX:
+            @pytest.mark.func_tag
+            def test_ok(self):
+                pass
+
+        => tags 包含：mod_tag / class_tag / func_tag
+
+    反例（不会进 tags）：
+        @pytest.mark.slow(reason="too slow")  # 有 kwargs
+        @pytest.mark.owner("alice")          # 有 args
+        @pytest.mark.attributes({"k": "v"})  # 显式排除
+    """
+    tags: List[str] = []
+    seen: Set[str] = set()
+    for mark in markers:
+        name_str = str(mark.name)
+        if not _is_tag_mark(mark) or name_str in seen:
+            continue
+        seen.add(name_str)
+        tags.append(name_str)
+    return tags
+
+
+def _try_set_owner(attributes: Dict[str, str], mark: Mark) -> None:
+    """解析 owner：仅支持 `@pytest.mark.owner("alice")`。
+
+    示例：
+        @pytest.mark.owner("alice")
+        def test_ok():
+            pass
+
+        => attributes["owner"] == "alice"
+    """
+    if "owner" in attributes:
+        return
+    if mark.name != "owner" or not mark.args:
+        return
+    attributes["owner"] = str(mark.args[0])
+
+
+def _try_set_extra_attributes(attributes: Dict[str, str], mark: Mark) -> None:
+    """解析 extra_attributes：仅支持 `@pytest.mark.extra_attributes({"k": "v"})`。
+
+    示例：
+        @pytest.mark.extra_attributes({"env": "AA", "skip": None})
+        def test_ok():
+            pass
+
+        => attributes["extra_attributes"] == '[{"env": "AA"}]'  # None 会被过滤
+    """
+    if mark.name != "extra_attributes" or not mark.args:
+        return
+    data = mark.args[0]
+    if not isinstance(data, dict):
+        return
+    attr_list = [{k: v} for k, v in data.items() if v is not None]
+    attributes["extra_attributes"] = json.dumps(attr_list)
+
+
+def _try_set_coding_testcase_id(attributes: Dict[str, str], item: Item, mark: Mark) -> None:
+    """解析 coding_testcase_id：面向参数化用例，通过参数 id 映射到外部用例 ID。
+
+    示例：
+        @pytest.mark.coding_testcase_id({"case1": "CID-001"})
+        @pytest.mark.parametrize("x", [pytest.param(1, id="case1")])
+        def test_p(x):
+            pass
+
+        => item.name == "test_p[case1]"
+        => attributes["coding_testcase_id"] == "CID-001"
+    """
+    if mark.name != "coding_testcase_id" or not mark.args:
+        return
+    if "[" not in item.name:
+        return
+    data = mark.args[0]
+    if not isinstance(data, dict):
+        return
+    case_data_name = item.name.split("[", 1)[1][:-1]
+    if case_data_name in data:
+        attributes["coding_testcase_id"] = str(data[case_data_name])
+
+
 def parse_case_attributes(item: Item, comment_fields: Optional[List[str]] = None) -> Dict[str, str]:
     """parse testcase attributes"""
-    desc: str = (str(item.function.__doc__) if item.function.__doc__ else "").strip()  # type: ignore
+    desc = _get_desc(item)
     attributes: Dict[str, str] = {"description": desc}
     if comment_fields:
         attributes.update(scan_comment_fields(desc, comment_fields))
 
-    if not item.own_markers:
-        return attributes
-    tags = []
-    for mark in item.own_markers:
-        if not mark.args and mark.name != "attributes":
-            tags.append(mark.name)
-        elif mark.args and mark.name == "owner":
-            attributes["owner"] = str(mark.args[0])
-        elif mark.name == "extra_attributes":
-            extra_attr = {}
-            attr_list = []
-            for key in mark.args[0]:
-                if mark.args[0][key] is None:
-                    continue
-                extra_attr[key] = mark.args[0][key]
-                attr_list.append(extra_attr)
-            attributes["extra_attributes"] = json.dumps(attr_list)
-        elif mark.name == "coding_testcase_id":
-            case_data_name = item.name.split("[")[1][:-1]
-            for data_name in mark.args[0]:
-                if data_name == case_data_name:
-                    attributes["coding_testcase_id"] = mark.args[0][data_name]
+    markers = _iter_markers(item)
+    for mark in markers:
+        _try_set_owner(attributes, mark)
+        _try_set_extra_attributes(attributes, mark)
+        _try_set_coding_testcase_id(attributes, item, mark)
 
-    attributes["tags"] = json.dumps(tags)
+    attributes["tags"] = json.dumps(_collect_tags(markers))
     return attributes
 
 
