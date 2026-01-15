@@ -47,10 +47,11 @@ def test_parse_case_attributes():
     coding_testcase_id: 123,456
     """
     item.own_markers = []
+    item.cls = None  # 确保没有类级别的docstring
 
     comment_fields = ["description", "owner", "coding_testcase_id"]
     expected = {
-        "description": "This is a test function",
+        "description": "This is a test function",  # 从注释中解析出的description字段值
         "owner": "test_owner",
         "coding_testcase_id": '["123", "456"]',
         "tags": "[]",
