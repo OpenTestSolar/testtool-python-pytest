@@ -22,11 +22,26 @@ from pytest import Item
 
 
 def _get_desc(item: Item) -> str:
+    # 优先检查函数的docstring
     try:
         doc = item.function.__doc__  # type: ignore
+        if doc:
+            doc_str = str(doc).strip()
+            if doc_str and doc_str != "main entrance, discovered by pytest":
+                return doc_str
     except AttributeError:
-        return ""
-    return str(doc).strip() if doc else ""
+        pass
+
+    # 检查类的docstring（HttpRunner测试用例）
+    try:
+        if hasattr(item, "cls") and item.cls and item.cls.__doc__:
+            class_doc = item.cls.__doc__.strip()
+            if class_doc:
+                return str(class_doc)
+    except (AttributeError, TypeError):
+        pass
+
+    return ""
 
 
 def _iter_markers(item: Item) -> List[Mark]:
