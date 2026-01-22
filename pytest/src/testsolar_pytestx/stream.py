@@ -2,7 +2,7 @@ import io
 import sys
 import pytest
 import contextlib
-from typing import List, Tuple, TextIO, TypeVar
+from typing import List, Tuple, TextIO, TypeVar, Union
 
 T = TypeVar("T")
 
@@ -27,14 +27,22 @@ class TeeStream:
     def __init__(self, *streams: TextIO) -> None:
         self.streams = streams
 
-    def write(self, data: str) -> None:
-        for stream in self.streams:
-            # 如果是标准输出流/标准错误流则直接写入
-            if not isinstance(stream, io.StringIO):
-                stream.write(data)
-            # 若超过最大字符数则不写入，避免内存占用过高
-            elif not exceeds_max_size(stream=stream):
-                stream.write(data)
+    def write(self, data: Union[str, bytes]) -> None:
+        try:
+            # 确保 data 是字符串类型
+            if isinstance(data, bytes):
+                data = data.decode("utf-8", errors="replace")
+
+            for stream in self.streams:
+                # 如果是标准输出流/标准错误流则直接写入
+                if not isinstance(stream, io.StringIO):
+                    stream.write(data)
+                # 若超过最大字符数则不写入，避免内存占用过高
+                elif not exceeds_max_size(stream=stream):
+                    stream.write(data)
+        except Exception:
+            # 捕获所有异常，避免写入失败导致程序崩溃
+            pass
 
     def flush(self) -> None:
         for stream in self.streams:
