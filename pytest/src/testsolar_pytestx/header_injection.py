@@ -6,6 +6,7 @@ HTTP请求头注入模块
 """
 
 import threading
+import urllib.parse
 from typing import Optional, Callable, Any, Dict
 
 from loguru import logger
@@ -33,6 +34,16 @@ def set_current_test_nodeid(nodeid: Optional[str]) -> None:
 
 
 # ============ Header 注入逻辑 ============
+def _encode_nodeid(nodeid: str) -> str:
+    """对nodeid进行URL编码，确保HTTP头部值只含ASCII字符。
+
+    HTTP头部值要求latin-1编码，含中文等非ASCII字符的用例名会导致
+    UnicodeEncodeError，故注入前统一percent-encode。接收方可用
+    urllib.parse.unquote还原原始用例名。
+    """
+    return urllib.parse.quote(nodeid, safe="")
+
+
 def _inject_header_to_dict(headers: Optional[Dict[str, Any]], nodeid: str) -> Dict[str, Any]:
     """
     向请求头字典注入X-Testsolar-Testcase
@@ -53,7 +64,7 @@ def _inject_header_to_dict(headers: Optional[Dict[str, Any]], nodeid: str) -> Di
         # 创建副本避免修改原始dict
         headers = headers.copy()
 
-    headers["X-Testsolar-Testcase"] = nodeid
+    headers["X-Testsolar-Testcase"] = _encode_nodeid(nodeid)
     return headers
 
 
@@ -119,11 +130,11 @@ def _patch_httplib() -> None:
             if nodeid:
                 # httplib的headers参数默认是{}而不是None
                 if final_headers is None:
-                    final_headers = {"X-Testsolar-Testcase": nodeid}
+                    final_headers = {"X-Testsolar-Testcase": _encode_nodeid(nodeid)}
                 else:
                     # 创建副本避免修改原始headers
                     new_headers = dict(final_headers)
-                    new_headers["X-Testsolar-Testcase"] = nodeid
+                    new_headers["X-Testsolar-Testcase"] = _encode_nodeid(nodeid)
                     final_headers = new_headers
 
             return _original_httplib_request(self, method, url, body, final_headers, **kwargs)
