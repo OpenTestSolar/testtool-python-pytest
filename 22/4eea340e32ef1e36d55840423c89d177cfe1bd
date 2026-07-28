@@ -1,0 +1,21 @@
+pytest/tests/test_header_injection.py
+  s_e0bf66f30506c9::t_2f8a8c34725231 82,87,96,101-110
+  s_e0bf66f30506c9::t_516675165a51ee 4
+  s_e0bf66f30506c9::t_7bd64c7d345499 181
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.13",
+  "base_commit_sha": "224eea340e32ef1e36d55840423c89d177cfe1bd",
+  "prompts": {},
+  "sessions": {
+    "s_e0bf66f30506c9": {
+      "agent_id": {
+        "tool": "codebuddy",
+        "id": "4320f98cd135420f8aa8495ab986ef5e",
+        "model": "glm-5.2-ioa"
+      },
+      "human_author": "zixingdeng <zixingdeng@tencent.com>"
+    }
+  }
+}
