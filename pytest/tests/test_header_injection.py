@@ -1,6 +1,7 @@
 """Tests for header_injection module."""
 
 import threading
+import urllib.parse
 from typing import Any, Dict, Optional
 from unittest import mock
 
@@ -78,12 +79,12 @@ class TestInjectHeaderToDict:
     def test_inject_header_to_none_headers(self) -> None:
         """Test injecting header when headers is None."""
         result = _inject_header_to_dict(None, "test::nodeid")
-        assert result == {"X-Testsolar-Testcase": "test::nodeid"}
+        assert result == {"X-Testsolar-Testcase": "test%3A%3Anodeid"}
 
     def test_inject_header_to_empty_dict(self) -> None:
         """Test injecting header to empty dict."""
         result = _inject_header_to_dict({}, "test::nodeid")
-        assert result == {"X-Testsolar-Testcase": "test::nodeid"}
+        assert result == {"X-Testsolar-Testcase": "test%3A%3Anodeid"}
 
     def test_inject_header_to_existing_dict(self) -> None:
         """Test injecting header to dict with existing headers."""
@@ -92,10 +93,21 @@ class TestInjectHeaderToDict:
 
         assert result == {
             "Content-Type": "application/json",
-            "X-Testsolar-Testcase": "test::nodeid",
+            "X-Testsolar-Testcase": "test%3A%3Anodeid",
         }
         # Original should not be modified
         assert "X-Testsolar-Testcase" not in original
+
+    def test_inject_header_encodes_non_ascii_nodeid(self) -> None:
+        """含中文等非ASCII字符的nodeid需被percent-encode，避免latin-1编码错误。"""
+        nodeid = "test_features.py::test_重启运行中实例"
+        result = _inject_header_to_dict(None, nodeid)
+
+        encoded = result["X-Testsolar-Testcase"]
+        # 注入值必须可被latin-1编码（HTTP头部要求），否则抛UnicodeEncodeError
+        assert isinstance(encoded.encode("latin-1"), bytes)
+        # 接收方unquote可还原原始用例名
+        assert urllib.parse.unquote(encoded) == nodeid
 
     def test_inject_header_does_not_modify_original(self) -> None:
         """Test that original headers dict is not modified."""
@@ -166,7 +178,7 @@ class TestRequestsIntegration:
             if mock_send.called:
                 request = mock_send.call_args[0][0]
                 assert "X-Testsolar-Testcase" in request.headers
-                assert request.headers["X-Testsolar-Testcase"] == "test_file.py::test_case"
+                assert request.headers["X-Testsolar-Testcase"] == "test_file.py%3A%3Atest_case"
 
     def test_requests_no_injection_when_nodeid_not_set(self) -> None:
         """Test that requests does not inject header when nodeid is not set."""
