@@ -1,0 +1,26 @@
+pytest/src/testsolar_pytestx/header_injection.py
+  s_e0bf66f30506c9::t_af2463a6d0c8f0 9
+  s_e0bf66f30506c9::t_ff3fa065801775 133,137
+  s_e0bf66f30506c9::t_3cc56846078ece 37-46,67
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.13",
+  "base_commit_sha": "314105a19c34c76015168d1cd621d2b2184a979a",
+  "prompts": {},
+  "humans": {
+    "h_3e00d71cd58935": {
+      "author": "zixingdeng <zixingdeng@tencent.com>"
+    }
+  },
+  "sessions": {
+    "s_e0bf66f30506c9": {
+      "agent_id": {
+        "tool": "codebuddy",
+        "id": "4320f98cd135420f8aa8495ab986ef5e",
+        "model": "glm-5.2-ioa"
+      },
+      "human_author": "zixingdeng <zixingdeng@tencent.com>"
+    }
+  }
+}
