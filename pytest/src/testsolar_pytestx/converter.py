@@ -14,6 +14,11 @@ def selector_to_pytest(test_selector: str) -> str:
     if not testcase:  # tests/hello_test.py
         return path
 
+    # 参数化用例的数据驱动标记：tests/hello_test.py?xxxTest/[data]
+    # 只要出现 /[ 就说明该 selector 是一个真实的参数化用例节点，
+    # 即使数据驱动数据中包含 "="（例如 sample_rate=0），也不应该被误判为属性筛选
+    data_drive_flag = "/["
+
     if "&" in testcase:
         testcase_attrs = testcase.split("&")
         for attr in testcase_attrs:
@@ -23,12 +28,20 @@ def selector_to_pytest(test_selector: str) -> str:
             elif "=" not in attr:  # tests/hello_test.py?xxxTest&
                 testcase = attr
                 break
-        else:  # tests/hello_test.py?test_hello_world&tag=prod
-            return path
+        else:
+            # 所有属性均包含 "="，无法区分属性筛选与参数化用例
+            if data_drive_flag not in testcase:
+                # 不含数据驱动标记，判定为纯属性筛选
+                # tests/hello_test.py?test_hello_world&tag=prod
+                return path
     else:
         if testcase.startswith("name="):  # tests/hello_test.py?name=xxxTest
             testcase = testcase[5:]
-        elif "=" in testcase:  # tests/hello_test.py?tag=prod
+        elif "=" in testcase and data_drive_flag not in testcase:
+            # tests/hello_test.py?tag=prod
+            # 注意：参数化数据中可能包含 "="，例如
+            # tests/test_asr_websocket.py?TestAsrWebSocket/test_sample_rate_parametrized/[0-default-sample_rate=0-False]
+            # 这种场景下数据驱动标记 /[ 一定存在，不能返回 path 导致退化为整个文件执行
             return path
 
     case, datadrive = extract_case_and_datadrive(testcase)
