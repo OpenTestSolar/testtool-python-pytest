@@ -54,6 +54,42 @@ class Test(TestCase):
             "/data/tests/tests/test_data_drive_with_backslash.py::test_backslash[\\n]",
         )
 
+    def test_selector_to_pytest_with_equal_sign_in_datadrive(self):
+        # 回归场景：参数化数据中包含 "=" 时，不能被误判为属性筛选而退化为整个文件执行
+        re = selector_to_pytest(
+            "tests/test_asr_websocket.py?TestAsrWebSocket/test_sample_rate_parametrized/[0-default-sample_rate=0-False]"
+        )
+        self.assertEqual(
+            re,
+            "tests/test_asr_websocket.py::TestAsrWebSocket::test_sample_rate_parametrized[0-default-sample_rate=0-False]",
+        )
+
+        # 参数化数据同时包含 "=" 和中文全角括号
+        re = selector_to_pytest(
+            "tests/test_asr_websocket.py?TestAsrWebSocket/test_asr_context_type_parametrized/[no_context-type=no_context（无上下文）-False]"
+        )
+        self.assertEqual(
+            re,
+            "tests/test_asr_websocket.py::TestAsrWebSocket::test_asr_context_type_parametrized[no_context-type=no_context\\uff08\\u65e0\\u4e0a\\u4e0b\\u6587\\uff09-False]",
+        )
+
+        re = selector_to_pytest(
+            "tests/test_asr_websocket.py?TestAsrWebSocket/test_voice_id_parametrized/[aaaaaaaa-voice_id=129位（超限）-True]"
+        )
+        self.assertEqual(
+            re,
+            "tests/test_asr_websocket.py::TestAsrWebSocket::test_voice_id_parametrized[aaaaaaaa-voice_id=129\\u4f4d\\uff08\\u8d85\\u9650\\uff09-True]",
+        )
+
+    def test_selector_to_pytest_with_equal_sign_in_http_datadrive(self):
+        re = selector_to_pytest(
+            "tests/test_asr_http.py?TestASRRecognize/test_recognize_audio_format/[summary_context-base64-pcm]"
+        )
+        self.assertEqual(
+            re,
+            "tests/test_asr_http.py::TestASRRecognize::test_recognize_audio_format[summary_context-base64-pcm]",
+        )
+
     def test_selector_to_pytest_with_utf8_string(self):
         re = selector_to_pytest(
             "/data/tests/tests/test_data_drive_zh_cn.py?aa/bb/test_include/[中文-中文汉字]"
