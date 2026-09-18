@@ -38,12 +38,4 @@ jobs:
           password: ${{ secrets.PYPI_API_TOKEN }}
           packages-dir: pytest/dist/
           skip-existing: true
-      - name: Release metadata
-        run: |
-          git config --global user.name 'asiazhang'
-          git config --global user.email 'asiazhang2002@gmail.com'
-          pip install -U solar-registry
-          solar-registry pull-request pytest
-        env:
-          GH_TOKEN: ${{ secrets.TESTSOLAR_TOKEN }}
 
