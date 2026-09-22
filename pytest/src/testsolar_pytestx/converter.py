@@ -5,6 +5,7 @@ from pytest import Item
 from loguru import logger
 
 CASE_DRIVE_SEPARATOR = "→"
+NAME_ATTR_PREFIX = "name="
 
 
 def selector_to_pytest(test_selector: str) -> str:
@@ -18,26 +19,34 @@ def selector_to_pytest(test_selector: str) -> str:
     # 只要出现 /[ 就说明该 selector 是一个真实的参数化用例节点，
     # 即使数据驱动数据中包含 "="（例如 sample_rate=0），也不应该被误判为属性筛选
     data_drive_flag = "/["
+    # 数据驱动里的 & 属于数据内容（例如 [demand_name=测试&author_name=xx]），
+    # 只有不含数据驱动标记时，& 才表示属性筛选：tests/hello_test.py?name=xxxTest&tag=prod
+    is_attr_filter = data_drive_flag not in testcase
 
     if "&" in testcase:
         testcase_attrs = testcase.split("&")
         for attr in testcase_attrs:
-            if "name=" in attr:  # tests/hello_test.py?name=xxxTest&tag=prod
-                testcase = attr[5:]
+            # 属性名只会出现在片段开头，不能用 in 判断：数据驱动中的参数名
+            # （例如 demand_name=测试、product_name=xx）同样包含 name=，
+            # 误判后 attr[len(NAME_ATTR_PREFIX):] 会把用例名截断
+            if is_attr_filter and attr.startswith(NAME_ATTR_PREFIX):
+                # tests/hello_test.py?name=xxxTest&tag=prod
+                testcase = attr[len(NAME_ATTR_PREFIX) :]
                 break
-            elif "=" not in attr:  # tests/hello_test.py?xxxTest&
+            elif is_attr_filter and "=" not in attr:
+                # tests/hello_test.py?xxxTest&tag=prod
                 testcase = attr
                 break
         else:
             # 所有属性均包含 "="，无法区分属性筛选与参数化用例
-            if data_drive_flag not in testcase:
+            if is_attr_filter:
                 # 不含数据驱动标记，判定为纯属性筛选
                 # tests/hello_test.py?test_hello_world&tag=prod
                 return path
     else:
-        if testcase.startswith("name="):  # tests/hello_test.py?name=xxxTest
-            testcase = testcase[5:]
-        elif "=" in testcase and data_drive_flag not in testcase:
+        if testcase.startswith(NAME_ATTR_PREFIX):  # tests/hello_test.py?name=xxxTest
+            testcase = testcase[len(NAME_ATTR_PREFIX) :]
+        elif "=" in testcase and is_attr_filter:
             # tests/hello_test.py?tag=prod
             # 注意：参数化数据中可能包含 "="，例如
             # tests/test_asr_websocket.py?TestAsrWebSocket/test_sample_rate_parametrized/[0-default-sample_rate=0-False]
