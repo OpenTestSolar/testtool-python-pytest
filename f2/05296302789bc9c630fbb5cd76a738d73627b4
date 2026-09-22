@@ -1,0 +1,31 @@
+pytest/src/testsolar_pytestx/converter.py
+  s_bd3783f9e7b4b4::t_a76915e4610500 8,22-24,29-34,36-37,42,47-48
+  s_bd3783f9e7b4b4::t_08d417d228138e 49
+pytest/tests/test_converter.py
+  s_bd3783f9e7b4b4::t_bc8f2b331cf4e1 93-121
+pytest/testtool.yaml
+  h_3e00d71cd58935 5
+pytest/pyproject.toml
+  h_3e00d71cd58935 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.13",
+  "base_commit_sha": "f205296302789bc9c630fbb5cd76a738d73627b4",
+  "prompts": {},
+  "humans": {
+    "h_3e00d71cd58935": {
+      "author": "zixingdeng <zixingdeng@tencent.com>"
+    }
+  },
+  "sessions": {
+    "s_bd3783f9e7b4b4": {
+      "agent_id": {
+        "tool": "codebuddy",
+        "id": "e1e7c7e40e2548249a7dec9cfea09fcd",
+        "model": "hy4-preview-ioa"
+      },
+      "human_author": "zixingdeng <zixingdeng@tencent.com>"
+    }
+  }
+}
